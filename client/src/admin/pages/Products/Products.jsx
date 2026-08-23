@@ -11,6 +11,7 @@ import { useState } from "react";
 import AdminTable from "../../components/AdminTable/AdminTable";
 
 import "./Products.css";
+import { Link } from "react-router-dom";
 
 function Products() {
   const [search, setSearch] = useState("");
@@ -86,10 +87,12 @@ function Products() {
           </p>
         </div>
 
+        <Link to="/admin/products/add">
         <button className="admin-primary-button">
           <Plus size={17} />
           Add Product
         </button>
+        </Link>
 
       </div>
 

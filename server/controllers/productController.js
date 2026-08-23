@@ -3,6 +3,7 @@ import Product from "../models/Product.js";
 // ==========================================
 // CREATE PRODUCT - ADMIN
 // ==========================================
+
 const createProduct = async (req, res) => {
   try {
     const {
@@ -11,14 +12,23 @@ const createProduct = async (req, res) => {
       price,
       compareAtPrice,
       category,
+      variants,
       images,
       stock,
       isActive,
       isFeatured,
     } = req.body;
 
-    // Validate required fields
-    if (!name || !description || price === undefined || !category) {
+    // ==========================================
+    // VALIDATE REQUIRED FIELDS
+    // ==========================================
+
+    if (
+      !name ||
+      !description ||
+      price === undefined ||
+      !category
+    ) {
       return res.status(400).json({
         success: false,
         message:
@@ -26,7 +36,23 @@ const createProduct = async (req, res) => {
       });
     }
 
-    // Check if product already exists
+    // ==========================================
+    // VALIDATE PRICE
+    // ==========================================
+
+    const productPrice = Number(price);
+
+    if (Number.isNaN(productPrice) || productPrice < 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Product price must be a valid number",
+      });
+    }
+
+    // ==========================================
+    // CHECK DUPLICATE PRODUCT
+    // ==========================================
+
     const existingProduct = await Product.findOne({
       name: name.trim(),
     });
@@ -38,31 +64,100 @@ const createProduct = async (req, res) => {
       });
     }
 
+    // ==========================================
+    // FORMAT VARIANTS
+    // ==========================================
+
+    let formattedVariants = [];
+
+    if (Array.isArray(variants)) {
+      formattedVariants = variants.map((variant) => ({
+        name: variant.name?.trim() || "",
+
+        price: Number(variant.price) || 0,
+
+        compareAtPrice:
+          Number(variant.compareAtPrice) || 0,
+
+        stock: Number(variant.stock) || 0,
+
+        sku: variant.sku?.trim() || "",
+      }));
+    }
+
+    // ==========================================
+    // FORMAT IMAGES
+    // ==========================================
+
+    const formattedImages = Array.isArray(images)
+      ? images.filter(
+          (image) =>
+            typeof image === "string" &&
+            image.trim() !== ""
+        )
+      : [];
+
+    // ==========================================
+    // CREATE PRODUCT
+    // ==========================================
+
     const product = await Product.create({
       name: name.trim(),
+
       description: description.trim(),
-      price: Number(price),
-      compareAtPrice: Number(compareAtPrice) || 0,
+
+      price: productPrice,
+
+      compareAtPrice:
+        Number(compareAtPrice) || 0,
+
       category,
-      images: Array.isArray(images) ? images : [],
+
+      variants: formattedVariants,
+
+      images: formattedImages,
+
       stock: Number(stock) || 0,
+
       isActive:
-        isActive !== undefined ? isActive : true,
+        isActive !== undefined
+          ? Boolean(isActive)
+          : true,
+
       isFeatured:
-        isFeatured !== undefined ? isFeatured : false,
+        isFeatured !== undefined
+          ? Boolean(isFeatured)
+          : false,
     });
 
-    res.status(201).json({
+    // ==========================================
+    // SUCCESS RESPONSE
+    // ==========================================
+
+    return res.status(201).json({
       success: true,
       message: "Product created successfully",
       product,
     });
   } catch (error) {
-    console.error("Create Product Error:", error);
+    console.error(
+      "Create Product Error:",
+      error
+    );
 
-    res.status(500).json({
+    // Handle duplicate slug
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "A product with this name or slug already exists",
+      });
+    }
+
+    return res.status(500).json({
       success: false,
-      message: "Server error while creating product",
+      message:
+        "Server error while creating product",
       error: error.message,
     });
   }
@@ -71,6 +166,7 @@ const createProduct = async (req, res) => {
 // ==========================================
 // GET ALL PRODUCTS - PUBLIC
 // ==========================================
+
 const getProducts = async (req, res) => {
   try {
     const {
@@ -84,93 +180,144 @@ const getProducts = async (req, res) => {
       limit = 12,
     } = req.query;
 
+    // ==========================================
+    // BASE FILTER
+    // ==========================================
+
     const filter = {
       isActive: true,
     };
 
-    // Search
-    if (search) {
+    // ==========================================
+    // SEARCH
+    // ==========================================
+
+    if (search && search.trim()) {
       filter.$or = [
         {
           name: {
-            $regex: search,
+            $regex: search.trim(),
             $options: "i",
           },
         },
         {
           description: {
-            $regex: search,
+            $regex: search.trim(),
             $options: "i",
           },
         },
       ];
     }
 
-    // Category
+    // ==========================================
+    // CATEGORY
+    // ==========================================
+
     if (category) {
       filter.category = category;
     }
 
-    // Price range
-    if (minPrice || maxPrice) {
+    // ==========================================
+    // PRICE RANGE
+    // ==========================================
+
+    if (minPrice !== undefined || maxPrice !== undefined) {
       filter.price = {};
 
-      if (minPrice) {
+      if (
+        minPrice !== undefined &&
+        minPrice !== ""
+      ) {
         filter.price.$gte = Number(minPrice);
       }
 
-      if (maxPrice) {
+      if (
+        maxPrice !== undefined &&
+        maxPrice !== ""
+      ) {
         filter.price.$lte = Number(maxPrice);
       }
     }
 
-    // Featured
+    // ==========================================
+    // FEATURED
+    // ==========================================
+
     if (featured === "true") {
       filter.isFeatured = true;
     }
 
-    // Pagination
-    const currentPage = Math.max(Number(page), 1);
+    // ==========================================
+    // PAGINATION
+    // ==========================================
+
+    const currentPage = Math.max(
+      Number(page) || 1,
+      1
+    );
+
     const productsPerPage = Math.min(
-      Math.max(Number(limit), 1),
+      Math.max(Number(limit) || 12, 1),
       50
     );
 
     const skip =
-      (currentPage - 1) * productsPerPage;
+      (currentPage - 1) *
+      productsPerPage;
 
-    // Sorting
+    // ==========================================
+    // SORTING
+    // ==========================================
+
     let sortOption = {
       createdAt: -1,
     };
 
     switch (sort) {
       case "price-low":
-        sortOption = { price: 1 };
+        sortOption = {
+          price: 1,
+        };
         break;
 
       case "price-high":
-        sortOption = { price: -1 };
+        sortOption = {
+          price: -1,
+        };
         break;
 
       case "rating":
-        sortOption = { rating: -1 };
+        sortOption = {
+          rating: -1,
+        };
         break;
 
       case "oldest":
-        sortOption = { createdAt: 1 };
+        sortOption = {
+          createdAt: 1,
+        };
         break;
 
       case "newest":
       default:
-        sortOption = { createdAt: -1 };
+        sortOption = {
+          createdAt: -1,
+        };
         break;
     }
+
+    // ==========================================
+    // GET PRODUCTS
+    // ==========================================
 
     const products = await Product.find(filter)
       .sort(sortOption)
       .skip(skip)
       .limit(productsPerPage);
+
+    // ==========================================
+    // COUNT PRODUCTS
+    // ==========================================
 
     const totalProducts =
       await Product.countDocuments(filter);
@@ -179,25 +326,34 @@ const getProducts = async (req, res) => {
       totalProducts / productsPerPage
     );
 
-    res.status(200).json({
+    // ==========================================
+    // RESPONSE
+    // ==========================================
+
+    return res.status(200).json({
       success: true,
       products,
-
       pagination: {
         currentPage,
         productsPerPage,
         totalProducts,
         totalPages,
-        hasNextPage: currentPage < totalPages,
-        hasPreviousPage: currentPage > 1,
+        hasNextPage:
+          currentPage < totalPages,
+        hasPreviousPage:
+          currentPage > 1,
       },
     });
   } catch (error) {
-    console.error("Get Products Error:", error);
+    console.error(
+      "Get Products Error:",
+      error
+    );
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: "Server error while fetching products",
+      message:
+        "Server error while fetching products",
     });
   }
 };
@@ -205,6 +361,7 @@ const getProducts = async (req, res) => {
 // ==========================================
 // GET SINGLE PRODUCT - PUBLIC
 // ==========================================
+
 const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -221,16 +378,21 @@ const getProductById = async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       product,
     });
   } catch (error) {
-    console.error("Get Product Error:", error);
+    console.error(
+      "Get Product Error:",
+      error
+    );
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: "Server error while fetching product",
+      message:
+        "Server error while fetching product",
+      error: error.message,
     });
   }
 };
@@ -238,9 +400,14 @@ const getProductById = async (req, res) => {
 // ==========================================
 // UPDATE PRODUCT - ADMIN
 // ==========================================
+
 const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
+
+    // ==========================================
+    // FIND PRODUCT
+    // ==========================================
 
     const product = await Product.findById(id);
 
@@ -257,64 +424,212 @@ const updateProduct = async (req, res) => {
       price,
       compareAtPrice,
       category,
+      variants,
       images,
       stock,
       isActive,
       isFeatured,
     } = req.body;
 
+    // ==========================================
+    // UPDATE NAME
+    // ==========================================
+
     if (name !== undefined) {
+      if (!name.trim()) {
+        return res.status(400).json({
+          success: false,
+          message: "Product name cannot be empty",
+        });
+      }
+
       product.name = name.trim();
     }
 
+    // ==========================================
+    // UPDATE DESCRIPTION
+    // ==========================================
+
     if (description !== undefined) {
-      product.description = description.trim();
+      if (!description.trim()) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Product description cannot be empty",
+        });
+      }
+
+      product.description =
+        description.trim();
     }
 
+    // ==========================================
+    // UPDATE PRICE
+    // ==========================================
+
     if (price !== undefined) {
-      product.price = Number(price);
+      const updatedPrice = Number(price);
+
+      if (
+        Number.isNaN(updatedPrice) ||
+        updatedPrice < 0
+      ) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Product price must be a valid number",
+        });
+      }
+
+      product.price = updatedPrice;
     }
+
+    // ==========================================
+    // UPDATE COMPARE PRICE
+    // ==========================================
 
     if (compareAtPrice !== undefined) {
       product.compareAtPrice =
-        Number(compareAtPrice);
+        Number(compareAtPrice) || 0;
     }
+
+    // ==========================================
+    // UPDATE CATEGORY
+    // ==========================================
 
     if (category !== undefined) {
       product.category = category;
     }
 
+    // ==========================================
+    // UPDATE VARIANTS
+    // ==========================================
+
+    if (variants !== undefined) {
+      if (!Array.isArray(variants)) {
+        return res.status(400).json({
+          success: false,
+          message: "Variants must be an array",
+        });
+      }
+
+      product.variants = variants.map(
+        (variant) => {
+          const formattedVariant = {
+            name:
+              variant.name?.trim() || "",
+
+            price:
+              Number(variant.price) || 0,
+
+            compareAtPrice:
+              Number(
+                variant.compareAtPrice
+              ) || 0,
+
+            stock:
+              Number(variant.stock) || 0,
+
+            sku:
+              variant.sku?.trim() || "",
+          };
+
+          // Preserve existing variant _id
+          if (variant._id) {
+            formattedVariant._id =
+              variant._id;
+          }
+
+          return formattedVariant;
+        }
+      );
+    }
+
+    // ==========================================
+    // UPDATE IMAGES
+    // ==========================================
+
     if (images !== undefined) {
       product.images = Array.isArray(images)
-        ? images
+        ? images.filter(
+            (image) =>
+              typeof image === "string" &&
+              image.trim() !== ""
+          )
         : [];
     }
 
+    // ==========================================
+    // UPDATE STOCK
+    // ==========================================
+
     if (stock !== undefined) {
-      product.stock = Number(stock);
+      const updatedStock = Number(stock);
+
+      if (
+        Number.isNaN(updatedStock) ||
+        updatedStock < 0
+      ) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Stock must be a valid non-negative number",
+        });
+      }
+
+      product.stock = updatedStock;
     }
+
+    // ==========================================
+    // UPDATE ACTIVE STATUS
+    // ==========================================
 
     if (isActive !== undefined) {
-      product.isActive = isActive;
+      product.isActive =
+        Boolean(isActive);
     }
+
+    // ==========================================
+    // UPDATE FEATURED STATUS
+    // ==========================================
 
     if (isFeatured !== undefined) {
-      product.isFeatured = isFeatured;
+      product.isFeatured =
+        Boolean(isFeatured);
     }
 
-    const updatedProduct = await product.save();
+    // ==========================================
+    // SAVE
+    // ==========================================
 
-    res.status(200).json({
+    const updatedProduct =
+      await product.save();
+
+    return res.status(200).json({
       success: true,
-      message: "Product updated successfully",
+      message:
+        "Product updated successfully",
       product: updatedProduct,
     });
   } catch (error) {
-    console.error("Update Product Error:", error);
+    console.error(
+      "Update Product Error:",
+      error
+    );
 
-    res.status(500).json({
+    // Duplicate slug/name
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "A product with this name or slug already exists",
+      });
+    }
+
+    return res.status(500).json({
       success: false,
-      message: "Server error while updating product",
+      message:
+        "Server error while updating product",
       error: error.message,
     });
   }
@@ -323,11 +638,13 @@ const updateProduct = async (req, res) => {
 // ==========================================
 // DELETE PRODUCT - ADMIN
 // ==========================================
+
 const deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const product = await Product.findById(id);
+    const product =
+      await Product.findById(id);
 
     if (!product) {
       return res.status(404).json({
@@ -338,16 +655,22 @@ const deleteProduct = async (req, res) => {
 
     await Product.findByIdAndDelete(id);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: "Product deleted successfully",
+      message:
+        "Product deleted successfully",
     });
   } catch (error) {
-    console.error("Delete Product Error:", error);
+    console.error(
+      "Delete Product Error:",
+      error
+    );
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: "Server error while deleting product",
+      message:
+        "Server error while deleting product",
+      error: error.message,
     });
   }
 };
@@ -355,13 +678,15 @@ const deleteProduct = async (req, res) => {
 // ==========================================
 // GET ALL PRODUCTS - ADMIN
 // ==========================================
+
 const getAdminProducts = async (req, res) => {
   try {
-    const products = await Product.find().sort({
-      createdAt: -1,
-    });
+    const products = await Product.find()
+      .sort({
+        createdAt: -1,
+      });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count: products.length,
       products,
@@ -372,12 +697,18 @@ const getAdminProducts = async (req, res) => {
       error
     );
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: "Server error while fetching products",
+      message:
+        "Server error while fetching products",
+      error: error.message,
     });
   }
 };
+
+// ==========================================
+// EXPORT
+// ==========================================
 
 export {
   createProduct,

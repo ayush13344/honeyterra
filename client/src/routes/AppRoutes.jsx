@@ -24,6 +24,7 @@ import Products from "../admin/pages/Products/Products";
 import Orders from "../admin/pages/Orders/Orders";
 import Customers from "../admin/pages/Customers/Customers";
 import Settings from "../admin/pages/Settings/Settings";
+import AddProduct from "../admin/pages/Products/AddProduct";
 
 function AppRoutes() {
   return (
@@ -99,6 +100,11 @@ function AppRoutes() {
           path="/admin/products"
           element={<Products />}
         />
+
+        <Route
+  path="/admin/products/add"
+  element={<AddProduct />}
+/>
 
         <Route
           path="/admin/orders"

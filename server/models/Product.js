@@ -1,5 +1,51 @@
 import mongoose from "mongoose";
 
+// ==========================================
+// VARIANT SCHEMA
+// ==========================================
+
+const variantSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "Variant name is required"],
+      trim: true,
+    },
+
+    price: {
+      type: Number,
+      required: [true, "Variant price is required"],
+      min: 0,
+    },
+
+    compareAtPrice: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    stock: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 0,
+    },
+
+    sku: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+  },
+  {
+    _id: true,
+  }
+);
+
+// ==========================================
+// PRODUCT SCHEMA
+// ==========================================
+
 const productSchema = new mongoose.Schema(
   {
     name: {
@@ -44,10 +90,27 @@ const productSchema = new mongoose.Schema(
       ],
     },
 
+    // ==========================================
+    // PRODUCT VARIANTS
+    // ==========================================
+
+    variants: {
+      type: [variantSchema],
+      default: [],
+    },
+
+    // ==========================================
+    // IMAGES
+    // ==========================================
+
     images: {
       type: [String],
       default: [],
     },
+
+    // ==========================================
+    // STOCK
+    // ==========================================
 
     stock: {
       type: Number,
@@ -55,6 +118,10 @@ const productSchema = new mongoose.Schema(
       min: 0,
       default: 0,
     },
+
+    // ==========================================
+    // SETTINGS
+    // ==========================================
 
     isActive: {
       type: Boolean,
@@ -65,6 +132,10 @@ const productSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+
+    // ==========================================
+    // REVIEWS
+    // ==========================================
 
     rating: {
       type: Number,
@@ -83,7 +154,10 @@ const productSchema = new mongoose.Schema(
   }
 );
 
-// Generate slug automatically
+// ==========================================
+// GENERATE SLUG
+// ==========================================
+
 productSchema.pre("save", function (next) {
   if (this.isModified("name") || !this.slug) {
     this.slug = this.name
@@ -96,6 +170,13 @@ productSchema.pre("save", function (next) {
   next();
 });
 
-const Product = mongoose.model("Product", productSchema);
+// ==========================================
+// MODEL
+// ==========================================
+
+const Product = mongoose.model(
+  "Product",
+  productSchema
+);
 
 export default Product;
