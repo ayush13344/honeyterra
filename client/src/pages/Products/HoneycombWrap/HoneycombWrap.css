@@ -1,0 +1,391 @@
+.wrap-page {
+  background: #fffdf8;
+  color: #1d2722;
+}
+
+.wrap-container {
+  width: min(1180px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+.wrap-product-section {
+  padding: 75px 0 100px;
+}
+
+.wrap-product-grid {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 70px;
+  align-items: start;
+}
+
+.wrap-product-info {
+  padding-top: 25px;
+}
+
+.wrap-category,
+.wrap-eyebrow {
+  color: #14755f;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+.wrap-product-info h1 {
+  margin: 17px 0 22px;
+
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(48px, 5vw, 66px);
+  line-height: 1.02;
+}
+
+.wrap-description {
+  max-width: 550px;
+
+  color: #68716d;
+  font-size: 17px;
+  line-height: 1.8;
+}
+
+
+/* Benefits */
+
+.wrap-benefits {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+
+  margin: 30px 0;
+  padding: 23px 0;
+
+  border-top: 1px solid #e6dfd4;
+  border-bottom: 1px solid #e6dfd4;
+}
+
+.wrap-benefit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  color: #14755f;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+
+/* Buy box */
+
+.wrap-buy-box {
+  padding: 25px;
+
+  border: 1px solid #dfd8ce;
+  border-radius: 18px;
+
+  background: white;
+}
+
+.wrap-price-label {
+  color: #14755f;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.3px;
+}
+
+.wrap-buy-box h3 {
+  margin-top: 7px;
+
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 25px;
+}
+
+.wrap-coming {
+  display: block;
+
+  margin: 14px 0;
+
+  color: #7b847e;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.wrap-add-cart {
+  width: 100%;
+  height: 50px;
+
+  border: none;
+  border-radius: 9px;
+
+  background: #e4e5e2;
+  color: #737b76;
+
+  font-weight: 700;
+}
+
+.wrap-note {
+  margin-top: 10px;
+
+  color: #919892;
+  font-size: 12px;
+  text-align: center;
+}
+
+
+/* Heading */
+
+.wrap-heading {
+  text-align: center;
+  margin-bottom: 55px;
+}
+
+.wrap-heading h2 {
+  margin-top: 15px;
+
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(40px, 5vw, 55px);
+  line-height: 1.1;
+}
+
+
+/* How */
+
+.wrap-how {
+  padding: 105px 0;
+  background: #f7f1e4;
+}
+
+.wrap-steps {
+  position: relative;
+
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.wrap-step {
+  position: relative;
+
+  padding: 10px 20px;
+  text-align: center;
+}
+
+.wrap-step-icon {
+  width: 68px;
+  height: 68px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin: 0 auto 20px;
+
+  border: 2px solid #e3a42f;
+  border-radius: 50%;
+
+  background: #fffdf8;
+  color: #c77c0b;
+}
+
+.wrap-step-number {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #c77c0b;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.wrap-step h3 {
+  margin-bottom: 10px;
+
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 24px;
+}
+
+.wrap-step p {
+  color: #68716d;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+
+/* Use Cases */
+
+.wrap-use {
+  padding: 105px 0;
+}
+
+.wrap-use-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.wrap-use-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+
+  padding: 24px;
+
+  border: 1px solid #e2dcd1;
+  border-radius: 17px;
+
+  background: white;
+
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 19px;
+}
+
+.wrap-use-icon {
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background: #edf6f2;
+  color: #14755f;
+}
+
+
+/* Comparison */
+
+.wrap-comparison {
+  padding: 105px 0;
+  background: #f7f1e4;
+}
+
+.wrap-comparison-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+}
+
+.comparison-card {
+  padding: 38px;
+
+  border-radius: 24px;
+
+  background: white;
+}
+
+.comparison-card span {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+}
+
+.comparison-card h3 {
+  margin: 12px 0 22px;
+
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 32px;
+}
+
+.comparison-card ul {
+  margin: 0;
+  padding-left: 20px;
+
+  color: #68716d;
+  line-height: 2;
+}
+
+.comparison-card.honeyterra {
+  border: 2px solid #e3a42f;
+}
+
+
+/* CTA */
+
+.wrap-cta {
+  padding: 110px 24px;
+
+  background: #0c5c4a;
+
+  color: white;
+  text-align: center;
+}
+
+.wrap-cta .wrap-eyebrow {
+  color: #e0a43a;
+}
+
+.wrap-cta h2 {
+  margin: 18px 0 30px;
+
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(42px, 6vw, 62px);
+  line-height: 1.08;
+}
+
+.wrap-cta-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 14px 25px;
+
+  border-radius: 9px;
+
+  background: white;
+  color: #0c5c4a;
+
+  font-weight: 700;
+}
+
+
+/* Responsive */
+
+@media (max-width: 900px) {
+
+  .wrap-product-grid {
+    grid-template-columns: 1fr;
+    gap: 45px;
+  }
+
+  .wrap-product-info {
+    padding-top: 0;
+  }
+
+  .wrap-steps {
+    grid-template-columns: 1fr 1fr;
+    row-gap: 40px;
+  }
+
+}
+
+@media (max-width: 650px) {
+
+  .wrap-container {
+    width: min(100% - 32px, 1180px);
+  }
+
+  .wrap-product-section,
+  .wrap-how,
+  .wrap-use,
+  .wrap-comparison {
+    padding: 70px 0;
+  }
+
+  .wrap-benefits {
+    grid-template-columns: 1fr;
+  }
+
+  .wrap-steps,
+  .wrap-use-grid,
+  .wrap-comparison-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .comparison-card {
+    padding: 28px;
+  }
+
+}

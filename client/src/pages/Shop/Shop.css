@@ -1,0 +1,217 @@
+.shop-page {
+  background: #fffdf8;
+  color: #1d2722;
+}
+
+.shop-container {
+  width: min(1180px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+.section-eyebrow {
+  color: #14755f;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+/* Hero */
+
+.shop-hero {
+  padding: 105px 24px 95px;
+  text-align: center;
+}
+
+.shop-hero h1 {
+  margin: 18px 0 22px;
+
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(48px, 7vw, 72px);
+  line-height: 1.05;
+}
+
+.shop-hero p {
+  max-width: 600px;
+  margin: auto;
+
+  color: #69736d;
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+
+/* Products */
+
+.shop-products {
+  padding: 80px 0 110px;
+}
+
+.shop-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+
+  margin-bottom: 45px;
+}
+
+.shop-heading h2,
+.shop-benefits-heading h2 {
+  margin-top: 12px;
+
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 48px;
+  line-height: 1.1;
+}
+
+.shop-heading p {
+  max-width: 340px;
+
+  margin: 0;
+
+  color: #69736d;
+  line-height: 1.7;
+}
+
+.shop-product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px;
+}
+
+
+/* Benefits */
+
+.shop-benefits {
+  padding: 100px 0;
+  background: #f7f1e4;
+}
+
+.shop-benefits-heading {
+  text-align: center;
+  margin-bottom: 55px;
+}
+
+.shop-benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.shop-benefit {
+  padding: 35px;
+
+  border: 1px solid #e5ddce;
+  border-radius: 22px;
+
+  background: #fffdf8;
+}
+
+.shop-benefit-icon {
+  width: 50px;
+  height: 50px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 20px;
+
+  border-radius: 50%;
+
+  background: #edf6f2;
+  color: #14755f;
+}
+
+.shop-benefit h3 {
+  margin-bottom: 10px;
+
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 24px;
+}
+
+.shop-benefit p {
+  color: #69736d;
+  line-height: 1.7;
+}
+
+
+/* CTA */
+
+.shop-cta {
+  padding: 100px 24px;
+
+  background: #0c5c4a;
+
+  color: white;
+  text-align: center;
+}
+
+.shop-cta .section-eyebrow {
+  color: #e0a43a;
+}
+
+.shop-cta h2 {
+  margin: 18px 0 30px;
+
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(42px, 6vw, 60px);
+  line-height: 1.1;
+}
+
+.shop-cta-button {
+  display: inline-flex;
+
+  padding: 14px 25px;
+
+  border-radius: 9px;
+
+  background: white;
+  color: #0c5c4a;
+
+  font-weight: 700;
+}
+
+
+/* Responsive */
+
+@media (max-width: 800px) {
+
+  .shop-heading {
+    display: block;
+  }
+
+  .shop-heading p {
+    margin-top: 20px;
+  }
+
+  .shop-product-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .shop-benefits-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+@media (max-width: 500px) {
+
+  .shop-container {
+    width: min(100% - 32px, 1180px);
+  }
+
+  .shop-hero {
+    padding: 75px 20px;
+  }
+
+  .shop-products,
+  .shop-benefits {
+    padding: 70px 0;
+  }
+
+  .shop-heading h2,
+  .shop-benefits-heading h2 {
+    font-size: 38px;
+  }
+
+}

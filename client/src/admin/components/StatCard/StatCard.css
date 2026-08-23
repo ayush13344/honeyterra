@@ -1,0 +1,82 @@
+.admin-stat-card {
+  padding: 20px;
+
+  border: 1px solid #e8e2d8;
+  border-radius: 14px;
+
+  background: #ffffff;
+
+  box-shadow: 0 3px 15px rgba(36, 48, 42, 0.04);
+}
+
+.admin-stat-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.admin-stat-icon {
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 11px;
+
+  background: #e8f3ed;
+
+  color: #16745b;
+}
+
+.admin-stat-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.admin-stat-change.positive {
+  color: #16805e;
+}
+
+.admin-stat-change.negative {
+  color: #c45b49;
+}
+
+.admin-stat-content {
+  margin-top: 19px;
+}
+
+.admin-stat-title {
+  display: block;
+
+  color: #7e8781;
+
+  font-size: 12px;
+}
+
+.admin-stat-value {
+  display: block;
+
+  margin-top: 5px;
+
+  color: #202923;
+
+  font-family: Georgia, serif;
+  font-size: 27px;
+  font-weight: 600;
+}
+
+.admin-stat-label {
+  display: block;
+
+  margin-top: 4px;
+
+  color: #a0a5a1;
+
+  font-size: 10px;
+}

@@ -1,0 +1,118 @@
+.admin-table-wrapper {
+  width: 100%;
+
+  overflow-x: auto;
+
+  border: 1px solid #e8e2d8;
+  border-radius: 14px;
+
+  background: #ffffff;
+}
+
+.admin-table {
+  width: 100%;
+
+  border-collapse: collapse;
+
+  min-width: 650px;
+}
+
+/* ==============================
+   HEADER
+============================== */
+
+.admin-table thead {
+  background: #faf8f3;
+}
+
+.admin-table th {
+  padding: 14px 18px;
+
+  border-bottom: 1px solid #e8e2d8;
+
+  color: #7c857f;
+
+  text-align: left;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  letter-spacing: 0.4px;
+
+  white-space: nowrap;
+}
+
+/* ==============================
+   BODY
+============================== */
+
+.admin-table td {
+  padding: 16px 18px;
+
+  border-bottom: 1px solid #f0ece5;
+
+  color: #3f4943;
+
+  font-size: 13px;
+
+  vertical-align: middle;
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-table tbody tr {
+  transition: background 0.2s ease;
+}
+
+.admin-table tbody tr:hover {
+  background: #fcfbf7;
+}
+
+/* ==============================
+   ACTIONS
+============================== */
+
+.admin-table-actions-heading {
+  text-align: right;
+}
+
+.admin-table-actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ==============================
+   EMPTY
+============================== */
+
+.admin-table-empty {
+  padding: 45px 20px !important;
+
+  color: #929a95 !important;
+
+  text-align: center !important;
+
+  font-size: 13px !important;
+}
+
+/* ==============================
+   MOBILE
+============================== */
+
+@media (max-width: 700px) {
+
+  .admin-table-wrapper {
+    border-radius: 11px;
+  }
+
+  .admin-table th {
+    padding: 12px 14px;
+  }
+
+  .admin-table td {
+    padding: 13px 14px;
+  }
+
+}
