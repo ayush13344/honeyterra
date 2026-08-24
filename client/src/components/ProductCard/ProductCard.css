@@ -1,3 +1,7 @@
+/* ==========================================
+   PRODUCT CARD
+========================================== */
+
 .product-card {
   overflow: hidden;
   border: 1px solid #e5dfd4;
@@ -13,37 +17,65 @@
   box-shadow: 0 18px 40px rgba(30, 45, 38, 0.09);
 }
 
+
+/* ==========================================
+   PRODUCT IMAGE
+========================================== */
+
 .product-card-image {
   position: relative;
   height: 390px;
   background: #f4f0e7;
+  overflow: hidden;
 }
+
+
+/* ==========================================
+   REAL PRODUCT IMAGE
+========================================== */
+
+.product-card-real-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.35s ease;
+}
+
+.product-card:hover .product-card-real-image {
+  transform: scale(1.03);
+}
+
+
+/* ==========================================
+   PRODUCT BADGE
+========================================== */
 
 .product-card-badge {
   position: absolute;
   top: 18px;
   left: 18px;
   z-index: 2;
-
   padding: 8px 14px;
   border-radius: 30px;
-
   background: #14755f;
   color: white;
-
   font-size: 12px;
   font-weight: 700;
 }
 
+
+/* ==========================================
+   IMAGE PLACEHOLDER
+========================================== */
+
 .product-image-placeholder {
   width: 100%;
   height: 100%;
-
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
   color: #8b938e;
 }
 
@@ -58,9 +90,19 @@
   font-size: 13px;
 }
 
+
+/* ==========================================
+   PRODUCT CONTENT
+========================================== */
+
 .product-card-content {
   padding: 28px;
 }
+
+
+/* ==========================================
+   CATEGORY
+========================================== */
 
 .product-card-category {
   color: #14755f;
@@ -70,12 +112,22 @@
   text-transform: uppercase;
 }
 
+
+/* ==========================================
+   PRODUCT NAME
+========================================== */
+
 .product-card h3 {
   margin: 10px 0;
   font-family: "Playfair Display", Georgia, serif;
   font-size: 30px;
   color: #1d2722;
 }
+
+
+/* ==========================================
+   DESCRIPTION
+========================================== */
 
 .product-card p {
   min-height: 52px;
@@ -85,6 +137,11 @@
   line-height: 1.65;
 }
 
+
+/* ==========================================
+   BOTTOM SECTION
+========================================== */
+
 .product-card-bottom {
   display: flex;
   align-items: center;
@@ -92,11 +149,44 @@
   gap: 15px;
 }
 
+
+/* ==========================================
+   PRICE CONTAINER
+========================================== */
+
+.product-card-bottom > div:first-child {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+
+/* ==========================================
+   CURRENT PRICE
+========================================== */
+
 .product-card-price {
   color: #14755f;
   font-size: 22px;
   font-weight: 700;
 }
+
+
+/* ==========================================
+   OLD / COMPARE PRICE
+========================================== */
+
+.product-card-old-price {
+  color: #9a9f9c;
+  font-size: 15px;
+  text-decoration: line-through;
+}
+
+
+/* ==========================================
+   COMING SOON
+========================================== */
 
 .product-card-price-text {
   color: #7a827d;
@@ -104,17 +194,48 @@
   font-weight: 600;
 }
 
+
+/* ==========================================
+   STOCK STATUS
+========================================== */
+
+.product-card-stock {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  color: #b84a4a;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+
+/* ==========================================
+   PRODUCT LINK
+========================================== */
+
 .product-card-link {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-
   color: #14755f;
   font-size: 14px;
   font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: gap 0.2s ease;
 }
 
+.product-card-link:hover {
+  gap: 10px;
+}
+
+
+/* ==========================================
+   MOBILE
+========================================== */
+
 @media (max-width: 600px) {
+
   .product-card-image {
     height: 300px;
   }
@@ -130,5 +251,9 @@
   .product-card-bottom {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .product-card-link {
+    margin-top: 5px;
   }
 }

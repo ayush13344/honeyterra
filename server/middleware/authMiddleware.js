@@ -3,59 +3,67 @@ import User from "../models/User.js";
 
 const protect = async (req, res, next) => {
   try {
-    const authHeader = req.headers.authorization;
+    let token;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    // ==========================================
+    // GET TOKEN FROM AUTHORIZATION HEADER
+    // ==========================================
+
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer ")
+    ) {
+      token = req.headers.authorization.split(" ")[1];
+    }
+
+    // ==========================================
+    // NO TOKEN
+    // ==========================================
+
+    if (!token) {
       return res.status(401).json({
         success: false,
-        message: "Not authorized. Please login.",
+        message: "Not authorized, token missing",
       });
     }
 
-    const token = authHeader.split(" ")[1];
+    // ==========================================
+    // VERIFY TOKEN
+    // ==========================================
 
     const decoded = jwt.verify(
       token,
       process.env.JWT_SECRET
     );
 
-    const user = await User.findById(decoded.userId).select(
+    // ==========================================
+    // FIND USER
+    // ==========================================
+
+    const user = await User.findById(decoded.id).select(
       "-password"
     );
 
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: "User not found.",
+        message: "User not found",
       });
     }
 
-    if (!user.isActive) {
-      return res.status(403).json({
-        success: false,
-        message: "Your account has been deactivated.",
-      });
-    }
-
-    // Automatically ensure configured admin email is admin
-    const isAdminEmail =
-      user.email.toLowerCase().trim() ===
-      process.env.ADMIN_EMAIL.toLowerCase().trim();
-
-    if (isAdminEmail && user.role !== "admin") {
-      user.role = "admin";
-      await user.save();
-    }
+    // ==========================================
+    // ATTACH USER
+    // ==========================================
 
     req.user = user;
 
     next();
   } catch (error) {
-    console.error("Auth Middleware Error:", error);
+    console.error("Auth middleware error:", error);
 
     return res.status(401).json({
       success: false,
-      message: "Invalid or expired token.",
+      message: "Invalid or expired token",
     });
   }
 };

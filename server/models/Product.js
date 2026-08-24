@@ -47,6 +47,10 @@ const variantSchema = new mongoose.Schema(
 
 const productSchema = new mongoose.Schema(
   {
+    // ==========================================
+    // BASIC PRODUCT INFORMATION
+    // ==========================================
+
     name: {
       type: String,
       required: [true, "Product name is required"],
@@ -66,6 +70,10 @@ const productSchema = new mongoose.Schema(
       trim: true,
     },
 
+    // ==========================================
+    // PRICING
+    // ==========================================
+
     price: {
       type: Number,
       required: [true, "Product price is required"],
@@ -77,6 +85,10 @@ const productSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+
+    // ==========================================
+    // CATEGORY
+    // ==========================================
 
     category: {
       type: String,
@@ -91,6 +103,7 @@ const productSchema = new mongoose.Schema(
 
     // ==========================================
     // PRODUCT VARIANTS
+    // OPTIONAL
     // ==========================================
 
     variants: {
@@ -158,7 +171,7 @@ const productSchema = new mongoose.Schema(
 // GENERATE SLUG AUTOMATICALLY
 // ==========================================
 
-productSchema.pre("save", function (next) {
+productSchema.pre("save", function () {
   if (this.isModified("name") || !this.slug) {
     this.slug = this.name
       .toLowerCase()
@@ -166,9 +179,11 @@ productSchema.pre("save", function (next) {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "");
   }
-
-  next();
 });
+
+// ==========================================
+// PRODUCT MODEL
+// ==========================================
 
 const Product = mongoose.model("Product", productSchema);
 

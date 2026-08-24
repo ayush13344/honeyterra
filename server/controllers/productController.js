@@ -4,6 +4,10 @@ import Product from "../models/Product.js";
 // CREATE PRODUCT - ADMIN
 // ==========================================
 
+// ==========================================
+// CREATE PRODUCT - ADMIN
+// ==========================================
+
 const createProduct = async (req, res) => {
   try {
     const {
@@ -13,14 +17,13 @@ const createProduct = async (req, res) => {
       compareAtPrice,
       category,
       variants,
-      images,
       stock,
       isActive,
       isFeatured,
     } = req.body;
 
     // ==========================================
-    // VALIDATION
+    // BASIC VALIDATION
     // ==========================================
 
     if (
@@ -35,6 +38,10 @@ const createProduct = async (req, res) => {
           "Name, description, price and category are required",
       });
     }
+
+    // ==========================================
+    // PRICE
+    // ==========================================
 
     const productPrice = Number(price);
 
@@ -65,37 +72,74 @@ const createProduct = async (req, res) => {
     }
 
     // ==========================================
-    // FORMAT VARIANTS
+    // OPTIONAL VARIANTS
     // ==========================================
 
     let formattedVariants = [];
 
-    if (Array.isArray(variants)) {
-      formattedVariants = variants.map((variant) => ({
-        name: variant.name?.trim() || "",
+    if (variants) {
+      try {
+        const parsedVariants =
+          typeof variants === "string"
+            ? JSON.parse(variants)
+            : variants;
 
-        price: Number(variant.price) || 0,
+        if (!Array.isArray(parsedVariants)) {
+          return res.status(400).json({
+            success: false,
+            message: "Variants must be an array",
+          });
+        }
 
-        compareAtPrice:
-          Number(variant.compareAtPrice) || 0,
+        formattedVariants = parsedVariants.map(
+          (variant) => ({
+            name:
+              variant.name?.trim() || "",
 
-        stock: Number(variant.stock) || 0,
+            price:
+              Number(variant.price) || 0,
 
-        sku: variant.sku?.trim() || "",
-      }));
+            compareAtPrice:
+              Number(
+                variant.compareAtPrice
+              ) || 0,
+
+            stock:
+              Number(variant.stock) || 0,
+
+            sku:
+              variant.sku?.trim() || "",
+          })
+        );
+      } catch (error) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid variants data",
+        });
+      }
     }
 
     // ==========================================
-    // FORMAT IMAGES
+    // IMAGES
     // ==========================================
 
-    const formattedImages = Array.isArray(images)
-      ? images.filter(
-          (image) =>
-            typeof image === "string" &&
-            image.trim() !== ""
-        )
+    const formattedImages = Array.isArray(
+      req.files
+    )
+      ? req.files.map((file) => file.path)
       : [];
+
+    // ==========================================
+    // IMAGE REQUIRED
+    // ==========================================
+
+    if (formattedImages.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "At least one product image is required",
+      });
+    }
 
     // ==========================================
     // CREATE PRODUCT
@@ -104,7 +148,8 @@ const createProduct = async (req, res) => {
     const product = await Product.create({
       name: name.trim(),
 
-      description: description.trim(),
+      description:
+        description.trim(),
 
       price: productPrice,
 
@@ -113,30 +158,33 @@ const createProduct = async (req, res) => {
 
       category,
 
-      variants: formattedVariants,
+      // Optional
+      variants:
+        formattedVariants,
 
-      images: formattedImages,
+      images:
+        formattedImages,
 
-      stock: Number(stock) || 0,
+      stock:
+        Number(stock) || 0,
 
       isActive:
-        isActive !== undefined
-          ? Boolean(isActive)
-          : true,
+        isActive === "true" ||
+        isActive === true,
 
       isFeatured:
-        isFeatured !== undefined
-          ? Boolean(isFeatured)
-          : false,
+        isFeatured === "true" ||
+        isFeatured === true,
     });
 
     // ==========================================
-    // RESPONSE
+    // SUCCESS
     // ==========================================
 
     return res.status(201).json({
       success: true,
-      message: "Product created successfully",
+      message:
+        "Product created successfully",
       product,
     });
   } catch (error) {
@@ -145,6 +193,10 @@ const createProduct = async (req, res) => {
       error
     );
 
+    // ==========================================
+    // DUPLICATE ERROR
+    // ==========================================
+
     if (error.code === 11000) {
       return res.status(409).json({
         success: false,
@@ -152,6 +204,10 @@ const createProduct = async (req, res) => {
           "A product with this name or slug already exists",
       });
     }
+
+    // ==========================================
+    // SERVER ERROR
+    // ==========================================
 
     return res.status(500).json({
       success: false,

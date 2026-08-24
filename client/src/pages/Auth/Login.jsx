@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
+
 import "./Auth.css";
 
 import { loginUser } from "../../services/authService";
@@ -27,6 +28,10 @@ function Login() {
     setLoading(true);
 
     try {
+      // ==========================================
+      // SEND LOGIN REQUEST
+      // ==========================================
+
       const result = await loginUser({
         email: email.trim(),
         password,
@@ -46,7 +51,7 @@ function Login() {
       }
 
       // ==========================================
-      // CHECK TOKEN + USER
+      // CHECK TOKEN
       // ==========================================
 
       if (!result.token) {
@@ -57,6 +62,10 @@ function Login() {
         return;
       }
 
+      // ==========================================
+      // CHECK USER
+      // ==========================================
+
       if (!result.user) {
         setError(
           "Login failed. User information was not received."
@@ -65,31 +74,72 @@ function Login() {
       }
 
       // ==========================================
-      // SAVE LOGIN DATA
-      // AuthContext handles:
-      // localStorage + React state
+      // SAVE TOKEN
+      // ==========================================
+      // IMPORTANT:
+      // Axios will read this token for all future
+      // protected requests.
+
+      localStorage.setItem(
+        "token",
+        result.token
+      );
+
+      // ==========================================
+      // SAVE USER
       // ==========================================
 
-      login(result.user, result.token);
+      localStorage.setItem(
+        "user",
+        JSON.stringify(result.user)
+      );
+
+      console.log(
+        "Token saved:",
+        localStorage.getItem("token")
+      );
+
+      console.log(
+        "User saved:",
+        localStorage.getItem("user")
+      );
 
       // ==========================================
-      // REDIRECT BASED ON ROLE
+      // UPDATE AUTH CONTEXT
+      // ==========================================
+
+      login(
+        result.user,
+        result.token
+      );
+
+      // ==========================================
+      // ADMIN REDIRECT
       // ==========================================
 
       if (result.user.role === "admin") {
-        console.log("Admin login detected");
+        console.log(
+          "Admin login detected"
+        );
 
         navigate("/admin", {
           replace: true,
         });
-      } else {
-        console.log("Normal user login detected");
 
-        navigate("/", {
-          replace: true,
-        });
+        return;
       }
 
+      // ==========================================
+      // NORMAL USER REDIRECT
+      // ==========================================
+
+      console.log(
+        "Normal user login detected"
+      );
+
+      navigate("/", {
+        replace: true,
+      });
     } catch (error) {
       console.error(
         "Login Error:",
@@ -102,11 +152,14 @@ function Login() {
         "Invalid email or password";
 
       setError(message);
-
     } finally {
       setLoading(false);
     }
   };
+
+  // ==========================================
+  // RENDER
+  // ==========================================
 
   return (
     <main className="auth-page">
@@ -129,6 +182,10 @@ function Login() {
             Sign in to your HoneyTerra account and
             continue your journey.
           </p>
+
+          {/* ======================================
+              LOGIN FORM
+          ======================================= */}
 
           <form
             className="auth-form"
@@ -164,7 +221,6 @@ function Login() {
             <div className="form-group">
 
               <div className="form-label-row">
-
                 <label htmlFor="password">
                   Password
                 </label>
@@ -175,7 +231,6 @@ function Login() {
                 >
                   Forgot password?
                 </Link>
-
               </div>
 
               <div className="password-input">
@@ -191,7 +246,9 @@ function Login() {
                   autoComplete="current-password"
                   value={password}
                   onChange={(event) =>
-                    setPassword(event.target.value)
+                    setPassword(
+                      event.target.value
+                    )
                   }
                   required
                 />
@@ -253,7 +310,6 @@ function Login() {
                 <ArrowRight size={18} />
               )}
             </button>
-
           </form>
 
           {/* ======================================

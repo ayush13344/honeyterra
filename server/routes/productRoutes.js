@@ -9,25 +9,36 @@ import {
   getAdminProducts,
 } from "../controllers/productController.js";
 
+import upload from "../middleware/uploadMiddleware.js";
 import protect from "../middleware/authMiddleware.js";
 import adminOnly from "../middleware/adminMiddleware.js";
-
-import upload from "../middleware/uploadMiddleware.js";
 
 const router = express.Router();
 
 // ==========================================
-// ADMIN ROUTES FIRST
+// PUBLIC ROUTES
+// ==========================================
+
+// GET ALL ACTIVE PRODUCTS
+router.get("/", getProducts);
+
+// GET SINGLE ACTIVE PRODUCT
+router.get("/:id", getProductById);
+
+
+// ==========================================
+// ADMIN ROUTES
 // ==========================================
 
 // GET ALL PRODUCTS FOR ADMIN
-
+// IMPORTANT: Keep this BEFORE /:id
 router.get(
   "/admin/all",
   protect,
   adminOnly,
   getAdminProducts
 );
+
 
 // ==========================================
 // CREATE PRODUCT
@@ -37,9 +48,10 @@ router.post(
   "/",
   protect,
   adminOnly,
-  upload.array("images", 6),
+  upload.array("images", 10),
   createProduct
 );
+
 
 // ==========================================
 // UPDATE PRODUCT
@@ -49,9 +61,10 @@ router.put(
   "/:id",
   protect,
   adminOnly,
-  upload.array("images", 6),
+  upload.array("images", 10),
   updateProduct
 );
+
 
 // ==========================================
 // DELETE PRODUCT
@@ -64,22 +77,5 @@ router.delete(
   deleteProduct
 );
 
-// ==========================================
-// PUBLIC ROUTES
-// ==========================================
-
-// GET ALL ACTIVE PRODUCTS
-
-router.get(
-  "/",
-  getProducts
-);
-
-// GET SINGLE PRODUCT
-
-router.get(
-  "/:id",
-  getProductById
-);
 
 export default router;

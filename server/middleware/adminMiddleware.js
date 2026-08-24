@@ -3,24 +3,24 @@ const adminOnly = (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({
         success: false,
-        message: "Please login first.",
+        message: "Not authenticated",
       });
     }
 
     if (req.user.role !== "admin") {
       return res.status(403).json({
         success: false,
-        message: "Admin access required.",
+        message: "Admin access required",
       });
     }
 
     next();
   } catch (error) {
-    console.error("Admin Middleware Error:", error);
+    console.error("Admin middleware error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: "Server error",
+      message: "Admin authorization failed",
     });
   }
 };

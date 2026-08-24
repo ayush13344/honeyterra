@@ -7,8 +7,9 @@ const api = axios.create({
   },
 });
 
-
-
+// ==========================================
+// ATTACH TOKEN TO EVERY REQUEST
+// ==========================================
 
 api.interceptors.request.use(
   (config) => {
@@ -25,15 +26,20 @@ api.interceptors.request.use(
   }
 );
 
+// ==========================================
+// HANDLE UNAUTHORIZED REQUESTS
+// ==========================================
 
 api.interceptors.response.use(
   (response) => {
     return response;
   },
-
   (error) => {
     if (error.response?.status === 401) {
       console.log("Unauthorized request");
+
+      // Don't immediately remove token here while debugging.
+      // Otherwise it can make the problem harder to trace.
     }
 
     return Promise.reject(error);

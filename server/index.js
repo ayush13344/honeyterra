@@ -15,8 +15,9 @@ const app = express();
 
 const PORT = process.env.PORT || 3000;
 
-await connectDB();
-
+// ==========================================
+// MIDDLEWARE
+// ==========================================
 
 app.use(
   cors({
@@ -25,31 +26,43 @@ app.use(
   })
 );
 
-
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-
+// ==========================================
+// ROUTES
+// ==========================================
 
 app.use("/api/auth", authRoutes);
-
 app.use("/api/admin", adminRoutes);
-
 app.use("/api/products", productRoutes);
-
 app.use("/api/cart", cartRoutes);
-
 app.use("/api/orders", orderRoutes);
-
 app.use("/api/admin/orders", adminOrderRoutes);
 
-
+// ==========================================
+// ROOT
+// ==========================================
 
 app.get("/", (req, res) => {
   res.send("server is live");
 });
 
-app.listen(PORT, () => {
-  console.log(
-    `server is running on port ${PORT}`
-  );
-});
+// ==========================================
+// START SERVER
+// ==========================================
+
+const startServer = async () => {
+  try {
+    await connectDB();
+
+    app.listen(PORT, () => {
+      console.log(`server is running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("Server startup error:", error);
+    process.exit(1);
+  }
+};
+
+startServer();
