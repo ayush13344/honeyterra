@@ -20,7 +20,7 @@ const createProduct = async (req, res) => {
     } = req.body;
 
     // ==========================================
-    // VALIDATE REQUIRED FIELDS
+    // VALIDATION
     // ==========================================
 
     if (
@@ -36,13 +36,12 @@ const createProduct = async (req, res) => {
       });
     }
 
-    // ==========================================
-    // VALIDATE PRICE
-    // ==========================================
-
     const productPrice = Number(price);
 
-    if (Number.isNaN(productPrice) || productPrice < 0) {
+    if (
+      Number.isNaN(productPrice) ||
+      productPrice < 0
+    ) {
       return res.status(400).json({
         success: false,
         message: "Product price must be a valid number",
@@ -60,7 +59,8 @@ const createProduct = async (req, res) => {
     if (existingProduct) {
       return res.status(409).json({
         success: false,
-        message: "A product with this name already exists",
+        message:
+          "A product with this name already exists",
       });
     }
 
@@ -131,7 +131,7 @@ const createProduct = async (req, res) => {
     });
 
     // ==========================================
-    // SUCCESS RESPONSE
+    // RESPONSE
     // ==========================================
 
     return res.status(201).json({
@@ -145,7 +145,6 @@ const createProduct = async (req, res) => {
       error
     );
 
-    // Handle duplicate slug
     if (error.code === 11000) {
       return res.status(409).json({
         success: false,
@@ -180,10 +179,6 @@ const getProducts = async (req, res) => {
       limit = 12,
     } = req.query;
 
-    // ==========================================
-    // BASE FILTER
-    // ==========================================
-
     const filter = {
       isActive: true,
     };
@@ -213,29 +208,40 @@ const getProducts = async (req, res) => {
     // CATEGORY
     // ==========================================
 
-    if (category) {
-      filter.category = category;
+    if (category && category.trim()) {
+      filter.category = category.trim();
     }
 
     // ==========================================
     // PRICE RANGE
     // ==========================================
 
-    if (minPrice !== undefined || maxPrice !== undefined) {
+    if (
+      minPrice !== undefined ||
+      maxPrice !== undefined
+    ) {
       filter.price = {};
 
       if (
         minPrice !== undefined &&
         minPrice !== ""
       ) {
-        filter.price.$gte = Number(minPrice);
+        const minimum = Number(minPrice);
+
+        if (!Number.isNaN(minimum)) {
+          filter.price.$gte = minimum;
+        }
       }
 
       if (
         maxPrice !== undefined &&
         maxPrice !== ""
       ) {
-        filter.price.$lte = Number(maxPrice);
+        const maximum = Number(maxPrice);
+
+        if (!Number.isNaN(maximum)) {
+          filter.price.$lte = maximum;
+        }
       }
     }
 
@@ -316,7 +322,7 @@ const getProducts = async (req, res) => {
       .limit(productsPerPage);
 
     // ==========================================
-    // COUNT PRODUCTS
+    // COUNT
     // ==========================================
 
     const totalProducts =
@@ -333,13 +339,16 @@ const getProducts = async (req, res) => {
     return res.status(200).json({
       success: true,
       products,
+
       pagination: {
         currentPage,
         productsPerPage,
         totalProducts,
         totalPages,
+
         hasNextPage:
           currentPage < totalPages,
+
         hasPreviousPage:
           currentPage > 1,
       },
@@ -354,6 +363,7 @@ const getProducts = async (req, res) => {
       success: false,
       message:
         "Server error while fetching products",
+      error: error.message,
     });
   }
 };
@@ -405,11 +415,8 @@ const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // ==========================================
-    // FIND PRODUCT
-    // ==========================================
-
-    const product = await Product.findById(id);
+    const product =
+      await Product.findById(id);
 
     if (!product) {
       return res.status(404).json({
@@ -432,14 +439,18 @@ const updateProduct = async (req, res) => {
     } = req.body;
 
     // ==========================================
-    // UPDATE NAME
+    // NAME
     // ==========================================
 
     if (name !== undefined) {
-      if (!name.trim()) {
+      if (
+        typeof name !== "string" ||
+        !name.trim()
+      ) {
         return res.status(400).json({
           success: false,
-          message: "Product name cannot be empty",
+          message:
+            "Product name cannot be empty",
         });
       }
 
@@ -447,11 +458,14 @@ const updateProduct = async (req, res) => {
     }
 
     // ==========================================
-    // UPDATE DESCRIPTION
+    // DESCRIPTION
     // ==========================================
 
     if (description !== undefined) {
-      if (!description.trim()) {
+      if (
+        typeof description !== "string" ||
+        !description.trim()
+      ) {
         return res.status(400).json({
           success: false,
           message:
@@ -464,7 +478,7 @@ const updateProduct = async (req, res) => {
     }
 
     // ==========================================
-    // UPDATE PRICE
+    // PRICE
     // ==========================================
 
     if (price !== undefined) {
@@ -485,7 +499,7 @@ const updateProduct = async (req, res) => {
     }
 
     // ==========================================
-    // UPDATE COMPARE PRICE
+    // COMPARE PRICE
     // ==========================================
 
     if (compareAtPrice !== undefined) {
@@ -494,7 +508,7 @@ const updateProduct = async (req, res) => {
     }
 
     // ==========================================
-    // UPDATE CATEGORY
+    // CATEGORY
     // ==========================================
 
     if (category !== undefined) {
@@ -502,14 +516,15 @@ const updateProduct = async (req, res) => {
     }
 
     // ==========================================
-    // UPDATE VARIANTS
+    // VARIANTS
     // ==========================================
 
     if (variants !== undefined) {
       if (!Array.isArray(variants)) {
         return res.status(400).json({
           success: false,
-          message: "Variants must be an array",
+          message:
+            "Variants must be an array",
         });
       }
 
@@ -534,7 +549,6 @@ const updateProduct = async (req, res) => {
               variant.sku?.trim() || "",
           };
 
-          // Preserve existing variant _id
           if (variant._id) {
             formattedVariant._id =
               variant._id;
@@ -546,7 +560,7 @@ const updateProduct = async (req, res) => {
     }
 
     // ==========================================
-    // UPDATE IMAGES
+    // IMAGES
     // ==========================================
 
     if (images !== undefined) {
@@ -560,7 +574,7 @@ const updateProduct = async (req, res) => {
     }
 
     // ==========================================
-    // UPDATE STOCK
+    // STOCK
     // ==========================================
 
     if (stock !== undefined) {
@@ -581,7 +595,7 @@ const updateProduct = async (req, res) => {
     }
 
     // ==========================================
-    // UPDATE ACTIVE STATUS
+    // ACTIVE
     // ==========================================
 
     if (isActive !== undefined) {
@@ -590,7 +604,7 @@ const updateProduct = async (req, res) => {
     }
 
     // ==========================================
-    // UPDATE FEATURED STATUS
+    // FEATURED
     // ==========================================
 
     if (isFeatured !== undefined) {
@@ -617,7 +631,6 @@ const updateProduct = async (req, res) => {
       error
     );
 
-    // Duplicate slug/name
     if (error.code === 11000) {
       return res.status(409).json({
         success: false,

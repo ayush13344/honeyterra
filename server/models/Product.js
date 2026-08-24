@@ -26,9 +26,8 @@ const variantSchema = new mongoose.Schema(
 
     stock: {
       type: Number,
-      required: true,
-      min: 0,
       default: 0,
+      min: 0,
     },
 
     sku: {
@@ -100,7 +99,7 @@ const productSchema = new mongoose.Schema(
     },
 
     // ==========================================
-    // IMAGES
+    // PRODUCT IMAGES
     // ==========================================
 
     images: {
@@ -109,7 +108,7 @@ const productSchema = new mongoose.Schema(
     },
 
     // ==========================================
-    // STOCK
+    // TOTAL PRODUCT STOCK
     // ==========================================
 
     stock: {
@@ -120,7 +119,7 @@ const productSchema = new mongoose.Schema(
     },
 
     // ==========================================
-    // SETTINGS
+    // PRODUCT STATUS
     // ==========================================
 
     isActive: {
@@ -149,13 +148,14 @@ const productSchema = new mongoose.Schema(
       default: 0,
     },
   },
+
   {
     timestamps: true,
   }
 );
 
 // ==========================================
-// GENERATE SLUG
+// GENERATE SLUG AUTOMATICALLY
 // ==========================================
 
 productSchema.pre("save", function (next) {
@@ -170,13 +170,6 @@ productSchema.pre("save", function (next) {
   next();
 });
 
-// ==========================================
-// MODEL
-// ==========================================
-
-const Product = mongoose.model(
-  "Product",
-  productSchema
-);
+const Product = mongoose.model("Product", productSchema);
 
 export default Product;

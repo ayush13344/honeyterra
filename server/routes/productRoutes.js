@@ -12,13 +12,16 @@ import {
 import protect from "../middleware/authMiddleware.js";
 import adminOnly from "../middleware/adminMiddleware.js";
 
+import upload from "../middleware/uploadMiddleware.js";
+
 const router = express.Router();
 
 // ==========================================
 // ADMIN ROUTES FIRST
 // ==========================================
 
-// Get all products for admin
+// GET ALL PRODUCTS FOR ADMIN
+
 router.get(
   "/admin/all",
   protect,
@@ -26,23 +29,34 @@ router.get(
   getAdminProducts
 );
 
-// Create product
+// ==========================================
+// CREATE PRODUCT
+// ==========================================
+
 router.post(
   "/",
   protect,
   adminOnly,
+  upload.array("images", 6),
   createProduct
 );
 
-// Update product
+// ==========================================
+// UPDATE PRODUCT
+// ==========================================
+
 router.put(
   "/:id",
   protect,
   adminOnly,
+  upload.array("images", 6),
   updateProduct
 );
 
-// Delete product
+// ==========================================
+// DELETE PRODUCT
+// ==========================================
+
 router.delete(
   "/:id",
   protect,
@@ -54,10 +68,18 @@ router.delete(
 // PUBLIC ROUTES
 // ==========================================
 
-// Get all active products
-router.get("/", getProducts);
+// GET ALL ACTIVE PRODUCTS
 
-// Get single active product
-router.get("/:id", getProductById);
+router.get(
+  "/",
+  getProducts
+);
+
+// GET SINGLE PRODUCT
+
+router.get(
+  "/:id",
+  getProductById
+);
 
 export default router;

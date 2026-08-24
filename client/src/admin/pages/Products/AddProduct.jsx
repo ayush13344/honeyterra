@@ -28,18 +28,23 @@ const AddProduct = () => {
   // ==========================================
   // HANDLE INPUT
   // ==========================================
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]:
+        type === "checkbox"
+          ? checked
+          : value,
     }));
   };
 
   // ==========================================
   // ADD VARIANT
   // ==========================================
+
   const addVariant = () => {
     setVariants((prev) => [
       ...prev,
@@ -56,7 +61,12 @@ const AddProduct = () => {
   // ==========================================
   // UPDATE VARIANT
   // ==========================================
-  const updateVariant = (index, field, value) => {
+
+  const updateVariant = (
+    index,
+    field,
+    value
+  ) => {
     setVariants((prev) =>
       prev.map((variant, i) =>
         i === index
@@ -72,21 +82,29 @@ const AddProduct = () => {
   // ==========================================
   // REMOVE VARIANT
   // ==========================================
+
   const removeVariant = (index) => {
     setVariants((prev) =>
-      prev.filter((_, i) => i !== index)
+      prev.filter(
+        (_, i) => i !== index
+      )
     );
   };
 
   // ==========================================
-  // ADD IMAGE
+  // ADD IMAGE URL
   // ==========================================
+
   const addImage = () => {
-    if (!imageUrl.trim()) return;
+    const trimmedUrl = imageUrl.trim();
+
+    if (!trimmedUrl) {
+      return;
+    }
 
     setImages((prev) => [
       ...prev,
-      imageUrl.trim(),
+      trimmedUrl,
     ]);
 
     setImageUrl("");
@@ -95,15 +113,19 @@ const AddProduct = () => {
   // ==========================================
   // REMOVE IMAGE
   // ==========================================
+
   const removeImage = (index) => {
     setImages((prev) =>
-      prev.filter((_, i) => i !== index)
+      prev.filter(
+        (_, i) => i !== index
+      )
     );
   };
 
   // ==========================================
   // SUBMIT PRODUCT
   // ==========================================
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -115,7 +137,27 @@ const AddProduct = () => {
     });
 
     try {
-      const token = localStorage.getItem("token");
+      // ==========================================
+      // GET TOKEN
+      // ==========================================
+
+      const token =
+        localStorage.getItem("token");
+
+      if (!token) {
+        setMessage({
+          type: "error",
+          text:
+            "You are not logged in. Please login as admin.",
+        });
+
+        setLoading(false);
+        return;
+      }
+
+      // ==========================================
+      // PREPARE PRODUCT DATA
+      // ==========================================
 
       const productData = {
         name: formData.name.trim(),
@@ -126,63 +168,90 @@ const AddProduct = () => {
         price: Number(formData.price),
 
         compareAtPrice:
-          Number(formData.compareAtPrice) || 0,
+          Number(
+            formData.compareAtPrice
+          ) || 0,
 
-        category: formData.category,
+        category:
+          formData.category,
 
-        stock: Number(formData.stock) || 0,
+        stock:
+          Number(formData.stock) || 0,
 
-        variants: variants.map((variant) => ({
-          name: variant.name.trim(),
+        variants:
+          variants.map((variant) => ({
+            name:
+              variant.name.trim(),
 
-          price: Number(variant.price) || 0,
+            price:
+              Number(variant.price) || 0,
 
-          compareAtPrice:
-            Number(variant.compareAtPrice) || 0,
+            compareAtPrice:
+              Number(
+                variant.compareAtPrice
+              ) || 0,
 
-          stock:
-            Number(variant.stock) || 0,
+            stock:
+              Number(variant.stock) || 0,
 
-          sku: variant.sku.trim(),
-        })),
+            sku:
+              variant.sku.trim(),
+          })),
 
-        images,
+        images: images,
 
-        isActive: formData.isActive,
+        isActive:
+          formData.isActive,
 
-        isFeatured: formData.isFeatured,
+        isFeatured:
+          formData.isFeatured,
       };
 
+      // ==========================================
+      // SEND TO BACKEND
+      // ==========================================
+
       const response = await axios.post(
-        "http://localhost:5000/api/products",
+        "http://localhost:3000/api/products",
         productData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
+            "Content-Type":
+              "application/json",
           },
         }
       );
 
+      // ==========================================
+      // SUCCESS
+      // ==========================================
+
       if (response.data.success) {
         setMessage({
           type: "success",
-          text: "Product created successfully!",
+          text:
+            "Product created successfully!",
         });
+
+        // Reset form
 
         setFormData({
           name: "",
           description: "",
           price: "",
           compareAtPrice: "",
-          category: "Gel Ash Trays",
+          category:
+            "Gel Ash Trays",
           stock: "",
           isActive: true,
           isFeatured: false,
         });
 
         setVariants([]);
+
         setImages([]);
+
         setImageUrl("");
       }
     } catch (error) {
@@ -194,7 +263,8 @@ const AddProduct = () => {
       setMessage({
         type: "error",
         text:
-          error.response?.data?.message ||
+          error.response?.data
+            ?.message ||
           "Failed to create product",
       });
     } finally {
@@ -208,8 +278,8 @@ const AddProduct = () => {
       {/* =====================================
           PAGE HEADER
       ===================================== */}
-      <div className="admin-add-product-heading">
 
+      <div className="admin-add-product-heading">
         <div>
           <p className="admin-add-product-eyebrow">
             HoneyTerra Admin
@@ -218,16 +288,16 @@ const AddProduct = () => {
           <h1>Add New Product</h1>
 
           <p>
-            Add a new product to your HoneyTerra
-            store.
+            Add a new product to your
+            HoneyTerra store.
           </p>
         </div>
-
       </div>
 
       {/* =====================================
           MESSAGE
       ===================================== */}
+
       {message.text && (
         <div
           className={`product-form-message ${
@@ -248,19 +318,24 @@ const AddProduct = () => {
         {/* =====================================
             BASIC INFORMATION
         ===================================== */}
+
         <div className="product-form-card">
 
           <div className="product-form-card-header">
-            <h2>Basic Information</h2>
+            <h2>
+              Basic Information
+            </h2>
 
             <p>
-              Enter the basic details of your product.
+              Enter the basic details
+              of your product.
             </p>
           </div>
 
           <div className="product-form-grid">
 
             {/* PRODUCT NAME */}
+
             <div className="product-form-group full-width">
               <label>
                 Product Name
@@ -277,7 +352,9 @@ const AddProduct = () => {
             </div>
 
             {/* CATEGORY */}
+
             <div className="product-form-group">
+
               <label>
                 Category
               </label>
@@ -304,10 +381,13 @@ const AddProduct = () => {
                   Accessories
                 </option>
               </select>
+
             </div>
 
             {/* STOCK */}
+
             <div className="product-form-group">
+
               <label>
                 Total Stock
               </label>
@@ -321,22 +401,28 @@ const AddProduct = () => {
                 placeholder="0"
                 required
               />
+
             </div>
 
             {/* DESCRIPTION */}
+
             <div className="product-form-group full-width">
+
               <label>
                 Description
               </label>
 
               <textarea
                 name="description"
-                value={formData.description}
+                value={
+                  formData.description
+                }
                 onChange={handleChange}
                 placeholder="Describe your product..."
                 rows="5"
                 required
               />
+
             </div>
 
           </div>
@@ -345,20 +431,26 @@ const AddProduct = () => {
         {/* =====================================
             PRICING
         ===================================== */}
+
         <div className="product-form-card">
 
           <div className="product-form-card-header">
+
             <h2>Pricing</h2>
 
             <p>
-              Set the selling price and original price.
+              Set the selling price
+              and original price.
             </p>
+
           </div>
 
           <div className="product-form-grid">
 
             {/* SELLING PRICE */}
+
             <div className="product-form-group">
+
               <label>
                 Selling Price (₹)
               </label>
@@ -372,10 +464,13 @@ const AddProduct = () => {
                 placeholder="499"
                 required
               />
+
             </div>
 
             {/* COMPARE PRICE */}
+
             <div className="product-form-group">
+
               <label>
                 Compare At Price (₹)
               </label>
@@ -383,11 +478,14 @@ const AddProduct = () => {
               <input
                 type="number"
                 name="compareAtPrice"
-                value={formData.compareAtPrice}
+                value={
+                  formData.compareAtPrice
+                }
                 onChange={handleChange}
                 min="0"
                 placeholder="699"
               />
+
             </div>
 
           </div>
@@ -396,16 +494,22 @@ const AddProduct = () => {
         {/* =====================================
             VARIANTS
         ===================================== */}
+
         <div className="product-form-card">
 
           <div className="product-form-card-header product-form-flex-header">
 
             <div>
-              <h2>Product Variants</h2>
+
+              <h2>
+                Product Variants
+              </h2>
 
               <p>
-                Add different sizes, packs or versions.
+                Add different sizes,
+                packs or versions.
               </p>
+
             </div>
 
             <button
@@ -420,172 +524,216 @@ const AddProduct = () => {
           </div>
 
           {variants.length === 0 ? (
+
             <div className="no-variants">
+
               <p>
                 No variants added yet.
               </p>
 
               <span>
-                Click "Add Variant" if this product
-                has different sizes, packs or versions.
+                Click "Add Variant" if
+                this product has
+                different sizes, packs
+                or versions.
               </span>
+
             </div>
+
           ) : (
+
             <div className="variants-container">
 
-              {variants.map((variant, index) => (
-                <div
-                  className="variant-card"
-                  key={index}
-                >
+              {variants.map(
+                (variant, index) => (
 
-                  <div className="variant-header">
+                  <div
+                    className="variant-card"
+                    key={index}
+                  >
 
-                    <h3>
-                      Variant {index + 1}
-                    </h3>
+                    <div className="variant-header">
 
-                    <button
-                      type="button"
-                      className="remove-variant-button"
-                      onClick={() =>
-                        removeVariant(index)
-                      }
-                    >
-                      Remove
-                    </button>
+                      <h3>
+                        Variant{" "}
+                        {index + 1}
+                      </h3>
+
+                      <button
+                        type="button"
+                        className="remove-variant-button"
+                        onClick={() =>
+                          removeVariant(
+                            index
+                          )
+                        }
+                      >
+                        Remove
+                      </button>
+
+                    </div>
+
+                    <div className="variant-grid">
+
+                      {/* NAME */}
+
+                      <div className="product-form-group">
+
+                        <label>
+                          Variant Name
+                        </label>
+
+                        <input
+                          type="text"
+                          value={
+                            variant.name
+                          }
+                          onChange={(e) =>
+                            updateVariant(
+                              index,
+                              "name",
+                              e.target.value
+                            )
+                          }
+                          placeholder="Small"
+                          required
+                        />
+
+                      </div>
+
+                      {/* PRICE */}
+
+                      <div className="product-form-group">
+
+                        <label>
+                          Price (₹)
+                        </label>
+
+                        <input
+                          type="number"
+                          value={
+                            variant.price
+                          }
+                          onChange={(e) =>
+                            updateVariant(
+                              index,
+                              "price",
+                              e.target.value
+                            )
+                          }
+                          placeholder="399"
+                          min="0"
+                          required
+                        />
+
+                      </div>
+
+                      {/* COMPARE PRICE */}
+
+                      <div className="product-form-group">
+
+                        <label>
+                          Compare Price (₹)
+                        </label>
+
+                        <input
+                          type="number"
+                          value={
+                            variant.compareAtPrice
+                          }
+                          onChange={(e) =>
+                            updateVariant(
+                              index,
+                              "compareAtPrice",
+                              e.target.value
+                            )
+                          }
+                          placeholder="499"
+                          min="0"
+                        />
+
+                      </div>
+
+                      {/* STOCK */}
+
+                      <div className="product-form-group">
+
+                        <label>
+                          Stock
+                        </label>
+
+                        <input
+                          type="number"
+                          value={
+                            variant.stock
+                          }
+                          onChange={(e) =>
+                            updateVariant(
+                              index,
+                              "stock",
+                              e.target.value
+                            )
+                          }
+                          placeholder="10"
+                          min="0"
+                          required
+                        />
+
+                      </div>
+
+                      {/* SKU */}
+
+                      <div className="product-form-group">
+
+                        <label>
+                          SKU
+                        </label>
+
+                        <input
+                          type="text"
+                          value={
+                            variant.sku
+                          }
+                          onChange={(e) =>
+                            updateVariant(
+                              index,
+                              "sku",
+                              e.target.value
+                            )
+                          }
+                          placeholder="GAT-SM"
+                        />
+
+                      </div>
+
+                    </div>
 
                   </div>
 
-                  <div className="variant-grid">
-
-                    {/* NAME */}
-                    <div className="product-form-group">
-                      <label>
-                        Variant Name
-                      </label>
-
-                      <input
-                        type="text"
-                        value={variant.name}
-                        onChange={(e) =>
-                          updateVariant(
-                            index,
-                            "name",
-                            e.target.value
-                          )
-                        }
-                        placeholder="Small"
-                        required
-                      />
-                    </div>
-
-                    {/* PRICE */}
-                    <div className="product-form-group">
-                      <label>
-                        Price (₹)
-                      </label>
-
-                      <input
-                        type="number"
-                        value={variant.price}
-                        onChange={(e) =>
-                          updateVariant(
-                            index,
-                            "price",
-                            e.target.value
-                          )
-                        }
-                        placeholder="399"
-                        min="0"
-                        required
-                      />
-                    </div>
-
-                    {/* COMPARE PRICE */}
-                    <div className="product-form-group">
-                      <label>
-                        Compare Price (₹)
-                      </label>
-
-                      <input
-                        type="number"
-                        value={
-                          variant.compareAtPrice
-                        }
-                        onChange={(e) =>
-                          updateVariant(
-                            index,
-                            "compareAtPrice",
-                            e.target.value
-                          )
-                        }
-                        placeholder="499"
-                        min="0"
-                      />
-                    </div>
-
-                    {/* STOCK */}
-                    <div className="product-form-group">
-                      <label>
-                        Stock
-                      </label>
-
-                      <input
-                        type="number"
-                        value={variant.stock}
-                        onChange={(e) =>
-                          updateVariant(
-                            index,
-                            "stock",
-                            e.target.value
-                          )
-                        }
-                        placeholder="10"
-                        min="0"
-                        required
-                      />
-                    </div>
-
-                    {/* SKU */}
-                    <div className="product-form-group">
-                      <label>
-                        SKU
-                      </label>
-
-                      <input
-                        type="text"
-                        value={variant.sku}
-                        onChange={(e) =>
-                          updateVariant(
-                            index,
-                            "sku",
-                            e.target.value
-                          )
-                        }
-                        placeholder="GAT-SM"
-                      />
-                    </div>
-
-                  </div>
-                </div>
-              ))}
+                )
+              )}
 
             </div>
+
           )}
+
         </div>
 
         {/* =====================================
             PRODUCT IMAGES
         ===================================== */}
+
         <div className="product-form-card">
 
           <div className="product-form-card-header">
 
-            <h2>Product Images</h2>
+            <h2>
+              Product Images
+            </h2>
 
             <p>
-              Add image URLs for your product.
+              Add image URLs for your
+              product.
             </p>
 
           </div>
@@ -596,7 +744,9 @@ const AddProduct = () => {
               type="url"
               value={imageUrl}
               onChange={(e) =>
-                setImageUrl(e.target.value)
+                setImageUrl(
+                  e.target.value
+                )
               }
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
@@ -618,51 +768,66 @@ const AddProduct = () => {
           </div>
 
           {images.length > 0 && (
+
             <div className="product-images-preview">
 
-              {images.map((image, index) => (
-                <div
-                  className="product-image-item"
-                  key={index}
-                >
+              {images.map(
+                (image, index) => (
 
-                  <img
-                    src={image}
-                    alt={`Product ${index + 1}`}
-                    onError={(e) => {
-                      e.currentTarget.style.display =
-                        "none";
-                    }}
-                  />
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      removeImage(index)
-                    }
-                    className="remove-image-button"
+                  <div
+                    className="product-image-item"
+                    key={index}
                   >
-                    ×
-                  </button>
 
-                </div>
-              ))}
+                    <img
+                      src={image}
+                      alt={`Product ${
+                        index + 1
+                      }`}
+                      onError={(e) => {
+                        e.currentTarget.style.display =
+                          "none";
+                      }}
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        removeImage(
+                          index
+                        )
+                      }
+                      className="remove-image-button"
+                    >
+                      ×
+                    </button>
+
+                  </div>
+
+                )
+              )}
 
             </div>
+
           )}
+
         </div>
 
         {/* =====================================
             SETTINGS
         ===================================== */}
+
         <div className="product-form-card">
 
           <div className="product-form-card-header">
 
-            <h2>Product Settings</h2>
+            <h2>
+              Product Settings
+            </h2>
 
             <p>
-              Control how this product appears in your store.
+              Control how this product
+              appears in your store.
             </p>
 
           </div>
@@ -670,61 +835,81 @@ const AddProduct = () => {
           <div className="product-settings">
 
             {/* ACTIVE */}
+
             <label className="product-setting-row">
 
               <div>
+
                 <strong>
                   Active Product
                 </strong>
 
                 <span>
-                  Make this product visible on your store.
+                  Make this product
+                  visible on your store.
                 </span>
+
               </div>
 
               <input
                 type="checkbox"
                 name="isActive"
-                checked={formData.isActive}
-                onChange={handleChange}
+                checked={
+                  formData.isActive
+                }
+                onChange={
+                  handleChange
+                }
               />
 
             </label>
 
             {/* FEATURED */}
+
             <label className="product-setting-row">
 
               <div>
+
                 <strong>
                   Featured Product
                 </strong>
 
                 <span>
-                  Show this product in your featured section.
+                  Show this product in
+                  your featured section.
                 </span>
+
               </div>
 
               <input
                 type="checkbox"
                 name="isFeatured"
-                checked={formData.isFeatured}
-                onChange={handleChange}
+                checked={
+                  formData.isFeatured
+                }
+                onChange={
+                  handleChange
+                }
               />
 
             </label>
 
           </div>
+
         </div>
 
         {/* =====================================
             ACTIONS
         ===================================== */}
+
         <div className="product-form-actions">
 
           <button
             type="button"
             className="product-cancel-button"
-            onClick={() => window.history.back()}
+            onClick={() =>
+              window.history.back()
+            }
           >
             Cancel
           </button>
@@ -742,6 +927,7 @@ const AddProduct = () => {
         </div>
 
       </form>
+
     </div>
   );
 };
