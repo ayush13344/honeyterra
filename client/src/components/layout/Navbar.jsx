@@ -119,7 +119,7 @@ function Navbar() {
 
           {/* Account */}
           <Link
-            to="/account"
+            to="/login"
             className="navbar-icon-btn"
             aria-label="Account"
           >
