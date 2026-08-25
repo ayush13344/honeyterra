@@ -7,7 +7,32 @@ import AdminSidebar from "../components/AdminSidebar/AdminSidebar";
 import "./AdminLayout.css";
 
 function AdminLayout() {
+  /*
+   * ==============================
+   * SIDEBAR STATE
+   * ==============================
+   */
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  /*
+   * Sidebar position:
+   * false = LEFT
+   * true  = RIGHT
+   *
+   * We remember the user's choice
+   * using localStorage.
+   */
+
+  const [sidebarRight, setSidebarRight] = useState(() => {
+    return localStorage.getItem("honeyterra-sidebar-position") === "right";
+  });
+
+  /*
+   * ==============================
+   * SIDEBAR CONTROLS
+   * ==============================
+   */
 
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
@@ -17,30 +42,72 @@ function AdminLayout() {
     setSidebarOpen(false);
   };
 
+  /*
+   * Change sidebar from LEFT ↔ RIGHT
+   */
+
+  const toggleSidebarPosition = () => {
+    setSidebarRight((prev) => {
+      const newPosition = !prev;
+
+      localStorage.setItem(
+        "honeyterra-sidebar-position",
+        newPosition ? "right" : "left"
+      );
+
+      return newPosition;
+    });
+
+    /*
+     * If the sidebar is currently open on mobile,
+     * close it after changing position.
+     */
+    setSidebarOpen(false);
+  };
+
   return (
-    <div className="admin-layout">
-      {/* Sidebar */}
+    <div
+      className={`admin-layout ${
+        sidebarRight ? "sidebar-right" : ""
+      }`}
+    >
+      {/* =================================
+          SIDEBAR
+      ================================= */}
+
       <AdminSidebar
         isOpen={sidebarOpen}
         onClose={closeSidebar}
+        isRight={sidebarRight}
+        onPositionToggle={toggleSidebarPosition}
       />
 
-      {/* Main Area */}
+      {/* =================================
+          MAIN AREA
+      ================================= */}
+
       <div className="admin-main">
 
         {/* Header */}
+
         <AdminHeader
           onMenuClick={toggleSidebar}
+          sidebarRight={sidebarRight}
+          onSidebarPositionToggle={toggleSidebarPosition}
         />
 
         {/* Page Content */}
+
         <main className="admin-content">
           <Outlet />
         </main>
 
       </div>
 
-      {/* Mobile Overlay */}
+      {/* =================================
+          MOBILE OVERLAY
+      ================================= */}
+
       {sidebarOpen && (
         <button
           type="button"

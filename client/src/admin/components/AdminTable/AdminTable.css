@@ -1,13 +1,24 @@
+/* =========================================
+   TABLE WRAPPER
+========================================= */
+
 .admin-table-wrapper {
   width: 100%;
 
   overflow-x: auto;
+  overflow-y: hidden;
 
   border: 1px solid #e8e2d8;
   border-radius: 14px;
 
   background: #ffffff;
+
+  -webkit-overflow-scrolling: touch;
 }
+
+/* =========================================
+   TABLE
+========================================= */
 
 .admin-table {
   width: 100%;
@@ -17,9 +28,9 @@
   min-width: 650px;
 }
 
-/* ==============================
+/* =========================================
    HEADER
-============================== */
+========================================= */
 
 .admin-table thead {
   background: #faf8f3;
@@ -42,9 +53,9 @@
   white-space: nowrap;
 }
 
-/* ==============================
+/* =========================================
    BODY
-============================== */
+========================================= */
 
 .admin-table td {
   padding: 16px 18px;
@@ -56,6 +67,8 @@
   font-size: 13px;
 
   vertical-align: middle;
+
+  white-space: nowrap;
 }
 
 .admin-table tbody tr:last-child td {
@@ -70,9 +83,9 @@
   background: #fcfbf7;
 }
 
-/* ==============================
+/* =========================================
    ACTIONS
-============================== */
+========================================= */
 
 .admin-table-actions-heading {
   text-align: right;
@@ -80,12 +93,13 @@
 
 .admin-table-actions {
   text-align: right;
+
   white-space: nowrap;
 }
 
-/* ==============================
+/* =========================================
    EMPTY
-============================== */
+========================================= */
 
 .admin-table-empty {
   padding: 45px 20px !important;
@@ -97,22 +111,53 @@
   font-size: 13px !important;
 }
 
-/* ==============================
-   MOBILE
-============================== */
+/* =========================================
+   TABLET
+========================================= */
 
-@media (max-width: 700px) {
-
+@media (max-width: 800px) {
   .admin-table-wrapper {
-    border-radius: 11px;
+    border-radius: 12px;
+  }
+
+  .admin-table {
+    min-width: 620px;
   }
 
   .admin-table th {
-    padding: 12px 14px;
+    padding: 13px 15px;
   }
 
   .admin-table td {
-    padding: 13px 14px;
+    padding: 14px 15px;
+  }
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 600px) {
+  .admin-table-wrapper {
+    border-radius: 10px;
+
+    /* Keeps table usable instead of squeezing */
+    overflow-x: auto;
   }
 
+  .admin-table {
+    min-width: 600px;
+  }
+
+  .admin-table th {
+    padding: 12px 13px;
+
+    font-size: 10px;
+  }
+
+  .admin-table td {
+    padding: 13px;
+
+    font-size: 12px;
+  }
 }
