@@ -2,275 +2,177 @@ import {
   Search,
   UserRound,
   ShoppingBag,
-  Menu,
-  X,
-  LogOut,
 } from "lucide-react";
-
-import { useState } from "react";
 
 import {
   Link,
   NavLink,
-  useNavigate,
+  useLocation,
 } from "react-router-dom";
-
-import Logo from "./Logo";
-
-import "./Navbar.css";
 
 import { useCart } from "../../context/CartContext";
 
-import { useAuth } from "../../context/AuthContext";
-
-const navItems = [
-  { label: "Home", to: "/" },
-  { label: "Shop", to: "/shop" },
-  {
-    label: "Honeycomb Wrap",
-    to: "/shop/wrap",
-  },
-  {
-    label: "Gel Ash Tray",
-    to: "/shop/ash-tray",
-  },
-  {
-    label: "About Us",
-    to: "/about",
-  },
-  {
-    label: "Contact",
-    to: "/contact",
-  },
-];
+import "./Navbar.css";
 
 function Navbar() {
-  const [open, setOpen] = useState(false);
-
-  const closeMenu = () => setOpen(false);
-
-  const navigate = useNavigate();
-
-  const { cartCount, openCart } = useCart();
+  const location = useLocation();
 
   const {
-    user,
-    logout,
-  } = useAuth();
+    openCart,
+    cartItems,
+  } = useCart();
 
   // ==========================================
-  // LOGOUT
+  // CHECKOUT PAGE
   // ==========================================
 
-  const handleLogout = () => {
-    logout();
-
-    closeMenu();
-
-    navigate("/");
-  };
+  const isCheckoutPage =
+    location.pathname === "/checkout";
 
   // ==========================================
-  // GET USER NAME
+  // CART COUNT
   // ==========================================
 
-  const getFirstName = () => {
-    if (!user?.name) {
-      return "";
-    }
+  const cartCount = cartItems.reduce(
+    (total, item) => total + Number(item.quantity || 0),
+    0
+  );
 
-    return user.name
-      .trim()
-      .split(" ")[0];
-  };
+  // ==========================================
+  // NAV LINKS
+  // ==========================================
+
+  const navLinks = [
+    {
+      label: "Home",
+      path: "/",
+    },
+    {
+      label: "Shop",
+      path: "/shop",
+    },
+    {
+      label: "Honey Comb Wrap",
+      path: "/shop/wrap",
+    },
+    {
+      label: "Gel Ash Tray",
+      path: "/shop/ash-tray",
+    },
+    {
+      label: "About Us",
+      path: "/about",
+    },
+    {
+      label: "Contact",
+      path: "/contact",
+    },
+  ];
 
   return (
-    <header className="site-header">
+    <header
+      className={`site-navbar ${
+        isCheckoutPage
+          ? "site-navbar-dark"
+          : ""
+      }`}
+    >
+      <div className="navbar-container">
 
-      <div className="navbar">
-
-        {/* ======================================
+        {/* ==========================================
             LOGO
-        ======================================= */}
+        ========================================== */}
 
-        <Logo />
-
-        {/* ======================================
-            NAVIGATION
-        ======================================= */}
-
-        <nav
-          className={`desktop-nav ${
-            open ? "mobile-open" : ""
-          }`}
+        <Link
+          to="/"
+          className="navbar-logo"
+          aria-label="HoneyTerra Home"
         >
-          {navItems.map((item) => (
+
+          <span className="navbar-logo-mark">
+            <span className="logo-leaf logo-leaf-one" />
+            <span className="logo-leaf logo-leaf-two" />
+          </span>
+
+          <span className="navbar-logo-text">
+            Honey<span>Terra</span>
+          </span>
+
+        </Link>
+
+
+        {/* ==========================================
+            DESKTOP NAVIGATION
+        ========================================== */}
+
+        <nav className="navbar-links">
+
+          {navLinks.map((link) => (
             <NavLink
-              key={item.to}
-              to={item.to}
-              onClick={closeMenu}
+              key={link.path}
+              to={link.path}
               className={({ isActive }) =>
-                isActive ? "active" : ""
+                `navbar-link ${
+                  isActive
+                    ? "navbar-link-active"
+                    : ""
+                }`
               }
             >
-              {item.label}
+              {link.label}
             </NavLink>
           ))}
+
         </nav>
 
-        {/* ======================================
+
+        {/* ==========================================
             ACTIONS
-        ======================================= */}
+        ========================================== */}
 
-        <div className="nav-actions">
+        <div className="navbar-actions">
 
-          {/* SEARCH */}
+          {/* Account */}
 
           <Link
-            to="/search"
-            aria-label="Search"
-            className="nav-icon"
-            onClick={closeMenu}
+            to="/account"
+            className="navbar-icon-btn"
+            aria-label="Account"
           >
-            <Search
+            <UserRound
               size={22}
               strokeWidth={1.8}
             />
           </Link>
 
 
-          {/* ====================================
-              ACCOUNT
-          ==================================== */}
-
-          {user ? (
-            <div
-              className="nav-user"
-              title={`Logged in as ${user.name}`}
-            >
-              <Link
-                to="/profile"
-                className="nav-user-link"
-                onClick={closeMenu}
-              >
-                <UserRound
-                  size={22}
-                  strokeWidth={1.8}
-                />
-
-                <span className="nav-user-name">
-                  Hi, {getFirstName()}
-                </span>
-              </Link>
-            </div>
-          ) : (
-            <Link
-              to="/login"
-              aria-label="Account"
-              className="nav-icon desktop-only"
-              onClick={closeMenu}
-            >
-              <UserRound
-                size={22}
-                strokeWidth={1.8}
-              />
-            </Link>
-          )}
-
-
-          {/* ====================================
-              CART
-          ==================================== */}
+          {/* Cart */}
 
           <button
+            type="button"
             className="navbar-cart-btn"
             onClick={openCart}
-            aria-label="Open cart"
+            aria-label={`Shopping cart with ${cartCount} items`}
           >
-            <ShoppingBag size={22} />
+
+            <ShoppingBag
+              size={22}
+              strokeWidth={1.8}
+            />
 
             {cartCount > 0 && (
-              <span className="cart-count">
-                {cartCount}
+              <span className="navbar-cart-count">
+                {cartCount > 99
+                  ? "99+"
+                  : cartCount}
               </span>
             )}
-          </button>
 
-
-          {/* ====================================
-              MOBILE MENU
-          ==================================== */}
-
-          <button
-            className="menu-button"
-            onClick={() =>
-              setOpen((value) => !value)
-            }
-            aria-label={
-              open
-                ? "Close menu"
-                : "Open menu"
-            }
-          >
-            {open ? (
-              <X size={24} />
-            ) : (
-              <Menu size={24} />
-            )}
           </button>
 
         </div>
+
       </div>
-
-
-      {/* ========================================
-          MOBILE USER SECTION
-      ======================================== */}
-
-      {open && (
-        <div className="mobile-account-section">
-
-          {user ? (
-            <>
-              <div className="mobile-user-info">
-
-                <UserRound
-                  size={20}
-                  strokeWidth={1.8}
-                />
-
-                <span>
-                  Hi, {getFirstName()}
-                </span>
-
-              </div>
-
-              <Link
-                to="/profile"
-                onClick={closeMenu}
-              >
-                My Account
-              </Link>
-
-              <button
-                onClick={handleLogout}
-              >
-                <LogOut size={18} />
-                Logout
-              </button>
-            </>
-          ) : (
-            <Link
-              to="/login"
-              onClick={closeMenu}
-            >
-              <UserRound size={18} />
-              Login
-            </Link>
-          )}
-
-        </div>
-      )}
     </header>
   );
 }

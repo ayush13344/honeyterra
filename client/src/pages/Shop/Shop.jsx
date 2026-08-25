@@ -1,61 +1,172 @@
+import { useEffect, useMemo, useState } from "react";
 import {
   Leaf,
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-
 import { Link } from "react-router-dom";
 
 import ProductCard from "../../components/ProductCard/ProductCard";
 
-import {productDetails} from "../../data/products";
-
 import "./Shop.css";
 
 function Shop() {
-  const { gelAshTray, honeycombWrap } = productDetails;
+  const [products, setProducts] = useState([]);
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  /* =====================================================
+     FETCH PRODUCTS
+  ===================================================== */
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        /*
+         * Change this URL if your backend uses
+         * a different products endpoint.
+         */
+        const response = await fetch(
+          "http://localhost:5000/api/products"
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch products");
+        }
+
+        const data = await response.json();
+
+        /*
+         * Supports both:
+         *
+         * { products: [...] }
+         *
+         * and
+         *
+         * [...]
+         */
+
+        const productList = Array.isArray(data)
+          ? data
+          : data.products || [];
+
+        setProducts(productList);
+
+      } catch (err) {
+        console.error("Product fetch error:", err);
+
+        setError(
+          "Unable to load products right now."
+        );
+
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+
+  /* =====================================================
+     FILTER PRODUCTS
+  ===================================================== */
+
+  const filteredProducts = useMemo(() => {
+    if (activeFilter === "all") {
+      return products;
+    }
+
+    return products.filter((product) => {
+      const category =
+        product.category?.toLowerCase() || "";
+
+      if (activeFilter === "gel-ash-tray") {
+        return (
+          category.includes("gel") &&
+          category.includes("ash")
+        );
+      }
+
+      if (activeFilter === "honeycomb-wrap") {
+        return (
+          category.includes("honeycomb") ||
+          category.includes("honey comb") ||
+          category.includes("wrap")
+        );
+      }
+
+      return true;
+    });
+  }, [products, activeFilter]);
+
+
+  /* =====================================================
+     FILTER HANDLER
+  ===================================================== */
+
+  const handleFilterChange = (filter) => {
+    setActiveFilter(filter);
+  };
+
 
   return (
     <main className="shop-page">
 
-      {/* Hero */}
+      {/* =====================================================
+          DARK SHOP HEADER
+      ===================================================== */}
 
-      <section className="shop-hero">
+      <section className="shop-header">
 
-        <span className="section-eyebrow">
-          HONEYTERRA SHOP
-        </span>
+        <div className="shop-container">
 
-        <h1>
-          Better products.
-          <br />
-          Better everyday choices.
-        </h1>
+          <span className="shop-header-eyebrow">
+            HONEYTERRA COLLECTION
+          </span>
 
-        <p>
-          Discover thoughtfully designed products made for
-          everyday life.
-        </p>
+          <h1>
+            Shop everything
+          </h1>
+
+          <p>
+            Thoughtfully made essentials for a cleaner home —
+            practical products designed for everyday life.
+          </p>
+
+        </div>
 
       </section>
 
 
-      {/* Products */}
+      {/* =====================================================
+          PRODUCTS
+      ===================================================== */}
 
       <section className="shop-products">
 
         <div className="shop-container">
 
+          {/* =================================================
+              HEADING
+          ================================================= */}
+
           <div className="shop-heading">
 
             <div>
+
               <span className="section-eyebrow">
                 OUR COLLECTION
               </span>
 
               <h2>
-                Shop HoneyTerra
+                All products
               </h2>
+
             </div>
 
             <p>
@@ -66,36 +177,167 @@ function Shop() {
           </div>
 
 
-          <div className="shop-product-grid">
+          {/* =================================================
+              FILTERS
+          ================================================= */}
 
-            <ProductCard
-              imageLabel="Gel Ash Tray"
-              category="Gel Ash Tray"
-              name="HoneyTerra Gel Ash Tray"
-              description={gelAshTray.tagline}
-              price={gelAshTray.variants[0].price}
-              badge="Bestseller"
-              link="/gel-ash-tray"
-            />
+          <div className="shop-filters">
+
+            <button
+              type="button"
+              className={
+                activeFilter === "all"
+                  ? "shop-filter active"
+                  : "shop-filter"
+              }
+              onClick={() =>
+                handleFilterChange("all")
+              }
+            >
+              All Products
+            </button>
 
 
-            <ProductCard
-              imageLabel="Honeycomb Wrap"
-              category="Sustainable Packaging"
-              name="Honeycomb Wrap"
-              description={honeycombWrap.tagline}
-              price={null}
-              link="/honey-comb-wrap"
-            />
+            <button
+              type="button"
+              className={
+                activeFilter === "gel-ash-tray"
+                  ? "shop-filter active"
+                  : "shop-filter"
+              }
+              onClick={() =>
+                handleFilterChange("gel-ash-tray")
+              }
+            >
+              Gel Ash Trays
+            </button>
+
+
+            <button
+              type="button"
+              className={
+                activeFilter === "honeycomb-wrap"
+                  ? "shop-filter active"
+                  : "shop-filter"
+              }
+              onClick={() =>
+                handleFilterChange("honeycomb-wrap")
+              }
+            >
+              Honey Comb Wraps
+            </button>
 
           </div>
+
+
+          {/* =================================================
+              PRODUCT COUNT
+          ================================================= */}
+
+          <div className="shop-product-count">
+
+            {loading
+              ? "Loading products..."
+              : `${filteredProducts.length} ${
+                  filteredProducts.length === 1
+                    ? "product"
+                    : "products"
+                }`
+            }
+
+          </div>
+
+
+          {/* =================================================
+              PRODUCTS
+          ================================================= */}
+
+          {loading ? (
+
+            <div className="shop-loading">
+
+              <div className="shop-loading-spinner"></div>
+
+              <p>
+                Loading our collection...
+              </p>
+
+            </div>
+
+          ) : error ? (
+
+            <div className="shop-error">
+
+              <h3>
+                Something went wrong
+              </h3>
+
+              <p>
+                {error}
+              </p>
+
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+              >
+                Try Again
+              </button>
+
+            </div>
+
+          ) : filteredProducts.length === 0 ? (
+
+            <div className="shop-empty">
+
+              <div className="shop-empty-icon">
+                <Sparkles size={24} />
+              </div>
+
+              <h3>
+                No products found
+              </h3>
+
+              <p>
+                There are currently no products in
+                this category.
+              </p>
+
+              <button
+                type="button"
+                onClick={() =>
+                  handleFilterChange("all")
+                }
+              >
+                View all products
+              </button>
+
+            </div>
+
+          ) : (
+
+            <div className="shop-product-grid">
+
+              {filteredProducts.map((product) => (
+
+                <ProductCard
+                  key={product._id}
+                  product={product}
+                />
+
+              ))}
+
+            </div>
+
+          )}
 
         </div>
 
       </section>
 
 
-      {/* Benefits */}
+      {/* =====================================================
+          BENEFITS
+      ===================================================== */}
 
       <section className="shop-benefits">
 
@@ -124,7 +366,9 @@ function Shop() {
                 <Leaf size={23} />
               </div>
 
-              <h3>Eco Friendly</h3>
+              <h3>
+                Eco Friendly
+              </h3>
 
               <p>
                 Thoughtfully designed products with
@@ -140,7 +384,9 @@ function Shop() {
                 <ShieldCheck size={23} />
               </div>
 
-              <h3>Made for Real Life</h3>
+              <h3>
+                Made for Real Life
+              </h3>
 
               <p>
                 Practical products designed around
@@ -156,7 +402,9 @@ function Shop() {
                 <Sparkles size={23} />
               </div>
 
-              <h3>Made with Care</h3>
+              <h3>
+                Made with Care
+              </h3>
 
               <p>
                 Thoughtful design without unnecessary
@@ -172,13 +420,15 @@ function Shop() {
       </section>
 
 
-      {/* CTA */}
+      {/* =====================================================
+          CTA
+      ===================================================== */}
 
       <section className="shop-cta">
 
         <div>
 
-          <span className="section-eyebrow">
+          <span className="section-eyebrow shop-cta-eyebrow">
             HONEYTERRA
           </span>
 

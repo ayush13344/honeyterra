@@ -1,234 +1,500 @@
-.site-header {
-  position: sticky;
-  top: 0;
+/* ==========================================
+   NAVBAR
+========================================== */
+
+.site-navbar {
+  position: relative;
   z-index: 1000;
-  background: rgba(255, 253, 248, 0.96);
-  border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(14px);
+
+  width: 100%;
+
+  background: #fffdf8;
+
+  border-bottom: 1px solid #e8e1d5;
+
+  color: #26332d;
+
+  transition:
+    background 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease;
 }
 
-.navbar {
-  width: min(100% - 48px, 1400px);
-  min-height: 76px;
+
+/* ==========================================
+   DARK CHECKOUT NAVBAR
+========================================== */
+
+.site-navbar-dark {
+  background: #123f34;
+
+  color: #ffffff;
+
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+}
+
+
+/* ==========================================
+   CONTAINER
+========================================== */
+
+.navbar-container {
+  width: min(
+    1360px,
+    calc(100% - 64px)
+  );
+
+  min-height: 88px;
+
   margin: 0 auto;
+
   display: flex;
+
   align-items: center;
+
   justify-content: space-between;
-  gap: 32px;
+
+  gap: 30px;
 }
 
-.brand-logo {
+
+/* ==========================================
+   LOGO
+========================================== */
+
+.navbar-logo {
   display: inline-flex;
+
   align-items: center;
+
   gap: 10px;
+
+  color: #17231e;
+
+  text-decoration: none;
+
   flex-shrink: 0;
 }
 
-.brand-name {
-  font-family: var(--font-display);
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: -0.8px;
-  color: var(--text);
+.site-navbar-dark .navbar-logo {
+  color: #ffffff;
 }
 
-.brand-name span {
-  color: var(--green);
-}
 
-.brand-mark {
-  width: 38px;
-  height: 38px;
+/* ==========================================
+   LOGO MARK
+========================================== */
+
+.navbar-logo-mark {
   position: relative;
-  display: inline-block;
+
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
   border-radius: 9px;
+
+  background: #17231e;
+
   overflow: hidden;
 }
 
-.brand-mark-black,
-.brand-mark-green {
+.site-navbar-dark .navbar-logo-mark {
+  background: #ffffff;
+}
+
+
+/* Leaves */
+
+.logo-leaf {
   position: absolute;
-  inset: 0;
-  clip-path: polygon(50% 0, 100% 26%, 100% 78%, 50% 100%, 0 76%, 0 25%);
+
+  width: 17px;
+  height: 24px;
+
+  border-radius: 2px 13px 2px 13px;
+
+  transform: rotate(45deg);
 }
 
-.brand-mark-black {
-  background: #101714;
-  transform: translate(-3px, 1px);
+.logo-leaf-one {
+  background: #6aa82f;
+
+  top: 6px;
+  right: 5px;
 }
 
-.brand-mark-green {
-  background: #62a62d;
-  transform: translate(4px, -3px) scale(.72);
+.logo-leaf-two {
+  background: #14785d;
+
+  bottom: 5px;
+  left: 5px;
+
+  transform: rotate(225deg);
 }
 
-.desktop-nav {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 30px;
-  margin-left: auto;
-}
 
-.desktop-nav a {
-  color: var(--text-soft);
-  font-size: 15px;
-  font-weight: 500;
+/* ==========================================
+   LOGO TEXT
+========================================== */
+
+.navbar-logo-text {
+  font-family:
+    "Playfair Display",
+    Georgia,
+    "Times New Roman",
+    serif;
+
+  font-size: 29px;
+
+  font-weight: 700;
+
+  letter-spacing: -0.7px;
+
   white-space: nowrap;
-  position: relative;
-  transition: color .2s ease;
 }
 
-.desktop-nav a:hover,
-.desktop-nav a.active {
-  color: var(--green);
+.navbar-logo-text span {
+  color: #14785d;
 }
 
-.nav-actions {
+.site-navbar-dark .navbar-logo-text span {
+  color: #d9b45b;
+}
+
+
+/* ==========================================
+   DESKTOP LINKS
+========================================== */
+
+.navbar-links {
   display: flex;
+
   align-items: center;
-  gap: 18px;
+
+  justify-content: center;
+
+  gap: 34px;
+
+  flex: 1;
 }
 
-.nav-icon {
-  color: var(--text-soft);
+.navbar-link {
   position: relative;
-  display: grid;
-  place-items: center;
+
+  padding: 8px 0;
+
+  color: #4e5a54;
+
+  font-size: 15px;
+
+  font-weight: 500;
+
+  text-decoration: none;
+
+  white-space: nowrap;
+
+  transition:
+    color 0.2s ease;
 }
 
-.nav-icon:hover {
-  color: var(--green);
+.site-navbar-dark .navbar-link {
+  color: rgba(255, 255, 255, 0.82);
 }
 
-.cart-count {
+.navbar-link:hover {
+  color: #14785d;
+}
+
+.site-navbar-dark .navbar-link:hover {
+  color: #e0b95f;
+}
+
+
+/* ==========================================
+   ACTIVE LINK
+========================================== */
+
+.navbar-link-active {
+  color: #14785d;
+  font-weight: 600;
+}
+
+.site-navbar-dark .navbar-link-active {
+  color: #ffffff;
+}
+
+.navbar-link-active::after {
+  content: "";
+
   position: absolute;
-  top: -8px;
-  right: -9px;
-  min-width: 16px;
-  height: 16px;
-  padding: 0 4px;
-  border-radius: 20px;
-  background: var(--green);
-  color: white;
-  font-size: 9px;
-  display: grid;
-  place-items: center;
+
+  left: 0;
+  right: 0;
+
+  bottom: 0;
+
+  height: 2px;
+
+  border-radius: 10px;
+
+  background: #14785d;
 }
 
-.menu-button {
-  display: none;
-  border: 0;
-  background: transparent;
-  color: var(--text);
+.site-navbar-dark .navbar-link-active::after {
+  background: #d9b45b;
 }
 
-@media (max-width: 1100px) {
-  .desktop-nav {
-    gap: 18px;
-  }
 
-  .desktop-nav a {
-    font-size: 14px;
-  }
+/* ==========================================
+   ACTIONS
+========================================== */
 
-  .navbar {
-    width: min(100% - 32px, 1400px);
-  }
+.navbar-actions {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  flex-shrink: 0;
 }
 
+
+/* ==========================================
+   ICON BUTTONS
+========================================== */
+
+.navbar-icon-btn,
 .navbar-cart-btn {
   position: relative;
 
-  border: none;
-  background: transparent;
-
-  cursor: pointer;
+  width: 42px;
+  height: 42px;
 
   display: flex;
+
   align-items: center;
   justify-content: center;
 
-  color: #3e4c45;
-}
-
-.cart-count {
-  position: absolute;
-
-  top: -8px;
-  right: -8px;
-
-  min-width: 18px;
-  height: 18px;
-
-  padding: 0 4px;
+  border: none;
 
   border-radius: 50%;
 
-  background: #14775c;
-  color: white;
+  background: transparent;
 
-  font-size: 10px;
-  font-weight: 700;
+  color: #435149;
+
+  text-decoration: none;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.site-navbar-dark .navbar-icon-btn,
+.site-navbar-dark .navbar-cart-btn {
+  color: #ffffff;
+}
+
+.navbar-icon-btn:hover,
+.navbar-cart-btn:hover {
+  background: #f0eee7;
+
+  color: #14785d;
+
+  transform: translateY(-1px);
+}
+
+.site-navbar-dark .navbar-icon-btn:hover,
+.site-navbar-dark .navbar-cart-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+
+  color: #e0b95f;
+}
+
+
+/* ==========================================
+   CART COUNT
+========================================== */
+
+.navbar-cart-count {
+  position: absolute;
+
+  top: 2px;
+  right: 1px;
+
+  min-width: 19px;
+  height: 19px;
+
+  padding: 0 5px;
 
   display: flex;
+
   align-items: center;
   justify-content: center;
+
+  border-radius: 999px;
+
+  background: #d9a844;
+
+  color: #ffffff;
+
+  border: 2px solid #fffdf8;
+
+  font-size: 9px;
+
+  font-weight: 800;
+
+  line-height: 1;
 }
+
+.site-navbar-dark .navbar-cart-count {
+  border-color: #123f34;
+
+  background: #e0b95f;
+
+  color: #17342c;
+}
+
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media (max-width: 1100px) {
+
+  .navbar-container {
+    width: min(
+      100% - 40px,
+      1360px
+    );
+  }
+
+  .navbar-links {
+    gap: 20px;
+  }
+
+  .navbar-link {
+    font-size: 14px;
+  }
+
+  .navbar-logo-text {
+    font-size: 26px;
+  }
+
+}
+
+
+/* ==========================================
+   TABLET
+========================================== */
 
 @media (max-width: 900px) {
-  .desktop-only {
+
+  .navbar-container {
+    min-height: 76px;
+  }
+
+  .navbar-links {
     display: none;
   }
 
-  .menu-button {
-    display: grid;
-    place-items: center;
+  .navbar-container {
+    justify-content: space-between;
   }
 
-  .navbar {
-    min-height: 70px;
+  .navbar-logo-text {
+    font-size: 27px;
   }
 
-  .desktop-nav {
-    display: none;
-    position: absolute;
-    top: 70px;
-    left: 0;
-    right: 0;
-    padding: 20px 24px 26px;
-    background: var(--cream);
-    border-bottom: 1px solid var(--border);
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 18px;
-    box-shadow: 0 14px 30px rgba(34, 44, 37, .07);
-  }
-
-  .desktop-nav.mobile-open {
-    display: flex;
-  }
-
-  .desktop-nav a {
-    font-size: 16px;
-  }
 }
 
-@media (max-width: 520px) {
-  .navbar {
-    width: min(100% - 24px, 1400px);
+
+/* ==========================================
+   MOBILE
+========================================== */
+
+@media (max-width: 600px) {
+
+  .navbar-container {
+    width: calc(100% - 28px);
+
+    min-height: 70px;
+
+    gap: 10px;
   }
 
-  .brand-name {
-    font-size: 23px;
+  .navbar-logo {
+    gap: 7px;
   }
 
-  .brand-mark {
-    width: 32px;
-    height: 32px;
+  .navbar-logo-mark {
+    width: 36px;
+    height: 36px;
+
+    border-radius: 8px;
   }
 
-  .nav-actions {
-    gap: 12px;
+  .navbar-logo-text {
+    font-size: 22px;
+
+    letter-spacing: -0.5px;
   }
+
+  .navbar-actions {
+    gap: 2px;
+  }
+
+  .navbar-icon-btn,
+  .navbar-cart-btn {
+    width: 38px;
+    height: 38px;
+  }
+
+  .navbar-cart-count {
+    top: 0;
+    right: 0;
+
+    min-width: 17px;
+    height: 17px;
+
+    font-size: 8px;
+  }
+
+}
+
+
+/* ==========================================
+   SMALL MOBILE
+========================================== */
+
+@media (max-width: 400px) {
+
+  .navbar-container {
+    width: calc(100% - 20px);
+  }
+
+  .navbar-logo-text {
+    font-size: 20px;
+  }
+
+  .navbar-logo-mark {
+    width: 33px;
+    height: 33px;
+  }
+
+  .navbar-icon-btn,
+  .navbar-cart-btn {
+    width: 35px;
+    height: 35px;
+  }
+
 }

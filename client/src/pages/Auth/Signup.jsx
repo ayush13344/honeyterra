@@ -1,11 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-
-import {
-  ArrowRight,
-  Eye,
-  EyeOff,
-} from "lucide-react";
-
+import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 
 import "./Auth.css";
@@ -39,6 +33,7 @@ function Signup() {
   const [error, setError] =
     useState("");
 
+
   // ==========================================
   // SIGNUP
   // ==========================================
@@ -48,14 +43,19 @@ function Signup() {
 
     setError("");
 
+
     // ==========================================
     // CHECK PASSWORD
     // ==========================================
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError(
+        "Passwords do not match"
+      );
+
       return;
     }
+
 
     // ==========================================
     // PASSWORD LENGTH
@@ -65,22 +65,28 @@ function Signup() {
       setError(
         "Password must be at least 6 characters"
       );
+
       return;
     }
 
+
     setLoading(true);
 
+
     try {
+
       const result = await registerUser({
         name: name.trim(),
         email: email.trim(),
         password,
       });
 
+
       console.log(
         "Signup response:",
         result
       );
+
 
       // ==========================================
       // CHECK RESPONSE
@@ -90,96 +96,144 @@ function Signup() {
         setError(
           "Something went wrong. Please try again."
         );
+
         return;
       }
 
+
       // ==========================================
-      // IF BACKEND RETURNS TOKEN + USER
+      // BACKEND RETURNS TOKEN + USER
       // ==========================================
 
       if (
         result.token &&
         result.user
       ) {
-        // This will update:
-        // localStorage
-        // AuthContext
-        // Navbar
 
         login(
           result.user,
           result.token
         );
 
-        // Go directly to homepage
+        navigate("/", {
+          replace: true,
+        });
 
-        navigate("/");
         return;
       }
 
+
       // ==========================================
-      // IF BACKEND RETURNS ONLY USER
+      // BACKEND RETURNS ONLY USER
       // ==========================================
 
       if (result.user) {
+
         localStorage.setItem(
           "user",
           JSON.stringify(result.user)
         );
+
       }
 
+
       // ==========================================
-      // IF BACKEND DOES NOT RETURN TOKEN
+      // NO TOKEN
       // ==========================================
 
-      navigate("/login");
+      navigate("/login", {
+        replace: true,
+      });
+
 
     } catch (error) {
+
       console.error(
         "Signup Error:",
         error.response?.data ||
           error.message
       );
 
+
       const message =
         error.response?.data?.message ||
         error.response?.data?.error ||
         "Unable to create account";
 
+
       setError(message);
 
+
     } finally {
+
       setLoading(false);
+
     }
   };
 
+
+  // ==========================================
+  // RENDER
+  // ==========================================
+
   return (
-    <main className="auth-page">
+    <main className="auth-page signup-page">
 
       <div className="auth-container">
 
         <div className="auth-content">
 
-          <span className="auth-eyebrow">
-            JOIN HONEYTERRA
-          </span>
 
-          <h1>
-            Create your account.
-          </h1>
+          {/* ======================================
+              BRAND
+          ======================================= */}
 
-          <p className="auth-description">
-            Create an account to make your
-            HoneyTerra shopping experience easier.
-          </p>
+          <Link
+            to="/"
+            className="auth-brand"
+          >
+
+            <span className="auth-brand-mark">
+              <span />
+            </span>
+
+            <span className="auth-brand-name">
+              Honey<span>Terra</span>
+            </span>
+
+          </Link>
+
+
+          {/* ======================================
+              HEADING
+          ======================================= */}
+
+          <div className="auth-heading">
+
+            <h1>
+              Create your account
+            </h1>
+
+            <p>
+              Save your details and track
+              every order.
+            </p>
+
+          </div>
+
+
+          {/* ======================================
+              SIGNUP FORM
+          ======================================= */}
 
           <form
             className="auth-form"
             onSubmit={handleSubmit}
           >
 
+
             {/* ======================================
-                NAME
+                FULL NAME
             ======================================= */}
 
             <div className="form-group">
@@ -191,16 +245,19 @@ function Signup() {
               <input
                 id="name"
                 type="text"
-                placeholder="Enter your full name"
+                placeholder="Priya Sharma"
                 autoComplete="name"
                 value={name}
                 onChange={(event) =>
-                  setName(event.target.value)
+                  setName(
+                    event.target.value
+                  )
                 }
                 required
               />
 
             </div>
+
 
             {/* ======================================
                 EMAIL
@@ -209,22 +266,25 @@ function Signup() {
             <div className="form-group">
 
               <label htmlFor="signup-email">
-                Email address
+                Email
               </label>
 
               <input
                 id="signup-email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder="you@email.com"
                 autoComplete="email"
                 value={email}
                 onChange={(event) =>
-                  setEmail(event.target.value)
+                  setEmail(
+                    event.target.value
+                  )
                 }
                 required
               />
 
             </div>
+
 
             {/* ======================================
                 PASSWORD
@@ -245,7 +305,7 @@ function Signup() {
                       ? "text"
                       : "password"
                   }
-                  placeholder="Create a password"
+                  placeholder="At least 6 characters"
                   autoComplete="new-password"
                   value={password}
                   onChange={(event) =>
@@ -271,16 +331,19 @@ function Signup() {
                       : "Show password"
                   }
                 >
+
                   {showPassword ? (
-                    <EyeOff size={19} />
+                    <EyeOff size={20} />
                   ) : (
-                    <Eye size={19} />
+                    <Eye size={20} />
                   )}
+
                 </button>
 
               </div>
 
             </div>
+
 
             {/* ======================================
                 CONFIRM PASSWORD
@@ -327,32 +390,30 @@ function Signup() {
                       : "Show password"
                   }
                 >
+
                   {showConfirmPassword ? (
-                    <EyeOff size={19} />
+                    <EyeOff size={20} />
                   ) : (
-                    <Eye size={19} />
+                    <Eye size={20} />
                   )}
+
                 </button>
 
               </div>
 
             </div>
 
+
             {/* ======================================
                 ERROR
             ======================================= */}
 
             {error && (
-              <p
-                style={{
-                  color: "#c0392b",
-                  marginTop: "8px",
-                  fontSize: "14px",
-                }}
-              >
+              <p className="auth-error">
                 {error}
               </p>
             )}
+
 
             {/* ======================================
                 SUBMIT
@@ -365,16 +426,13 @@ function Signup() {
             >
 
               {loading
-                ? "Creating Account..."
-                : "Create Account"}
-
-              {!loading && (
-                <ArrowRight size={18} />
-              )}
+                ? "Creating account..."
+                : "Create account"}
 
             </button>
 
           </form>
+
 
           {/* ======================================
               LOGIN
@@ -391,6 +449,7 @@ function Signup() {
           </p>
 
         </div>
+
       </div>
 
     </main>

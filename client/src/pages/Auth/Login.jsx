@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 
 import "./Auth.css";
@@ -12,8 +12,10 @@ function Login() {
   const { login } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -28,10 +30,6 @@ function Login() {
     setLoading(true);
 
     try {
-      // ==========================================
-      // SEND LOGIN REQUEST
-      // ==========================================
-
       const result = await loginUser({
         email: email.trim(),
         password,
@@ -76,9 +74,6 @@ function Login() {
       // ==========================================
       // SAVE TOKEN
       // ==========================================
-      // IMPORTANT:
-      // Axios will read this token for all future
-      // protected requests.
 
       localStorage.setItem(
         "token",
@@ -140,6 +135,7 @@ function Login() {
       navigate("/", {
         replace: true,
       });
+
     } catch (error) {
       console.error(
         "Login Error:",
@@ -152,6 +148,7 @@ function Login() {
         "Invalid email or password";
 
       setError(message);
+
     } finally {
       setLoading(false);
     }
@@ -163,25 +160,46 @@ function Login() {
 
   return (
     <main className="auth-page">
+
       <div className="auth-container">
+
         <div className="auth-content">
 
           {/* ======================================
-              EYEBROW
+              BRAND
           ======================================= */}
 
-          <span className="auth-eyebrow">
-            WELCOME BACK
-          </span>
+          <Link
+            to="/"
+            className="auth-brand"
+          >
+            <span className="auth-brand-mark">
+              <span />
+            </span>
 
-          <h1>
-            Good to see you again.
-          </h1>
+            <span className="auth-brand-name">
+              Honey<span>Terra</span>
+            </span>
+          </Link>
 
-          <p className="auth-description">
-            Sign in to your HoneyTerra account and
-            continue your journey.
-          </p>
+
+          {/* ======================================
+              HEADING
+          ======================================= */}
+
+          <div className="auth-heading">
+
+            <h1>
+              Welcome back
+            </h1>
+
+            <p>
+              Sign in to track orders and
+              check out faster.
+            </p>
+
+          </div>
+
 
           {/* ======================================
               LOGIN FORM
@@ -197,14 +215,15 @@ function Login() {
             ======================================= */}
 
             <div className="form-group">
+
               <label htmlFor="email">
-                Email address
+                Email
               </label>
 
               <input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder="you@email.com"
                 autoComplete="email"
                 value={email}
                 onChange={(event) =>
@@ -212,7 +231,9 @@ function Login() {
                 }
                 required
               />
+
             </div>
+
 
             {/* ======================================
                 PASSWORD
@@ -220,18 +241,9 @@ function Login() {
 
             <div className="form-group">
 
-              <div className="form-label-row">
-                <label htmlFor="password">
-                  Password
-                </label>
-
-                <Link
-                  to="/forgot-password"
-                  className="forgot-password"
-                >
-                  Forgot password?
-                </Link>
-              </div>
+              <label htmlFor="password">
+                Password
+              </label>
 
               <div className="password-input">
 
@@ -242,7 +254,7 @@ function Login() {
                       ? "text"
                       : "password"
                   }
-                  placeholder="Enter your password"
+                  placeholder="••••••••"
                   autoComplete="current-password"
                   value={password}
                   onChange={(event) =>
@@ -268,30 +280,27 @@ function Login() {
                   }
                 >
                   {showPassword ? (
-                    <EyeOff size={19} />
+                    <EyeOff size={20} />
                   ) : (
-                    <Eye size={19} />
+                    <Eye size={20} />
                   )}
                 </button>
 
               </div>
+
             </div>
+
 
             {/* ======================================
                 ERROR
             ======================================= */}
 
             {error && (
-              <p
-                style={{
-                  color: "#c0392b",
-                  marginTop: "8px",
-                  fontSize: "14px",
-                }}
-              >
+              <p className="auth-error">
                 {error}
               </p>
             )}
+
 
             {/* ======================================
                 SUBMIT
@@ -302,38 +311,34 @@ function Login() {
               className="auth-submit"
               disabled={loading}
             >
-              {loading
-                ? "Signing In..."
-                : "Sign In"}
 
-              {!loading && (
-                <ArrowRight size={18} />
-              )}
+              {loading
+                ? "Signing in..."
+                : "Sign in"}
+
             </button>
+
           </form>
 
-          {/* ======================================
-              DIVIDER
-          ======================================= */}
-
-          <div className="auth-divider">
-            <span>or</span>
-          </div>
 
           {/* ======================================
               SIGNUP
           ======================================= */}
 
           <p className="auth-switch">
-            Don't have an account?{" "}
+
+            New to HoneyTerra?{" "}
 
             <Link to="/signup">
               Create an account
             </Link>
+
           </p>
 
         </div>
+
       </div>
+
     </main>
   );
 }
