@@ -30,41 +30,110 @@ const CartDrawer = () => {
     return null;
   }
 
+  // ==========================================
+  // TOTAL NUMBER OF PRODUCTS
+  // ==========================================
+
+  const cartItemCount = cartItems.reduce(
+    (total, item) => total + Number(item.quantity || 0),
+    0
+  );
+
+  // ==========================================
+  // FREE SHIPPING
+  // ==========================================
+
+  const FREE_SHIPPING_LIMIT = 1000;
+
+  const remainingForFreeShipping = Math.max(
+    FREE_SHIPPING_LIMIT - cartSubtotal,
+    0
+  );
+
+  const shippingProgress = Math.min(
+    (cartSubtotal / FREE_SHIPPING_LIMIT) * 100,
+    100
+  );
+
+  // ==========================================
+  // CHECKOUT
+  // ==========================================
+
   const handleCheckout = () => {
     closeCart();
     navigate("/checkout");
   };
 
+  // ==========================================
+  // CONTINUE SHOPPING
+  // ==========================================
+
+  const handleContinueShopping = () => {
+    closeCart();
+    navigate("/shop");
+  };
+
   return (
     <div className="cart-overlay">
-      {/* Background */}
+
+      {/* ==========================================
+          BACKGROUND
+      ========================================== */}
+
       <div
         className="cart-backdrop"
         onClick={closeCart}
       />
 
-      {/* Drawer */}
+      {/* ==========================================
+          CART DRAWER
+      ========================================== */}
+
       <aside className="cart-drawer">
 
-        {/* Header */}
+        {/* ==========================================
+            HEADER
+        ========================================== */}
+
         <div className="cart-header">
-          <h2>Your Cart</h2>
+
+          <div className="cart-header-title">
+
+            <h2>Your Cart</h2>
+
+            {cartItemCount > 0 && (
+              <span className="cart-count-label">
+                {cartItemCount}{" "}
+                {cartItemCount === 1 ? "item" : "items"}
+              </span>
+            )}
+
+          </div>
 
           <button
             className="cart-close-btn"
             onClick={closeCart}
             aria-label="Close cart"
           >
-            <X size={24} />
+            <X size={27} strokeWidth={2} />
           </button>
+
         </div>
 
-        {/* Cart Content */}
+
+        {/* ==========================================
+            EMPTY CART
+        ========================================== */}
+
         {cartItems.length === 0 ? (
+
           <div className="empty-cart">
 
             <div className="empty-cart-icon">
-              <ShoppingBag size={42} strokeWidth={1.5} />
+              <ShoppingBag
+                size={42}
+                strokeWidth={1.5}
+              />
             </div>
 
             <h3>Your cart is empty</h3>
@@ -84,58 +153,111 @@ const CartDrawer = () => {
             </Link>
 
           </div>
+
         ) : (
+
           <>
-            {/* Shipping message */}
+
+            {/* ==========================================
+                SHIPPING MESSAGE
+            ========================================== */}
+
             <div className="cart-shipping">
-              <p>
-                Add <strong>₹841</strong> more for free shipping
-              </p>
+
+              {remainingForFreeShipping > 0 ? (
+
+                <p>
+                  Add{" "}
+                  <strong>
+                    ₹
+                    {remainingForFreeShipping.toLocaleString(
+                      "en-IN"
+                    )}
+                  </strong>{" "}
+                  more for free shipping
+                </p>
+
+              ) : (
+
+                <p className="free-shipping-message">
+                  🎉 You unlocked{" "}
+                  <strong>free shipping!</strong>
+                </p>
+
+              )}
 
               <div className="shipping-progress">
-                <span />
+                <span
+                  style={{
+                    width: `${shippingProgress}%`,
+                  }}
+                />
               </div>
+
             </div>
 
-            {/* Products */}
+
+            {/* ==========================================
+                PRODUCTS
+            ========================================== */}
+
             <div className="cart-items">
 
               {cartItems.map((item) => (
+
                 <div
                   className="cart-item"
                   key={item.id}
                 >
 
-                  {/* Image */}
+                  {/* ==========================================
+                      PRODUCT IMAGE
+                  ========================================== */}
+
                   <div className="cart-item-image">
 
                     {item.image ? (
+
                       <img
                         src={item.image}
                         alt={item.name}
                       />
+
                     ) : (
+
                       <div className="cart-image-placeholder">
                         <ShoppingBag size={28} />
                       </div>
+
                     )}
 
                   </div>
 
-                  {/* Product information */}
+
+                  {/* ==========================================
+                      PRODUCT DETAILS
+                  ========================================== */}
+
                   <div className="cart-item-details">
 
                     <div className="cart-item-top">
 
                       <div>
-                        <h3>{item.name}</h3>
+
+                        <h3>
+                          {item.name}
+                        </h3>
 
                         {item.variant && (
                           <p className="cart-variant">
                             {item.variant}
                           </p>
                         )}
+
                       </div>
+
+
+                      {/* DELETE */}
 
                       <button
                         className="cart-delete-btn"
@@ -144,46 +266,69 @@ const CartDrawer = () => {
                         }
                         aria-label={`Remove ${item.name}`}
                       >
-                        <Trash2 size={18} />
+                        <Trash2
+                          size={18}
+                          strokeWidth={1.8}
+                        />
                       </button>
 
                     </div>
 
-                    {/* Quantity */}
+
+                    {/* ==========================================
+                        QUANTITY + PRICE
+                    ========================================== */}
+
                     <div className="cart-item-bottom">
 
-                      <div className="quantity-control">
+                      {/* Quantity */}
 
-                        <button
-                          onClick={() =>
-                            decreaseQuantity(item.id)
-                          }
-                          aria-label="Decrease quantity"
-                        >
-                          <Minus size={15} />
-                        </button>
+                     <div
+  className="quantity-control"
+  aria-label={`Quantity ${item.quantity}`}
+>
+  <button
+    className="quantity-btn"
+    onClick={() =>
+      decreaseQuantity(item.id)
+    }
+    aria-label="Decrease quantity"
+  >
+    <Minus
+      size={16}
+      strokeWidth={2.5}
+    />
+  </button>
 
-                        <span>
-                          {item.quantity}
-                        </span>
+  <span className="quantity-number">
+    {item.quantity}
+  </span>
 
-                        <button
-                          onClick={() =>
-                            increaseQuantity(item.id)
-                          }
-                          aria-label="Increase quantity"
-                        >
-                          <Plus size={15} />
-                        </button>
+  <button
+    className="quantity-btn"
+    onClick={() =>
+      increaseQuantity(item.id)
+    }
+    aria-label="Increase quantity"
+  >
+    <Plus
+      size={16}
+      strokeWidth={2.5}
+    />
+  </button>
+</div>
 
-                      </div>
+
+                      {/* Item Price */}
 
                       <strong className="cart-item-price">
+
                         ₹
                         {(
                           Number(item.price) *
-                          item.quantity
+                          Number(item.quantity)
                         ).toLocaleString("en-IN")}
+
                       </strong>
 
                     </div>
@@ -191,20 +336,37 @@ const CartDrawer = () => {
                   </div>
 
                 </div>
+
               ))}
 
             </div>
 
-            {/* Bottom */}
+
+            {/* ==========================================
+                FOOTER
+            ========================================== */}
+
             <div className="cart-footer">
 
+              {/* Subtotal */}
+
               <div className="cart-subtotal">
-                <span>Subtotal</span>
+
+                <span>
+                  Subtotal
+                </span>
 
                 <strong>
-                  ₹{cartSubtotal.toLocaleString("en-IN")}
+                  ₹
+                  {cartSubtotal.toLocaleString(
+                    "en-IN"
+                  )}
                 </strong>
+
               </div>
+
+
+              {/* Checkout */}
 
               <button
                 className="checkout-btn"
@@ -213,18 +375,24 @@ const CartDrawer = () => {
                 Checkout
               </button>
 
+
+              {/* Continue Shopping */}
+
               <button
                 className="continue-shopping-btn"
-                onClick={closeCart}
+                onClick={handleContinueShopping}
               >
                 Continue shopping
               </button>
 
             </div>
+
           </>
+
         )}
 
       </aside>
+
     </div>
   );
 };

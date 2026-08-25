@@ -23,10 +23,9 @@ function Footer() {
 
         <div className="footer-column">
           <h4>Shop</h4>
-          <Link to="/products">All Products</Link>
-          <Link to="/products/honeycomb-wrap">Honeycomb Wrap</Link>
-          <Link to="/products/gel-ash-tray">Gel Ash Tray</Link>
-          <Link to="/cart">Cart</Link>
+          <Link to="/shop">All Products</Link>
+          <Link to="/shop/wrap">Honeycomb Wrap</Link>
+          <Link to="/shop/ash-tray">Gel Ash Tray</Link>
         </div>
 
         <div className="footer-column">

@@ -1,4 +1,9 @@
+/* =========================================================
+   SHOP PAGE
+========================================================= */
+
 .shop-page {
+  min-height: 100vh;
   background: #fffdf8;
   color: #1d2722;
 }
@@ -8,60 +13,200 @@
   margin: 0 auto;
 }
 
-.section-eyebrow {
-  color: #14755f;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 1.5px;
+
+/* =========================================================
+   DARK SHOP HEADER
+========================================================= */
+
+.shop-header {
+  position: relative;
+  overflow: hidden;
+
+  padding: 88px 24px 82px;
+
+  background:
+    radial-gradient(
+      circle at 15% 20%,
+      rgba(40, 140, 110, 0.22),
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at 85% 80%,
+      rgba(117, 164, 58, 0.12),
+      transparent 32%
+    ),
+    linear-gradient(
+      135deg,
+      #071914 0%,
+      #0b211b 50%,
+      #091510 100%
+    );
+
+  color: white;
 }
 
-/* Hero */
 
-.shop-hero {
-  padding: 105px 24px 95px;
-  text-align: center;
+.shop-header::before {
+  content: "";
+
+  position: absolute;
+
+  width: 420px;
+  height: 420px;
+
+  top: -280px;
+  right: -100px;
+
+  border-radius: 50%;
+
+  background: rgba(129, 190, 70, 0.07);
+
+  pointer-events: none;
 }
 
-.shop-hero h1 {
-  margin: 18px 0 22px;
+
+.shop-header::after {
+  content: "";
+
+  position: absolute;
+
+  width: 330px;
+  height: 330px;
+
+  bottom: -250px;
+  left: -140px;
+
+  border-radius: 50%;
+
+  background: rgba(20, 117, 95, 0.12);
+
+  pointer-events: none;
+}
+
+
+.shop-header .shop-container {
+  position: relative;
+  z-index: 1;
+}
+
+
+.shop-header-eyebrow {
+  display: inline-flex;
+  align-items: center;
+
+  margin-bottom: 18px;
+
+  color: #9dcc55;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  letter-spacing: 2px;
+
+  text-transform: uppercase;
+}
+
+
+.shop-header-eyebrow::before {
+  content: "";
+
+  width: 30px;
+  height: 2px;
+
+  margin-right: 11px;
+
+  border-radius: 10px;
+
+  background: #9dcc55;
+}
+
+
+.shop-header h1 {
+  margin: 0;
+
+  max-width: 850px;
 
   font-family: "Playfair Display", Georgia, serif;
-  font-size: clamp(48px, 7vw, 72px);
-  line-height: 1.05;
-}
 
-.shop-hero p {
-  max-width: 600px;
-  margin: auto;
+  font-size: clamp(52px, 7vw, 82px);
 
-  color: #69736d;
-  font-size: 17px;
-  line-height: 1.7;
+  font-weight: 600;
+
+  line-height: 1;
+
+  letter-spacing: -1.5px;
 }
 
 
-/* Products */
+.shop-header p {
+  max-width: 650px;
+
+  margin: 24px 0 0;
+
+  color: rgba(255, 255, 255, 0.72);
+
+  font-size: 18px;
+
+  line-height: 1.75;
+}
+
+
+/* =========================================================
+   PRODUCTS SECTION
+========================================================= */
 
 .shop-products {
-  padding: 80px 0 110px;
+  padding: 78px 0 115px;
+
+  background: #fffdf8;
 }
+
+
+/* =========================================================
+   HEADING
+========================================================= */
 
 .shop-heading {
   display: flex;
+
   justify-content: space-between;
   align-items: flex-end;
 
-  margin-bottom: 45px;
+  gap: 40px;
+
+  margin-bottom: 28px;
 }
 
-.shop-heading h2,
-.shop-benefits-heading h2 {
-  margin-top: 12px;
+
+.section-eyebrow {
+  display: inline-block;
+
+  color: #14755f;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  letter-spacing: 1.5px;
+
+  text-transform: uppercase;
+}
+
+
+.shop-heading h2 {
+  margin: 12px 0 0;
 
   font-family: "Playfair Display", Georgia, serif;
-  font-size: 48px;
+
+  font-size: clamp(42px, 5vw, 55px);
+
+  font-weight: 600;
+
   line-height: 1.1;
+
+  color: #1d2722;
 }
+
 
 .shop-heading p {
   max-width: 340px;
@@ -69,48 +214,354 @@
   margin: 0;
 
   color: #69736d;
+
+  font-size: 16px;
+
   line-height: 1.7;
 }
 
+
+/* =========================================================
+   FILTERS
+========================================================= */
+
+.shop-filters {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  margin-top: 34px;
+
+  margin-bottom: 42px;
+
+  flex-wrap: wrap;
+}
+
+
+.shop-filter {
+  appearance: none;
+
+  padding: 12px 21px;
+
+  border: 1px solid #e2d9ca;
+
+  border-radius: 30px;
+
+  background: #fffdf8;
+
+  color: #52605a;
+
+  font-family: inherit;
+
+  font-size: 15px;
+
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+.shop-filter:hover {
+  border-color: #14755f;
+
+  color: #14755f;
+
+  transform: translateY(-1px);
+}
+
+
+.shop-filter.active {
+  border-color: #14755f;
+
+  background: #14755f;
+
+  color: white;
+
+  box-shadow:
+    0 8px 20px rgba(20, 117, 95, 0.15);
+}
+
+
+/* =========================================================
+   PRODUCT COUNT
+========================================================= */
+
+.shop-product-count {
+  margin-bottom: 25px;
+
+  color: #7a837e;
+
+  font-size: 15px;
+}
+
+
+/* =========================================================
+   PRODUCT GRID
+========================================================= */
+
+/*
+   Four cards on desktop, just like your reference image.
+*/
+
 .shop-product-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+
   gap: 28px;
 }
 
 
-/* Benefits */
+/*
+   Make ProductCard fit nicely inside
+   the four-column layout.
+*/
+
+.shop-product-grid .product-card {
+  min-width: 0;
+}
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.shop-loading {
+  min-height: 350px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 16px;
+
+  color: #69736d;
+}
+
+
+.shop-loading-spinner {
+  width: 38px;
+  height: 38px;
+
+  border: 3px solid #dce8e3;
+
+  border-top-color: #14755f;
+
+  border-radius: 50%;
+
+  animation: shop-spin 0.8s linear infinite;
+}
+
+
+@keyframes shop-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* =========================================================
+   EMPTY STATE
+========================================================= */
+
+.shop-empty {
+  min-height: 330px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 40px;
+
+  border: 1px dashed #dcd4c7;
+
+  border-radius: 24px;
+
+  background: #faf7f0;
+
+  text-align: center;
+}
+
+
+.shop-empty-icon {
+  width: 54px;
+  height: 54px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 18px;
+
+  border-radius: 50%;
+
+  background: #e8f2ee;
+
+  color: #14755f;
+}
+
+
+.shop-empty h3 {
+  margin: 0 0 8px;
+
+  font-family: "Playfair Display", Georgia, serif;
+
+  font-size: 27px;
+}
+
+
+.shop-empty p {
+  margin: 0 0 20px;
+
+  color: #69736d;
+}
+
+
+.shop-empty button,
+.shop-error button {
+  padding: 11px 20px;
+
+  border: none;
+
+  border-radius: 9px;
+
+  background: #14755f;
+
+  color: white;
+
+  font-family: inherit;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.shop-error {
+  padding: 50px 30px;
+
+  border-radius: 20px;
+
+  background: #faf4ee;
+
+  text-align: center;
+}
+
+
+.shop-error h3 {
+  margin-bottom: 8px;
+
+  font-family: "Playfair Display", Georgia, serif;
+
+  font-size: 28px;
+}
+
+
+.shop-error p {
+  margin-bottom: 20px;
+
+  color: #69736d;
+}
+
+
+/* =========================================================
+   BENEFITS
+========================================================= */
 
 .shop-benefits {
-  padding: 100px 0;
-  background: #f7f1e4;
+  padding: 105px 0;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f5f0e5 0%,
+      #faf5eb 100%
+    );
 }
 
+
 .shop-benefits-heading {
+  max-width: 700px;
+
+  margin: 0 auto 55px;
+
   text-align: center;
-  margin-bottom: 55px;
 }
+
+
+.shop-benefits-heading h2 {
+  margin: 14px 0 0;
+
+  font-family: "Playfair Display", Georgia, serif;
+
+  font-size: clamp(40px, 5vw, 54px);
+
+  font-weight: 600;
+
+  line-height: 1.1;
+}
+
 
 .shop-benefits-grid {
   display: grid;
+
   grid-template-columns: repeat(3, 1fr);
+
   gap: 24px;
 }
+
 
 .shop-benefit {
   padding: 35px;
 
   border: 1px solid #e5ddce;
+
   border-radius: 22px;
 
-  background: #fffdf8;
+  background: rgba(255, 253, 248, 0.9);
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
 }
+
+
+.shop-benefit:hover {
+  transform: translateY(-5px);
+
+  box-shadow:
+    0 18px 40px rgba(30, 45, 38, 0.08);
+}
+
 
 .shop-benefit-icon {
   width: 50px;
   height: 50px;
 
   display: flex;
+
   align-items: center;
   justify-content: center;
 
@@ -118,75 +569,150 @@
 
   border-radius: 50%;
 
-  background: #edf6f2;
+  background: #e6f1ec;
+
   color: #14755f;
 }
 
+
 .shop-benefit h3 {
-  margin-bottom: 10px;
+  margin: 0 0 10px;
 
   font-family: "Playfair Display", Georgia, serif;
+
   font-size: 24px;
 }
 
+
 .shop-benefit p {
+  margin: 0;
+
   color: #69736d;
+
   line-height: 1.7;
 }
 
 
-/* CTA */
+/* =========================================================
+   CTA
+========================================================= */
 
 .shop-cta {
-  padding: 100px 24px;
+  position: relative;
 
-  background: #0c5c4a;
+  overflow: hidden;
+
+  padding: 105px 24px;
+
+  background:
+    radial-gradient(
+      circle at 20% 30%,
+      rgba(69, 146, 117, 0.18),
+      transparent 35%
+    ),
+    linear-gradient(
+      135deg,
+      #083b30 0%,
+      #0c5c4a 55%,
+      #0a4539 100%
+    );
 
   color: white;
+
   text-align: center;
 }
 
-.shop-cta .section-eyebrow {
-  color: #e0a43a;
+
+.shop-cta > div {
+  position: relative;
+  z-index: 1;
 }
+
+
+.shop-cta-eyebrow {
+  color: #b6d968;
+}
+
 
 .shop-cta h2 {
   margin: 18px 0 30px;
 
   font-family: "Playfair Display", Georgia, serif;
+
   font-size: clamp(42px, 6vw, 60px);
+
   line-height: 1.1;
 }
+
 
 .shop-cta-button {
   display: inline-flex;
 
+  align-items: center;
+  justify-content: center;
+
   padding: 14px 25px;
 
-  border-radius: 9px;
+  border-radius: 10px;
 
-  background: white;
+  background: #fffdf8;
+
   color: #0c5c4a;
 
   font-weight: 700;
+
+  text-decoration: none;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 
-/* Responsive */
+.shop-cta-button:hover {
+  transform: translateY(-2px);
 
-@media (max-width: 800px) {
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1100px) {
+
+  .shop-product-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+}
+
+
+@media (max-width: 850px) {
+
+  .shop-header {
+    padding: 75px 24px;
+  }
+
 
   .shop-heading {
     display: block;
   }
 
+
   .shop-heading p {
-    margin-top: 20px;
+    margin-top: 18px;
   }
 
+
   .shop-product-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 22px;
   }
+
 
   .shop-benefits-grid {
     grid-template-columns: 1fr;
@@ -194,24 +720,74 @@
 
 }
 
-@media (max-width: 500px) {
+
+@media (max-width: 600px) {
 
   .shop-container {
     width: min(100% - 32px, 1180px);
   }
 
-  .shop-hero {
-    padding: 75px 20px;
+
+  .shop-header {
+    padding: 65px 20px;
   }
 
-  .shop-products,
-  .shop-benefits {
-    padding: 70px 0;
+
+  .shop-header h1 {
+    font-size: 50px;
+
+    letter-spacing: -1px;
   }
 
-  .shop-heading h2,
-  .shop-benefits-heading h2 {
+
+  .shop-header p {
+    font-size: 16px;
+  }
+
+
+  .shop-products {
+    padding: 65px 0 80px;
+  }
+
+
+  .shop-heading h2 {
     font-size: 38px;
+  }
+
+
+  .shop-filters {
+    gap: 8px;
+
+    margin-top: 28px;
+
+    margin-bottom: 30px;
+  }
+
+
+  .shop-filter {
+    padding: 10px 16px;
+
+    font-size: 14px;
+  }
+
+
+  .shop-product-grid {
+    grid-template-columns: 1fr;
+  }
+
+
+  .shop-benefits {
+    padding: 75px 0;
+  }
+
+
+  .shop-benefit {
+    padding: 28px;
+  }
+
+
+  .shop-cta {
+    padding: 75px 20px;
   }
 
 }

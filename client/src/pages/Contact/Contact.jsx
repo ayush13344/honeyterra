@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import "./Contact.css";
 
 function Contact() {
+
   const handleSubmit = (event) => {
     event.preventDefault();
 
@@ -18,42 +19,76 @@ function Contact() {
   return (
     <main className="contact-page">
 
-      {/* Hero */}
+
+      {/* =====================================================
+          HERO
+      ===================================================== */}
 
       <section className="contact-hero">
-        <span className="section-eyebrow">CONTACT HONEYTERRA</span>
 
-        <h1>We're here to help.</h1>
+        <div className="contact-hero-glow" />
 
-        <p>
-          Have a question about a product, an order, or anything
-          HoneyTerra? We'd love to hear from you.
-        </p>
+        <div className="contact-hero-content">
+
+          <span className="section-eyebrow">
+            CONTACT HONEYTERRA
+          </span>
+
+          <h1>
+            We're here
+            <br />
+            <span>to help.</span>
+          </h1>
+
+          <p>
+            Have a question about a product, an order, or anything
+            HoneyTerra? We'd love to hear from you.
+          </p>
+
+        </div>
+
       </section>
 
-      {/* Contact section */}
+
+      {/* =====================================================
+          CONTACT MAIN
+      ===================================================== */}
 
       <section className="contact-main section-container">
 
         <div className="contact-grid">
 
-          {/* Form */}
+
+          {/* =================================================
+              FORM
+          ================================================= */}
 
           <div className="contact-form-card">
 
             <div className="contact-form-header">
+
               <span className="section-eyebrow">
                 SEND US A MESSAGE
               </span>
 
-              <h2>How can we help?</h2>
+              <h2>
+                How can we help?
+              </h2>
+
+              <p>
+                Fill out the form and our team will get back to
+                you as soon as possible.
+              </p>
+
             </div>
+
 
             <form onSubmit={handleSubmit}>
 
               <div className="contact-form-row">
 
                 <div className="contact-field">
+
                   <label htmlFor="contact-name">
                     Name
                   </label>
@@ -64,9 +99,12 @@ function Contact() {
                     placeholder="Your name"
                     required
                   />
+
                 </div>
 
+
                 <div className="contact-field">
+
                   <label htmlFor="contact-email">
                     Email
                   </label>
@@ -77,11 +115,14 @@ function Contact() {
                     placeholder="you@example.com"
                     required
                   />
+
                 </div>
 
               </div>
 
+
               <div className="contact-field">
+
                 <label htmlFor="contact-subject">
                   Subject
                 </label>
@@ -92,9 +133,12 @@ function Contact() {
                   placeholder="What can we help you with?"
                   required
                 />
+
               </div>
 
+
               <div className="contact-field">
+
                 <label htmlFor="contact-message">
                   Message
                 </label>
@@ -105,30 +149,58 @@ function Contact() {
                   placeholder="Tell us a little more..."
                   required
                 />
+
               </div>
+
 
               <button
                 type="submit"
                 className="contact-submit"
               >
                 Send Message
-                <ArrowRight size={18} />
+                <ArrowRight size={17} />
               </button>
 
             </form>
+
           </div>
 
-          {/* Information */}
+
+          {/* =================================================
+              INFORMATION
+          ================================================= */}
 
           <div className="contact-info">
+
+
+            <div className="contact-info-intro">
+
+              <span className="section-eyebrow">
+                GET IN TOUCH
+              </span>
+
+              <h2>
+                Let's talk.
+              </h2>
+
+              <p>
+                Whether you have a question about our products,
+                an order or simply want to say hello, we're here.
+              </p>
+
+            </div>
+
+
+            {/* Email */}
 
             <div className="contact-info-card">
 
               <div className="contact-info-icon">
-                <Mail size={22} />
+                <Mail size={20} />
               </div>
 
               <div>
+
                 <h3>Email us</h3>
 
                 <p>
@@ -139,17 +211,22 @@ function Contact() {
                 <a href="mailto:hello@honeyterra.com">
                   hello@honeyterra.com
                 </a>
+
               </div>
 
             </div>
 
+
+            {/* Order */}
+
             <div className="contact-info-card">
 
               <div className="contact-info-icon">
-                <Package size={22} />
+                <Package size={20} />
               </div>
 
               <div>
+
                 <h3>Need help with an order?</h3>
 
                 <p>
@@ -159,19 +236,24 @@ function Contact() {
 
                 <Link to="/track-order">
                   Track your order
-                  <ArrowRight size={16} />
+                  <ArrowRight size={15} />
                 </Link>
+
               </div>
 
             </div>
 
+
+            {/* FAQ */}
+
             <div className="contact-info-card">
 
               <div className="contact-info-icon">
-                <MessageCircle size={22} />
+                <MessageCircle size={20} />
               </div>
 
               <div>
+
                 <h3>Frequently asked questions</h3>
 
                 <p>
@@ -181,8 +263,9 @@ function Contact() {
 
                 <Link to="/faqs">
                   Visit FAQs
-                  <ArrowRight size={16} />
+                  <ArrowRight size={15} />
                 </Link>
+
               </div>
 
             </div>
@@ -193,11 +276,17 @@ function Contact() {
 
       </section>
 
-      {/* Bottom CTA */}
+
+      {/* =====================================================
+          BOTTOM CTA
+      ===================================================== */}
 
       <section className="contact-bottom">
 
-        <div>
+        <div className="contact-bottom-glow" />
+
+        <div className="contact-bottom-content">
+
           <span className="section-eyebrow">
             HONEYTERRA
           </span>
@@ -205,13 +294,22 @@ function Contact() {
           <h2>
             Better products.
             <br />
-            Better everyday choices.
+            <span>Better everyday choices.</span>
           </h2>
 
-          <Link to="/shop" className="primary-button">
+          <p>
+            Explore our collection and discover thoughtfully
+            designed products for everyday life.
+          </p>
+
+          <Link
+            to="/shop"
+            className="primary-button"
+          >
             Explore Products
             <ArrowRight size={18} />
           </Link>
+
         </div>
 
       </section>

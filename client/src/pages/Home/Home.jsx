@@ -1,21 +1,16 @@
 import {
   ArrowRight,
   Check,
-  ChevronDown,
+  CircleDot,
   Expand,
   PackageCheck,
   Truck,
-  CircleDot,
   Home as HomeIcon,
   Coffee,
   Building2,
-  Gift,
+  BriefcaseBusiness,
   PartyPopper,
   HelpCircle,
-  Wine,
-  Smartphone,
-  Sparkles,
-  ShoppingBag,
 } from "lucide-react";
 
 import { useEffect, useState } from "react";
@@ -28,73 +23,46 @@ import ProductCard from "../../components/ProductCard/ProductCard.jsx";
 
 import "./Home.css";
 
-// ==========================================
-// USE CASES
-// ==========================================
-
 const useCases = [
   {
-    icon: Wine,
-    title: "Glass Bottles",
-    text: "Protect bottles during storage and shipping.",
+    icon: HomeIcon,
+    title: "Home",
+    description: "Compact packs for everyday personal use.",
+    category: "home",
   },
   {
-    icon: Sparkles,
-    title: "Ceramics",
-    text: "Cushion delicate ceramic pieces.",
+    icon: Coffee,
+    title: "Café",
+    description: "Practical packs for cafés and small spaces.",
+    category: "cafe",
   },
   {
-    icon: Smartphone,
-    title: "Electronics",
-    text: "Add a soft protective layer.",
+    icon: Building2,
+    title: "Hotel",
+    description: "Bulk-friendly solutions for hospitality.",
+    category: "hotel",
   },
   {
-    icon: Sparkles,
-    title: "Cosmetics",
-    text: "Keep beauty products protected.",
+    icon: BriefcaseBusiness,
+    title: "Office",
+    description: "Clean and practical products for workplaces.",
+    category: "office",
   },
   {
-    icon: Gift,
-    title: "Gifts",
-    text: "Wrap special products with care.",
+    icon: PartyPopper,
+    title: "Events",
+    description: "Useful packs when you need more quantity.",
+    category: "event",
   },
   {
-    icon: ShoppingBag,
-    title: "E-commerce & Retail",
-    text: "A practical packaging choice for orders.",
+    icon: HelpCircle,
+    title: "Other",
+    description: "Explore the complete HoneyTerra collection.",
+    category: "other",
   },
 ];
-
-// ==========================================
-// FIT CARDS
-// ==========================================
-
-const fitCards = [
-  {
-    image: "/images/lifestyle-home.jpg",
-    title: "At home",
-    text: "Fits easily on a coffee table, desk or balcony.",
-  },
-  {
-    image: "/images/lifestyle-tabletop.jpg",
-    title: "Any tabletop",
-    text: "Sturdy and stable — no tipping or rolling off the edge.",
-  },
-  {
-    image: "/images/lifestyle-business.jpg",
-    title: "Cafés, lounges & hotels",
-    text: "Pack sizes built for businesses that go through a lot of trays.",
-  },
-];
-
-// ==========================================
-// HOME
-// ==========================================
 
 function Home() {
-  // ==========================================
-  // PRODUCTS STATE
-  // ==========================================
 
   const [products, setProducts] = useState([]);
 
@@ -104,14 +72,18 @@ function Home() {
   const [productError, setProductError] =
     useState("");
 
-  // ==========================================
-  // FETCH PRODUCTS
-  // ==========================================
+  /* ==========================================
+     FETCH PRODUCTS
+  ========================================== */
 
   useEffect(() => {
+
     const fetchProducts = async () => {
+
       try {
+
         setLoadingProducts(true);
+
         setProductError("");
 
         const response = await axios.get(
@@ -119,15 +91,22 @@ function Home() {
         );
 
         if (response.data.success) {
-          setProducts(response.data.products || []);
+
+          setProducts(
+            response.data.products || []
+          );
+
         } else {
+
           setProducts([]);
 
           setProductError(
             "Unable to load products."
           );
         }
+
       } catch (error) {
+
         console.error(
           "Error fetching products:",
           error
@@ -138,17 +117,22 @@ function Home() {
         setProductError(
           "Unable to load products right now."
         );
+
       } finally {
+
         setLoadingProducts(false);
+
       }
+
     };
 
     fetchProducts();
+
   }, []);
 
-  // ==========================================
-  // FILTER PRODUCTS BY CATEGORY
-  // ==========================================
+  /* ==========================================
+     PRODUCT CATEGORIES
+  ========================================== */
 
   const gelProducts = products.filter(
     (product) =>
@@ -160,313 +144,207 @@ function Home() {
       product.category === "Honeycomb Wraps"
   );
 
-  return (
-    <div className="home-page">
+  /* ==========================================
+     USE CASE ROUTING
+  ========================================== */
 
-      {/* ==========================================
+  const getUseCaseLink = (category) => {
+
+    switch (category) {
+
+      case "home":
+        return "/products?use=home";
+
+      case "cafe":
+        return "/products?use=cafe";
+
+      case "hotel":
+        return "/products?use=hotel";
+
+      case "office":
+        return "/products?use=office";
+
+      case "event":
+        return "/products?use=event";
+
+      default:
+        return "/products";
+    }
+  };
+
+  return (
+
+    <main className="home-page">
+
+      {/* ======================================
           HERO
-      ========================================== */}
+      ====================================== */}
 
       <section className="hero">
 
-        <div className="hero-copy">
+        <div className="hero-overlay" />
 
-          <p className="eyebrow">
-            DESIGNED FOR REAL LIFE
+        <div className="hero-content">
+
+          <p className="hero-eyebrow">
+            HONEYTERRA
           </p>
 
           <h1>
-            Simple products.
+            Better products.
             <br />
-            Thoughtfully designed.
+            Better everyday.
           </h1>
 
           <p className="hero-text">
-            Discover practical everyday products made
-            to look good, work well, and fit naturally
-            into your space.
+            Thoughtfully designed products for
+            everyday spaces, businesses and
+            everything in between.
           </p>
 
           <div className="hero-actions">
 
             <Link
-              to="/products"
-              className="btn btn-primary"
+              to="/shop"
+              className="hero-btn hero-btn-primary"
             >
-              Shop now
-              <ArrowRight size={17} />
+              Shop HoneyTerra
+              <ArrowRight size={18} />
             </Link>
 
-            <Link
-              to="/about"
-              className="btn btn-secondary"
+            <a
+              href="#discover"
+              className="hero-btn hero-btn-secondary"
             >
-              Learn more
-            </Link>
+              Discover more
+            </a>
 
           </div>
 
         </div>
 
-        <div className="hero-image-wrap">
-
-          <img
-            src="/images/hero.jpg"
-            alt="HoneyTerra products"
-          />
-
-          <div className="hero-float-card">
-
-            <span className="hero-dot" />
-
-            Made for everyday use
-
-          </div>
-
+        <div className="hero-scroll">
+          <span />
+          Scroll to explore
         </div>
 
       </section>
 
 
-      {/* ==========================================
-          FIT / REAL LIFE
-      ========================================== */}
+      {/* ======================================
+          INTRODUCTION
+      ====================================== */}
 
-      <section className="section section-tight">
+      <section
+        className="intro-section"
+        id="discover"
+      >
 
-        <div className="section-heading center">
+        <div className="intro-content">
 
           <p className="eyebrow">
-            SEE IT IN REAL LIFE
+            WHAT IS HONEYTERRA?
           </p>
 
           <h2>
-            Designed for real life
-          </h2>
-
-        </div>
-
-        <div className="fit-grid">
-
-          {fitCards.map((card) => (
-
-            <article
-              className="fit-card"
-              key={card.title}
-            >
-
-              <div className="fit-image">
-
-                <img
-                  src={card.image}
-                  alt={card.title}
-                />
-
-              </div>
-
-              <div className="fit-content">
-
-                <h3>
-                  {card.title}
-                </h3>
-
-                <p>
-                  {card.text}
-                </p>
-
-              </div>
-
-            </article>
-
-          ))}
-
-        </div>
-
-      </section>
-
-
-      {/* ==========================================
-          PRODUCTS
-      ========================================== */}
-
-      <section className="section catalog-section">
-
-        <div className="section-heading center">
-
-          <p className="eyebrow">
-            OUR PRODUCTS
-          </p>
-
-          <h2>
-            Simple things, done better.
+            Everyday products,
+            <br />
+            thoughtfully made.
           </h2>
 
           <p>
-            Explore HoneyTerra's current collection.
+            HoneyTerra brings together practical
+            products designed to fit naturally
+            into the way people live and work.
           </p>
+
+          <p>
+            From everyday ash trays to protective
+            Honeycomb Wrap, every product is
+            designed around simplicity, usability
+            and real-world needs.
+          </p>
+
+          <Link
+            to="/about"
+            className="text-link"
+          >
+            Discover HoneyTerra
+            <ArrowRight size={17} />
+          </Link>
 
         </div>
 
+        <div className="intro-image">
 
-        {/* ==========================================
-            ERROR
-        ========================================== */}
+          <img
+            src="/images/honeyterra-intro.jpg"
+            alt="HoneyTerra products"
+          />
 
-        {productError && (
-          <div className="products-message">
-            {productError}
-          </div>
-        )}
+        </div>
 
-
-        {/* ==========================================
-            LOADING
-        ========================================== */}
-
-        {loadingProducts && (
-          <div className="products-message">
-            Loading products...
-          </div>
-        )}
+      </section>
 
 
-        {/* ==========================================
-            GEL ASH TRAYS
-        ========================================== */}
+      {/* ======================================
+          GEL ASH TRAY
+      ====================================== */}
 
-        {!loadingProducts && !productError && (
-          <div className="product-category-section">
+      <section className="product-story ash-tray-story">
 
-            <div className="product-category-heading">
+        <div className="story-image">
 
-              <div>
+          <img
+            src="/images/ash-tray.jpg"
+            alt="HoneyTerra Gel Ash Tray"
+          />
 
-                <p className="eyebrow">
-                  GEL ASH TRAYS
-                </p>
+        </div>
 
-                <h3>
-                  Designed for everyday use.
-                </h3>
+        <div className="story-content">
 
-              </div>
+          <p className="eyebrow">
+            GEL ASH TRAY
+          </p>
 
-              <Link
-                to="/products?category=Gel%20Ash%20Trays"
-                className="category-view-all"
-              >
-                View all
-                <ArrowRight size={17} />
-              </Link>
+          <h2>
+            Clean design.
+            <br />
+            Smarter everyday use.
+          </h2>
 
+          <p>
+            A practical ash tray designed to
+            keep your space cleaner while
+            fitting naturally into your home,
+            café or hospitality environment.
+          </p>
+
+          <div className="story-features">
+
+            <div>
+              <Check size={17} />
+              Easy to use
             </div>
 
-
-            {gelProducts.length === 0 ? (
-
-              <div className="products-message">
-
-                No Gel Ash Trays available.
-
-              </div>
-
-            ) : (
-
-              <div className="product-grid">
-
-                {gelProducts
-                  .slice(0, 4)
-                  .map((product) => (
-
-                    <ProductCard
-                      key={product._id}
-                      product={product}
-                    />
-
-                  ))}
-
-              </div>
-
-            )}
-
-          </div>
-        )}
-
-
-        {/* ==========================================
-            HONEYCOMB WRAPS
-        ========================================== */}
-
-        {!loadingProducts && !productError && (
-          <div className="product-category-section">
-
-            <div className="product-category-heading">
-
-              <div>
-
-                <p className="eyebrow">
-                  HONEYCOMB WRAPS
-                </p>
-
-                <h3>
-                  Protective packaging, rethought.
-                </h3>
-
-              </div>
-
-              <Link
-                to="/products?category=Honeycomb%20Wraps"
-                className="category-view-all"
-              >
-                View all
-                <ArrowRight size={17} />
-              </Link>
-
+            <div>
+              <Check size={17} />
+              Compact design
             </div>
 
-
-            {honeycombProducts.length === 0 ? (
-
-              <div className="products-message">
-
-                No Honeycomb Wraps available.
-
-              </div>
-
-            ) : (
-
-              <div className="product-grid">
-
-                {honeycombProducts
-                  .slice(0, 4)
-                  .map((product) => (
-
-                    <ProductCard
-                      key={product._id}
-                      product={product}
-                    />
-
-                  ))}
-
-              </div>
-
-            )}
+            <div>
+              <Check size={17} />
+              Built for everyday use
+            </div>
 
           </div>
-        )}
-
-
-        {/* ==========================================
-            VIEW ALL PRODUCTS
-        ========================================== */}
-
-        <div className="center">
 
           <Link
-            to="/products"
+            to="/shop/ash-tray"
             className="btn btn-primary"
           >
-            View all products
+            Explore Ash Trays
             <ArrowRight size={17} />
           </Link>
 
@@ -475,83 +353,123 @@ function Home() {
       </section>
 
 
-      {/* ==========================================
-          CHOICE SECTION
-      ========================================== */}
+      {/* ======================================
+          WHERE WILL YOU USE IT?
+      ====================================== */}
 
-      <section className="choice-section">
+      <section className="use-section">
 
-        <div className="choice-card">
+        <div className="section-heading center">
 
           <p className="eyebrow">
-            NOT SURE WHICH PACK?
+            FIND YOUR FIT
           </p>
 
           <h2>
             Where will you use it?
           </h2>
 
-          <div className="choice-grid">
+          <p>
+            Choose your space and we'll take
+            you to the products that make the
+            most sense for you.
+          </p>
 
-            {[
-              [HomeIcon, "Home"],
-              [Coffee, "Café"],
-              [Building2, "Hotel"],
-              [Building2, "Business"],
-              [PartyPopper, "Event"],
-              [HelpCircle, "Other"],
-            ].map(([Icon, label]) => (
+        </div>
 
-              <button
-                className="choice-item"
-                key={label}
+        <div className="use-grid">
+
+          {useCases.map(
+            ({
+              icon: Icon,
+              title,
+              description,
+              category,
+            }) => (
+
+              <Link
+                key={category}
+                to={getUseCaseLink(category)}
+                className="use-card"
               >
 
-                <span>
-                  <Icon size={21} />
+                <span className="use-icon">
+                  <Icon size={25} />
                 </span>
 
-                <small>
-                  {label}
-                </small>
+                <div>
 
-              </button>
+                  <h3>
+                    {title}
+                  </h3>
 
-            ))}
+                  <p>
+                    {description}
+                  </p>
 
-          </div>
+                </div>
+
+                <ArrowRight
+                  className="use-arrow"
+                  size={19}
+                />
+
+              </Link>
+
+            )
+          )}
 
         </div>
 
       </section>
 
 
-      {/* ==========================================
-          HONEYCOMB BANNER
-      ========================================== */}
+      {/* ======================================
+          HONEYCOMB WRAP
+      ====================================== */}
 
-      <section className="honeycomb-banner">
+      <section className="product-story honeycomb-story">
 
-        <div className="honeycomb-pattern" />
+        <div className="story-content">
 
-        <div className="banner-content">
-
-          <p className="eyebrow">
-            SUSTAINABLE PACKAGING
+          <p className="eyebrow gold">
+            HONEYCOMB WRAP
           </p>
 
           <h2>
-            Rethink your packaging.
+            Protection that
+            <br />
+            moves with you.
           </h2>
 
           <p>
-            Honeycomb Wrap expands from a compact
-            roll into protective cushioning, helping
-            replace unnecessary plastic packaging.
+            Honeycomb Wrap starts compact and
+            expands into a protective cushioning
+            layer for products that need a little
+            extra care.
           </p>
 
+          <div className="story-features">
+
+            <div>
+              <Check size={17} />
+              Compact to store
+            </div>
+
+            <div>
+              <Check size={17} />
+              Expands when needed
+            </div>
+
+            <div>
+              <Check size={17} />
+              Flexible protection
+            </div>
+
+          </div>
+
           <Link
-            to="/products/honeycomb-wrap"
+            to="/shop/wrap"
             className="btn btn-dark"
           >
             Explore Honeycomb Wrap
@@ -560,7 +478,7 @@ function Home() {
 
         </div>
 
-        <div className="banner-image">
+        <div className="story-image">
 
           <img
             src="/images/honeycomb-wrap.jpg"
@@ -572,20 +490,20 @@ function Home() {
       </section>
 
 
-      {/* ==========================================
-          HOW IT WORKS
-      ========================================== */}
+      {/* ======================================
+          HOW TO USE
+      ====================================== */}
 
-      <section className="section how-section">
+      <section className="how-section">
 
         <div className="section-heading center">
 
           <p className="eyebrow gold">
-            HOW IT WORKS
+            HOW TO USE IT
           </p>
 
           <h2>
-            How does Honeycomb Wrap work?
+            Simple from start to finish.
           </h2>
 
         </div>
@@ -595,107 +513,53 @@ function Home() {
           {[
             [
               CircleDot,
-              "01 — Roll",
-              "Starts as a compact, flat roll — easy to store and ship.",
+              "01",
+              "Pull",
+              "Take the wrap from its compact roll."
             ],
             [
               Expand,
-              "02 — Expand",
-              "Pull it open and the honeycomb structure springs into a cushioned pad.",
+              "02",
+              "Expand",
+              "Pull the material to open the honeycomb structure."
             ],
             [
               PackageCheck,
-              "03 — Wrap",
-              "Wrap it around glass, ceramics, electronics or gifts for protective cushioning.",
+              "03",
+              "Wrap",
+              "Wrap it around the product you want to protect."
             ],
             [
               Truck,
-              "04 — Pack",
-              "Box it up — plastic-free protection, ready to ship.",
+              "04",
+              "Protect",
+              "Place it inside your package and you're ready."
             ],
-          ].map(([Icon, title, text]) => (
+          ].map(
+            ([Icon, number, title, text]) => (
 
-            <article
-              className="step"
-              key={title}
-            >
-
-              <div className="step-icon">
-
-                <Icon size={27} />
-
-              </div>
-
-              <h3>
-                {title}
-              </h3>
-
-              <p>
-                {text}
-              </p>
-
-            </article>
-
-          ))}
-
-        </div>
-
-      </section>
-
-
-      {/* ==========================================
-          USE CASES
-      ========================================== */}
-
-      <section className="use-cases">
-
-        <div className="section-heading center">
-
-          <p className="eyebrow">
-            USE CASES
-          </p>
-
-          <h2>
-            What can you wrap?
-          </h2>
-
-        </div>
-
-        <div className="use-case-grid">
-
-          {useCases.map(
-            ({
-              icon: Icon,
-              title,
-              text,
-            }) => (
-
-              <button
-                className="use-case-card"
-                key={title}
+              <article
+                className="step"
+                key={number}
               >
 
-                <span className="use-case-icon">
+                <div className="step-number">
+                  {number}
+                </div>
 
-                  <Icon size={21} />
+                <div className="step-icon">
+                  <Icon size={25} />
+                </div>
 
-                </span>
+                <h3>
+                  {title}
+                </h3>
 
-                <span>
+                <p>
+                  {text}
+                </p>
 
-                  <strong>
-                    {title}
-                  </strong>
-
-                  <small>
-                    {text}
-                  </small>
-
-                </span>
-
-                <ChevronDown size={19} />
-
-              </button>
+              </article>
 
             )
           )}
@@ -705,77 +569,60 @@ function Home() {
       </section>
 
 
-      {/* ==========================================
-          BEFORE VS AFTER
-      ========================================== */}
+      {/* ======================================
+          WHERE CAN YOU USE HONEYCOMB WRAP?
+      ====================================== */}
 
-      <section className="before-after">
+      <section className="wrap-use-section">
 
         <div className="section-heading center">
 
           <p className="eyebrow">
-            BEFORE VS AFTER
+            WHERE TO USE IT
           </p>
 
           <h2>
-            Rethink your packaging
+            One wrap. Many possibilities.
           </h2>
 
         </div>
 
-        <div className="comparison">
+        <div className="wrap-use-grid">
 
-          <div className="comparison-card">
-
-            <div className="comparison-image">
-
-              <img
-                src="/images/traditional-packaging.jpg"
-                alt="Traditional packaging"
-              />
-
-            </div>
-
-            <div className="comparison-content">
-
-              <h3>
-                Traditional packaging
-              </h3>
-
-              <p>
-                Bulky, plastic-heavy and often
-                harder to store.
-              </p>
-
-            </div>
-
+          <div className="wrap-use-card">
+            <span>01</span>
+            <h3>Glass</h3>
+            <p>
+              Protect bottles and glassware
+              during storage or shipping.
+            </p>
           </div>
 
+          <div className="wrap-use-card">
+            <span>02</span>
+            <h3>Ceramics</h3>
+            <p>
+              Add cushioning around delicate
+              ceramic products.
+            </p>
+          </div>
 
-          <div className="comparison-card highlight">
+          <div className="wrap-use-card">
+            <span>03</span>
+            <h3>Electronics</h3>
+            <p>
+              Create a protective layer around
+              sensitive products.
+            </p>
+          </div>
 
-            <div className="comparison-image">
-
-              <img
-                src="/images/honeycomb-wrap.jpg"
-                alt="HoneyTerra Honeycomb Wrap"
-              />
-
-            </div>
-
-            <div className="comparison-content">
-
-              <h3>
-                HoneyTerra Honeycomb Wrap
-              </h3>
-
-              <p>
-                Compact, flexible cushioning designed
-                for modern packaging.
-              </p>
-
-            </div>
-
+          <div className="wrap-use-card">
+            <span>04</span>
+            <h3>Gifts</h3>
+            <p>
+              Wrap special products before
+              placing them inside a box.
+            </p>
           </div>
 
         </div>
@@ -783,35 +630,220 @@ function Home() {
       </section>
 
 
-      {/* ==========================================
-          CTA
-      ========================================== */}
+      {/* =====================================================
+    PRODUCT DISCOVERY
+===================================================== */}
 
-      <section className="cta-section">
+<section className="product-discovery">
+
+  {/* SECTION INTRO */}
+
+  <div className="product-discovery-header">
+
+    <div>
+
+      <p className="eyebrow">
+        THE HONEYTERRA COLLECTION
+      </p>
+
+      <h2>
+        Simple products.
+        <br />
+        Thoughtfully made.
+      </h2>
+
+    </div>
+
+    <div className="product-discovery-copy">
+
+      <p>
+        Designed for homes, cafés, offices and everyday spaces.
+        Choose the product that fits the way you live and work.
+      </p>
+
+      <Link
+        to="/products"
+        className="text-link"
+      >
+        Explore entire collection
+        <ArrowRight size={17} />
+      </Link>
+
+    </div>
+
+  </div>
+
+
+  {/* =================================================
+      FEATURED ASH TRAYS
+  ================================================= */}
+
+  {gelProducts.length > 0 && (
+
+    <div className="featured-product-block">
+
+      <div className="featured-product-info">
 
         <div>
 
           <p className="eyebrow">
-            READY TO EXPLORE?
+            GEL ASH TRAYS
           </p>
 
-          <h2>
-            Find something made for your everyday.
-          </h2>
+          <h3>
+            Everyday,
+            <br />
+            without the mess.
+          </h3>
+
+          <p className="featured-product-description">
+            Clean, practical ash trays designed for everyday
+            use at home, in cafés, offices and outdoor spaces.
+          </p>
 
         </div>
 
         <Link
-          to="/products"
-          className="btn btn-primary"
+          to="/products?category=Gel%20Ash%20Trays"
+          className="btn btn-secondary"
         >
-          Shop HoneyTerra
+          Explore ash trays
           <ArrowRight size={17} />
         </Link>
 
-      </section>
+      </div>
+
+
+      <div className="featured-product-grid">
+
+        {gelProducts
+          .slice(0, 3)
+          .map((product) => (
+
+            <ProductCard
+              key={product._id}
+              product={product}
+            />
+
+          ))}
+
+      </div>
 
     </div>
+
+  )}
+
+
+  {/* =================================================
+      HONEYCOMB WRAPS
+  ================================================= */}
+
+  {honeycombProducts.length > 0 && (
+
+    <div className="featured-product-block honeycomb-block">
+
+      <div className="featured-product-info">
+
+        <div>
+
+          <p className="eyebrow gold">
+            HONEYCOMB WRAPS
+          </p>
+
+          <h3>
+            Protect better.
+            <br />
+            Pack smarter.
+          </h3>
+
+          <p className="featured-product-description">
+            Flexible honeycomb protection designed to keep
+            your products safe while reducing unnecessary waste.
+          </p>
+
+        </div>
+
+        <Link
+          to="/products?category=Honeycomb%20Wraps"
+          className="btn btn-secondary"
+        >
+          Explore honeycomb wraps
+          <ArrowRight size={17} />
+        </Link>
+
+      </div>
+
+
+      <div className="featured-product-grid">
+
+        {honeycombProducts
+          .slice(0, 3)
+          .map((product) => (
+
+            <ProductCard
+              key={product._id}
+              product={product}
+            />
+
+          ))}
+
+      </div>
+
+    </div>
+
+  )}  
+
+</section>
+
+
+{/* =====================================================
+    FINAL CTA
+===================================================== */}
+
+<section className="final-cta">
+
+  <div className="final-cta-content">
+
+    <p className="eyebrow">
+      READY WHEN YOU ARE
+    </p>
+
+    <h2>
+      Find the right
+      <br />
+      HoneyTerra product.
+    </h2>
+
+    <p>
+      From everyday home use to larger commercial needs,
+      discover products designed to make things simpler.
+    </p>
+
+  </div>
+
+
+  <div className="final-cta-actions">
+
+    <Link
+      to="/products"
+      className="btn btn-primary"
+    >
+      Shop the collection
+      <ArrowRight size={17} />
+    </Link>
+
+    <Link
+      to="/contact"
+      className="btn btn-outline"
+    >
+      Talk to us
+    </Link>
+
+  </div>
+
+</section>
+
+    </main>
   );
 }
 
