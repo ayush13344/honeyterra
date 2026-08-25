@@ -1,92 +1,50 @@
-import { Link, useNavigate } from "react-router-dom";
+import {
+  X,
+  Plus,
+  Minus,
+  Trash2,
+  ShoppingBag,
+} from "lucide-react";
 
 import {
-  Minus,
-  Plus,
-  ShoppingBag,
-  Trash2,
-  X,
-  ArrowRight,
-} from "lucide-react";
+  useNavigate,
+} from "react-router-dom";
 
 import { useCart } from "../../context/CartContext";
 
 import "./CartDrawer.css";
 
-const CartDrawer = () => {
-  const navigate = useNavigate();
-
+function CartDrawer() {
   const {
-    cartItems,
-    cartSubtotal,
-    isCartOpen,
+    cart,
+    cartOpen,
     closeCart,
-    increaseQuantity,
-    decreaseQuantity,
+    updateQuantity,
     removeFromCart,
   } = useCart();
 
-  if (!isCartOpen) {
+  const navigate = useNavigate();
+
+  if (!cartOpen) {
     return null;
   }
 
-  // ==========================================
-  // TOTAL NUMBER OF PRODUCTS
-  // ==========================================
-
-  const cartItemCount = cartItems.reduce(
-    (total, item) => total + Number(item.quantity || 0),
-    0
-  );
-
-  // ==========================================
-  // FREE SHIPPING
-  // ==========================================
-
-  const FREE_SHIPPING_LIMIT = 1000;
-
-  const remainingForFreeShipping = Math.max(
-    FREE_SHIPPING_LIMIT - cartSubtotal,
-    0
-  );
-
-  const shippingProgress = Math.min(
-    (cartSubtotal / FREE_SHIPPING_LIMIT) * 100,
-    100
-  );
-
-  // ==========================================
-  // CHECKOUT
-  // ==========================================
-
-  const handleCheckout = () => {
-    closeCart();
-    navigate("/checkout");
-  };
-
-  // ==========================================
-  // CONTINUE SHOPPING
-  // ==========================================
-
-  const handleContinueShopping = () => {
-    closeCart();
-    navigate("/shop");
-  };
+  const items = cart?.items || [];
 
   return (
     <div className="cart-overlay">
 
       {/* ==========================================
-          BACKGROUND
+          BACKDROP
       ========================================== */}
 
       <div
         className="cart-backdrop"
         onClick={closeCart}
-      />
+      ></div>
 
       {/* ==========================================
-          CART DRAWER
+          DRAWER
       ========================================== */}
 
       <aside className="cart-drawer">
@@ -95,299 +53,275 @@ const CartDrawer = () => {
             HEADER
         ========================================== */}
 
-        <div className="cart-header">
-
-          <div className="cart-header-title">
+        <div className="cart-drawer-header">
+          <div>
+            <span className="cart-eyebrow">
+              HONEYTERRA
+            </span>
 
             <h2>Your Cart</h2>
-
-            {cartItemCount > 0 && (
-              <span className="cart-count-label">
-                {cartItemCount}{" "}
-                {cartItemCount === 1 ? "item" : "items"}
-              </span>
-            )}
-
           </div>
 
           <button
-            className="cart-close-btn"
+            className="cart-close"
             onClick={closeCart}
             aria-label="Close cart"
           >
-            <X size={27} strokeWidth={2} />
+            <X size={22} />
           </button>
-
         </div>
 
-
         {/* ==========================================
-            EMPTY CART
+            FREE SHIPPING
         ========================================== */}
 
-        {cartItems.length === 0 ? (
+        {items.length > 0 && (
+          <div className="cart-shipping">
 
-          <div className="empty-cart">
-
-            <div className="empty-cart-icon">
-              <ShoppingBag
-                size={42}
-                strokeWidth={1.5}
-              />
-            </div>
-
-            <h3>Your cart is empty</h3>
-
-            <p>
-              Looks like you haven't added anything
-              to your cart yet.
-            </p>
-
-            <Link
-              to="/shop"
-              className="start-shopping-btn"
-              onClick={closeCart}
-            >
-              Start Shopping
-              <ArrowRight size={18} />
-            </Link>
-
-          </div>
-
-        ) : (
-
-          <>
-
-            {/* ==========================================
-                SHIPPING MESSAGE
-            ========================================== */}
-
-            <div className="cart-shipping">
-
-              {remainingForFreeShipping > 0 ? (
-
-                <p>
+            <div className="cart-shipping-text">
+              {cart.totalAmount >= 1000 ? (
+                <span>
+                  🎉 You unlocked free shipping!
+                </span>
+              ) : (
+                <span>
                   Add{" "}
                   <strong>
-                    ₹
-                    {remainingForFreeShipping.toLocaleString(
-                      "en-IN"
-                    )}
+                    ₹{1000 - cart.totalAmount}
                   </strong>{" "}
                   more for free shipping
-                </p>
-
-              ) : (
-
-                <p className="free-shipping-message">
-                  🎉 You unlocked{" "}
-                  <strong>free shipping!</strong>
-                </p>
-
+                </span>
               )}
+            </div>
 
-              <div className="shipping-progress">
-                <span
-                  style={{
-                    width: `${shippingProgress}%`,
-                  }}
-                />
+            <div className="cart-progress">
+              <div
+                className="cart-progress-bar"
+                style={{
+                  width: `${Math.min(
+                    (cart.totalAmount / 1000) * 100,
+                    100
+                  )}%`,
+                }}
+              ></div>
+            </div>
+
+          </div>
+        )}
+
+        {/* ==========================================
+            CART CONTENT
+        ========================================== */}
+
+        <div className="cart-drawer-content">
+
+          {items.length === 0 ? (
+
+            <div className="cart-empty">
+
+              <div className="cart-empty-icon">
+                <ShoppingBag size={28} />
               </div>
+
+              <h3>
+                Your cart is empty
+              </h3>
+
+              <p>
+                Looks like you haven't added
+                anything yet.
+              </p>
+
+              <button
+                onClick={closeCart}
+                className="cart-shop-button"
+              >
+                Continue Shopping
+              </button>
 
             </div>
 
-
-            {/* ==========================================
-                PRODUCTS
-            ========================================== */}
+          ) : (
 
             <div className="cart-items">
 
-              {cartItems.map((item) => (
+              {items.map((item) =>  {
 
-                <div
-                  className="cart-item"
-                  key={item.id}
-                >
+                const product = item.product;
 
-                  {/* ==========================================
-                      PRODUCT IMAGE
-                  ========================================== */}
+                if (!product) {
+                  return null;
+                }
 
-                  <div className="cart-item-image">
+                const image =
+                  product.images?.[0];
 
-                    {item.image ? (
+                return (
+                  <div
+                    className="cart-item"
+                    key={product._id}
+                  >
 
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                      />
+                    {/* IMAGE */}
 
-                    ) : (
+                    <div className="cart-item-image">
 
-                      <div className="cart-image-placeholder">
-                        <ShoppingBag size={28} />
-                      </div>
-
-                    )}
-
-                  </div>
-
-
-                  {/* ==========================================
-                      PRODUCT DETAILS
-                  ========================================== */}
-
-                  <div className="cart-item-details">
-
-                    <div className="cart-item-top">
-
-                      <div>
-
-                        <h3>
-                          {item.name}
-                        </h3>
-
-                        {item.variant && (
-                          <p className="cart-variant">
-                            {item.variant}
-                          </p>
-                        )}
-
-                      </div>
-
-
-                      {/* DELETE */}
-
-                      <button
-                        className="cart-delete-btn"
-                        onClick={() =>
-                          removeFromCart(item.id)
-                        }
-                        aria-label={`Remove ${item.name}`}
-                      >
-                        <Trash2
-                          size={18}
-                          strokeWidth={1.8}
+                      {image ? (
+                        <img
+                          src={image}
+                          alt={product.name}
                         />
-                      </button>
+                      ) : (
+                        <div>
+                          No Image
+                        </div>
+                      )}
 
                     </div>
 
+                    {/* DETAILS */}
 
-                    {/* ==========================================
-                        QUANTITY + PRICE
-                    ========================================== */}
+                    <div className="cart-item-details">
 
-                    <div className="cart-item-bottom">
+                      <div className="cart-item-top">
 
-                      {/* Quantity */}
+                        <div>
 
-                     <div
-  className="quantity-control"
-  aria-label={`Quantity ${item.quantity}`}
->
-  <button
-    className="quantity-btn"
-    onClick={() =>
-      decreaseQuantity(item.id)
-    }
-    aria-label="Decrease quantity"
-  >
-    <Minus
-      size={16}
-      strokeWidth={2.5}
-    />
-  </button>
+                          <h3>
+                            {product.name}
+                          </h3>
 
-  <span className="quantity-number">
-    {item.quantity}
-  </span>
+                          {product.category && (
+                            <span>
+                              {product.category}
+                            </span>
+                          )}
 
-  <button
-    className="quantity-btn"
-    onClick={() =>
-      increaseQuantity(item.id)
-    }
-    aria-label="Increase quantity"
-  >
-    <Plus
-      size={16}
-      strokeWidth={2.5}
-    />
-  </button>
-</div>
+                        </div>
 
+                        <button
+                          className="cart-delete"
+                          onClick={() =>
+                            removeFromCart(
+                              product._id
+                            )
+                          }
+                          aria-label="Remove product"
+                        >
+                          <Trash2 size={17} />
+                        </button>
 
-                      {/* Item Price */}
+                      </div>
 
-                      <strong className="cart-item-price">
+                      {/* PRICE */}
 
-                        ₹
-                        {(
-                          Number(item.price) *
-                          Number(item.quantity)
-                        ).toLocaleString("en-IN")}
+                      <div className="cart-item-price">
+                        ₹{item.price}
+                      </div>
 
-                      </strong>
+                      {/* QUANTITY */}
+
+                      <div className="cart-item-bottom">
+
+                        <div className="cart-quantity">
+
+                          <button
+                            onClick={() =>
+                              updateQuantity(
+                                product._id,
+                                item.quantity - 1
+                              )
+                            }
+                            disabled={
+                              item.quantity <= 1
+                            }
+                          >
+                            <Minus size={14} />
+                          </button>
+
+                          <span>
+                            {item.quantity}
+                          </span>
+
+                          <button
+                            onClick={() =>
+                              updateQuantity(
+                                product._id,
+                                item.quantity + 1
+                              )
+                            }
+                            disabled={
+                              item.quantity >=
+                              product.stock
+                            }
+                          >
+                            <Plus size={14} />
+                          </button>
+
+                        </div>
+
+                        <strong>
+                          ₹
+                          {(
+                            item.price *
+                            item.quantity
+                          ).toLocaleString("en-IN")}
+                        </strong>
+
+                      </div>
 
                     </div>
 
                   </div>
+                );
+              })}
 
-                </div>
+            </div>
+          )}
 
-              ))}
+        </div>
+
+        {/* ==========================================
+            FOOTER
+        ========================================== */}
+
+        {items.length > 0 && (
+
+          <div className="cart-drawer-footer">
+
+            <div className="cart-subtotal">
+
+              <span>
+                Subtotal
+              </span>
+
+              <strong>
+                ₹
+                {cart.totalAmount?.toLocaleString(
+                  "en-IN"
+                )}
+              </strong>
 
             </div>
 
+            <button
+              className="cart-checkout-button"
+              onClick={() => {
+                closeCart();
+                navigate("/checkout");
+              }}
+            >
+              Checkout
+            </button>
 
-            {/* ==========================================
-                FOOTER
-            ========================================== */}
+            <button
+              className="cart-continue"
+              onClick={closeCart}
+            >
+              Continue shopping
+            </button>
 
-            <div className="cart-footer">
-
-              {/* Subtotal */}
-
-              <div className="cart-subtotal">
-
-                <span>
-                  Subtotal
-                </span>
-
-                <strong>
-                  ₹
-                  {cartSubtotal.toLocaleString(
-                    "en-IN"
-                  )}
-                </strong>
-
-              </div>
-
-
-              {/* Checkout */}
-
-              <button
-                className="checkout-btn"
-                onClick={handleCheckout}
-              >
-                Checkout
-              </button>
-
-
-              {/* Continue Shopping */}
-
-              <button
-                className="continue-shopping-btn"
-                onClick={handleContinueShopping}
-              >
-                Continue shopping
-              </button>
-
-            </div>
-
-          </>
+          </div>
 
         )}
 
@@ -395,6 +329,6 @@ const CartDrawer = () => {
 
     </div>
   );
-};
+}
 
 export default CartDrawer;

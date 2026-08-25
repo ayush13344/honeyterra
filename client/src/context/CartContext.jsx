@@ -1,138 +1,263 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import axios from "axios";
 
-const CartContext = createContext(null);
+const CartContext = createContext();
 
-export function CartProvider({ children }) {
-  const [cartItems, setCartItems] = useState(() => {
-    try {
-      const savedCart = localStorage.getItem("honeyterra-cart");
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:3000";
 
-      return savedCart ? JSON.parse(savedCart) : [];
-    } catch (error) {
-      console.error("Failed to load cart:", error);
-      return [];
-    }
+export const CartProvider = ({ children }) => {
+  const [cart, setCart] = useState({
+    items: [],
+    totalItems: 0,
+    totalAmount: 0,
   });
 
-  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Save cart whenever cart changes
-  useEffect(() => {
-    localStorage.setItem(
-      "honeyterra-cart",
-      JSON.stringify(cartItems)
-    );
-  }, [cartItems]);
+  // ==========================================
+  // GET TOKEN
+  // ==========================================
 
-  // Add product to cart
-  const addToCart = (product) => {
-    setCartItems((currentItems) => {
-      const existingProduct = currentItems.find(
-        (item) => item.id === product.id
+  const getToken = () => {
+    return localStorage.getItem("token");
+  };
+
+  // ==========================================
+  // AXIOS CONFIG
+  // ==========================================
+
+  const getConfig = () => {
+    const token = getToken();
+
+    return {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+  };
+
+  // ==========================================
+  // FETCH CART
+  // ==========================================
+
+  const fetchCart = async () => {
+    const token = getToken();
+
+    if (!token) {
+      setCart({
+        items: [],
+        totalItems: 0,
+        totalAmount: 0,
+      });
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await axios.get(
+        `${API_URL}/api/cart`,
+        getConfig()
       );
 
-      if (existingProduct) {
-        return currentItems.map((item) =>
-          item.id === product.id
-            ? {
-                ...item,
-                quantity: item.quantity + (product.quantity || 1),
-              }
-            : item
-        );
+      if (response.data.success) {
+        setCart(response.data.cart);
+      }
+    } catch (error) {
+      console.error(
+        "Fetch Cart Error:",
+        error.response?.data || error.message
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ==========================================
+  // LOAD CART WHEN APP STARTS
+  // ==========================================
+
+  useEffect(() => {
+    fetchCart();
+  }, []);
+
+  // ==========================================
+  // ADD TO CART
+  // ==========================================
+
+  const addToCart = async (productId, quantity = 1) => {
+    try {
+      const token = getToken();
+
+      if (!token) {
+        throw new Error("Please login to add products to cart");
       }
 
-      return [
-        ...currentItems,
+      setLoading(true);
+
+      const response = await axios.post(
+        `${API_URL}/api/cart/add`,
         {
-          ...product,
-          quantity: product.quantity || 1,
+          productId,
+          quantity,
         },
-      ];
-    });
+        getConfig()
+      );
 
-    setIsCartOpen(true);
+      if (response.data.success) {
+        setCart(response.data.cart);
+
+        // Open drawer automatically
+        setCartOpen(true);
+
+        return {
+          success: true,
+          message: response.data.message,
+        };
+      }
+
+      return {
+        success: false,
+        message: response.data.message,
+      };
+    } catch (error) {
+      console.error(
+        "Add To Cart Error:",
+        error.response?.data || error.message
+      );
+
+      return {
+        success: false,
+        message:
+          error.response?.data?.message ||
+          error.message ||
+          "Unable to add product to cart",
+      };
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Increase quantity
-  const increaseQuantity = (id) => {
-    setCartItems((items) =>
-      items.map((item) =>
-        item.id === id
-          ? {
-              ...item,
-              quantity: item.quantity + 1,
-            }
-          : item
-      )
-    );
+  // ==========================================
+  // UPDATE QUANTITY
+  // ==========================================
+
+  const updateQuantity = async (productId, quantity) => {
+    if (quantity < 1) {
+      return;
+    }
+
+    try {
+      const response = await axios.put(
+        `${API_URL}/api/cart/update/${productId}`,
+        {
+          quantity,
+        },
+        getConfig()
+      );
+
+      if (response.data.success) {
+        setCart(response.data.cart);
+      }
+    } catch (error) {
+      console.error(
+        "Update Cart Error:",
+        error.response?.data || error.message
+      );
+
+      alert(
+        error.response?.data?.message ||
+          "Unable to update cart"
+      );
+    }
   };
 
-  // Decrease quantity
-  const decreaseQuantity = (id) => {
-    setCartItems((items) =>
-      items
-        .map((item) =>
-          item.id === id
-            ? {
-                ...item,
-                quantity: item.quantity - 1,
-              }
-            : item
-        )
-        .filter((item) => item.quantity > 0)
-    );
+  // ==========================================
+  // REMOVE ITEM
+  // ==========================================
+
+  const removeFromCart = async (productId) => {
+    try {
+      const response = await axios.delete(
+        `${API_URL}/api/cart/remove/${productId}`,
+        getConfig()
+      );
+
+      if (response.data.success) {
+        setCart(response.data.cart);
+      }
+    } catch (error) {
+      console.error(
+        "Remove Cart Error:",
+        error.response?.data || error.message
+      );
+    }
   };
 
-  // Remove product
-  const removeFromCart = (id) => {
-    setCartItems((items) =>
-      items.filter((item) => item.id !== id)
-    );
+  // ==========================================
+  // CLEAR CART
+  // ==========================================
+
+  const clearCart = async () => {
+    try {
+      const response = await axios.delete(
+        `${API_URL}/api/cart/clear`,
+        getConfig()
+      );
+
+      if (response.data.success) {
+        setCart(response.data.cart);
+      }
+    } catch (error) {
+      console.error(
+        "Clear Cart Error:",
+        error.response?.data || error.message
+      );
+    }
   };
 
-  // Clear cart
-  const clearCart = () => {
-    setCartItems([]);
+  // ==========================================
+  // OPEN / CLOSE DRAWER
+  // ==========================================
+
+  const openCart = () => {
+    setCartOpen(true);
   };
 
-  // Number of products
-  const cartCount = cartItems.reduce(
-    (total, item) => total + item.quantity,
-    0
-  );
-
-  // Cart subtotal
-  const cartSubtotal = cartItems.reduce(
-    (total, item) =>
-      total + Number(item.price) * item.quantity,
-    0
-  );
+  const closeCart = () => {
+    setCartOpen(false);
+  };
 
   return (
     <CartContext.Provider
       value={{
-        cartItems,
-        cartCount,
-        cartSubtotal,
-        isCartOpen,
+        cart,
+        cartOpen,
+        loading,
 
         addToCart,
-        increaseQuantity,
-        decreaseQuantity,
+        updateQuantity,
         removeFromCart,
         clearCart,
 
-        openCart: () => setIsCartOpen(true),
-        closeCart: () => setIsCartOpen(false),
+        fetchCart,
+
+        openCart,
+        closeCart,
       }}
     >
       {children}
     </CartContext.Provider>
   );
-}
+};
 
-export function useCart() {
+// ==========================================
+// CUSTOM HOOK
+// ==========================================
+
+export const useCart = () => {
   const context = useContext(CartContext);
 
   if (!context) {
@@ -142,4 +267,4 @@ export function useCart() {
   }
 
   return context;
-}
+};

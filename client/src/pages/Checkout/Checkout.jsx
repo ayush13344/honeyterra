@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -12,16 +13,28 @@ import { useCart } from "../../context/CartContext";
 
 import "./Checkout.css";
 
-
 const Checkout = () => {
-
   const navigate = useNavigate();
 
   const {
+    cart,
     cartItems,
     cartSubtotal,
   } = useCart();
 
+  // ==========================================
+  // USE CART DATA
+  // ==========================================
+
+  const items =
+    cart?.items || cartItems || [];
+
+  const subtotal =
+    Number(
+      cartSubtotal ??
+        cart?.totalAmount ??
+        0
+    );
 
   // ==========================================
   // FORM STATE
@@ -38,7 +51,6 @@ const Checkout = () => {
     pincode: "",
   });
 
-
   // ==========================================
   // PAYMENT METHOD
   // ==========================================
@@ -46,13 +58,11 @@ const Checkout = () => {
   const [paymentMethod, setPaymentMethod] =
     useState("cod");
 
-
   // ==========================================
   // FORM ERRORS
   // ==========================================
 
   const [errors, setErrors] = useState({});
-
 
   // ==========================================
   // SUBMIT STATE
@@ -61,7 +71,6 @@ const Checkout = () => {
   const [isSubmitting, setIsSubmitting] =
     useState(false);
 
-
   // ==========================================
   // SHIPPING
   // ==========================================
@@ -69,21 +78,18 @@ const Checkout = () => {
   const FREE_SHIPPING_LIMIT = 999;
 
   const shipping =
-    cartSubtotal >= FREE_SHIPPING_LIMIT
+    subtotal >= FREE_SHIPPING_LIMIT
       ? 0
       : 49;
 
-
   const total =
-    Number(cartSubtotal) + Number(shipping);
-
+    Number(subtotal) + Number(shipping);
 
   // ==========================================
   // HANDLE INPUT
   // ==========================================
 
   const handleChange = (event) => {
-
     const {
       name,
       value,
@@ -94,34 +100,26 @@ const Checkout = () => {
       [name]: value,
     }));
 
-
     // Remove error when user starts typing
-
     if (errors[name]) {
-
       setErrors((previous) => ({
         ...previous,
         [name]: "",
       }));
-
     }
   };
-
 
   // ==========================================
   // VALIDATION
   // ==========================================
 
   const validateForm = () => {
-
     const newErrors = {};
-
 
     if (!formData.fullName.trim()) {
       newErrors.fullName =
         "Please enter your full name.";
     }
-
 
     if (!formData.email.trim()) {
       newErrors.email =
@@ -135,7 +133,6 @@ const Checkout = () => {
         "Please enter a valid email.";
     }
 
-
     if (!formData.mobile.trim()) {
       newErrors.mobile =
         "Please enter your mobile number.";
@@ -148,24 +145,20 @@ const Checkout = () => {
         "Please enter a valid 10-digit mobile number.";
     }
 
-
     if (!formData.address.trim()) {
       newErrors.address =
         "Please enter your delivery address.";
     }
-
 
     if (!formData.city.trim()) {
       newErrors.city =
         "Please enter your city.";
     }
 
-
     if (!formData.state.trim()) {
       newErrors.state =
         "Please enter your state.";
     }
-
 
     if (!formData.pincode.trim()) {
       newErrors.pincode =
@@ -179,21 +172,19 @@ const Checkout = () => {
         "Please enter a valid 6-digit pincode.";
     }
 
-
     setErrors(newErrors);
 
-    return Object.keys(newErrors).length === 0;
+    return (
+      Object.keys(newErrors).length === 0
+    );
   };
-
 
   // ==========================================
   // PLACE ORDER
   // ==========================================
 
   const handlePlaceOrder = async (event) => {
-
     event.preventDefault();
-
 
     const isValid = validateForm();
 
@@ -201,35 +192,25 @@ const Checkout = () => {
       return;
     }
 
-
     setIsSubmitting(true);
-
 
     /*
       ==========================================
       BACKEND ORDER API WILL GO HERE
       ==========================================
 
-      Example later:
+      Later this will become:
 
-      await axios.post(
-        "/api/orders",
-        {
-          customer: formData,
-          items: cartItems,
-          subtotal: cartSubtotal,
-          shipping,
-          total,
-          paymentMethod,
-        }
-      );
+      await axios.post("/api/orders", {
+        shippingAddress: formData,
+        paymentMethod,
+        items,
+      });
+
     */
 
-
     // Temporary frontend behavior
-
     setTimeout(() => {
-
       setIsSubmitting(false);
 
       alert(
@@ -237,19 +218,15 @@ const Checkout = () => {
       );
 
       navigate("/");
-
     }, 1000);
   };
-
 
   // ==========================================
   // EMPTY CART
   // ==========================================
 
-  if (!cartItems || cartItems.length === 0) {
-
+  if (!items || items.length === 0) {
     return (
-
       <main className="checkout-page">
 
         <div className="checkout-empty">
@@ -268,7 +245,9 @@ const Checkout = () => {
           </p>
 
           <button
-            onClick={() => navigate("/shop")}
+            onClick={() =>
+              navigate("/shop")
+            }
             className="checkout-empty-button"
           >
             Continue Shopping
@@ -277,24 +256,19 @@ const Checkout = () => {
         </div>
 
       </main>
-
     );
   }
 
-
   return (
-
     <main className="checkout-page">
 
       <div className="checkout-container">
-
 
         {/* ==================================================
             LEFT SIDE
         ================================================== */}
 
         <section className="checkout-form-section">
-
 
           {/* ==========================================
               PAGE HEADING
@@ -318,12 +292,12 @@ const Checkout = () => {
 
           </div>
 
-
           {/* ==========================================
               CONTACT & DELIVERY
           ========================================== */}
 
           <form
+            id="checkout-form"
             onSubmit={handlePlaceOrder}
             className="checkout-form"
           >
@@ -348,7 +322,6 @@ const Checkout = () => {
                 </div>
 
               </div>
-
 
               {/* ==========================================
                   FULL NAME
@@ -381,7 +354,6 @@ const Checkout = () => {
                 )}
 
               </div>
-
 
               {/* ==========================================
                   EMAIL + MOBILE
@@ -417,7 +389,6 @@ const Checkout = () => {
 
                 </div>
 
-
                 <div className="checkout-field">
 
                   <label htmlFor="mobile">
@@ -448,7 +419,6 @@ const Checkout = () => {
                 </div>
 
               </div>
-
 
               {/* ==========================================
                   ADDRESS
@@ -482,7 +452,6 @@ const Checkout = () => {
 
               </div>
 
-
               {/* ==========================================
                   LANDMARK
               ========================================== */}
@@ -508,7 +477,6 @@ const Checkout = () => {
                 />
 
               </div>
-
 
               {/* ==========================================
                   CITY + STATE
@@ -544,7 +512,6 @@ const Checkout = () => {
 
                 </div>
 
-
                 <div className="checkout-field">
 
                   <label htmlFor="state">
@@ -574,7 +541,6 @@ const Checkout = () => {
                 </div>
 
               </div>
-
 
               {/* ==========================================
                   PINCODE
@@ -612,7 +578,6 @@ const Checkout = () => {
 
             </section>
 
-
             {/* ==================================================
                 PAYMENT
             ================================================== */}
@@ -638,10 +603,7 @@ const Checkout = () => {
 
               </div>
 
-
-              {/* ==========================================
-                  COD
-              ========================================== */}
+              {/* COD */}
 
               <button
                 type="button"
@@ -667,13 +629,13 @@ const Checkout = () => {
 
                 </div>
 
-
                 <div className="payment-icon">
+
                   <CreditCard
                     size={21}
                   />
-                </div>
 
+                </div>
 
                 <div className="payment-content">
 
@@ -688,7 +650,6 @@ const Checkout = () => {
 
                 </div>
 
-
                 {paymentMethod === "cod" && (
                   <CheckCircle2
                     className="payment-check"
@@ -698,10 +659,7 @@ const Checkout = () => {
 
               </button>
 
-
-              {/* ==========================================
-                  ONLINE PAYMENT PLACEHOLDER
-              ========================================== */}
+              {/* ONLINE PAYMENT PLACEHOLDER */}
 
               <button
                 type="button"
@@ -712,9 +670,11 @@ const Checkout = () => {
                 <div className="payment-radio" />
 
                 <div className="payment-icon">
+
                   <CreditCard
                     size={21}
                   />
+
                 </div>
 
                 <div className="payment-content">
@@ -732,7 +692,6 @@ const Checkout = () => {
               </button>
 
             </section>
-
 
             {/* ==========================================
                 MOBILE PLACE ORDER
@@ -752,13 +711,11 @@ const Checkout = () => {
 
         </section>
 
-
         {/* ==================================================
             RIGHT SIDE — ORDER SUMMARY
         ================================================== */}
 
         <aside className="order-summary">
-
 
           {/* ==========================================
               SUMMARY HEADER
@@ -779,17 +736,20 @@ const Checkout = () => {
             </div>
 
             <span className="summary-item-count">
-              {cartItems.reduce(
+
+              {items.reduce(
                 (total, item) =>
                   total +
-                  Number(item.quantity || 0),
+                  Number(
+                    item.quantity || 0
+                  ),
                 0
               )}{" "}
               items
+
             </span>
 
           </div>
-
 
           {/* ==========================================
               PRODUCTS
@@ -797,82 +757,90 @@ const Checkout = () => {
 
           <div className="summary-products">
 
-            {cartItems.map((item) => (
+            {items.map((item) => {
 
-              <div
-                className="summary-product"
-                key={item.id}
-              >
+              const product =
+                item.product;
 
-                {/* Image */}
+              if (!product) {
+                return null;
+              }
 
-                <div className="summary-product-image">
+              const image =
+                product.images?.[0];
 
-                  {item.image ? (
+              return (
+                <div
+                  className="summary-product"
+                  key={product._id}
+                >
 
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                    />
+                  {/* IMAGE */}
 
-                  ) : (
+                  <div className="summary-product-image">
 
-                    <ShoppingBag
-                      size={25}
-                    />
+                    {image ? (
+                      <img
+                        src={image}
+                        alt={product.name}
+                      />
+                    ) : (
+                      <ShoppingBag
+                        size={25}
+                      />
+                    )}
 
-                  )}
+                    <span className="summary-product-quantity">
+                      {item.quantity}
+                    </span>
 
-                  <span className="summary-product-quantity">
-                    {item.quantity}
-                  </span>
+                  </div>
 
-                </div>
+                  {/* DETAILS */}
 
+                  <div className="summary-product-info">
 
-                {/* Details */}
+                    <h3>
+                      {product.name}
+                    </h3>
 
-                <div className="summary-product-info">
+                    {product.category && (
+                      <p>
+                        {product.category}
+                      </p>
+                    )}
 
-                  <h3>
-                    {item.name}
-                  </h3>
+                    <span>
+                      ₹
+                      {Number(
+                        item.price
+                      ).toLocaleString(
+                        "en-IN"
+                      )}{" "}
+                      × {item.quantity}
+                    </span>
 
-                  {item.variant && (
-                    <p>
-                      {item.variant}
-                    </p>
-                  )}
+                  </div>
 
-                  <span>
+                  {/* TOTAL */}
+
+                  <strong>
                     ₹
-                    {Number(item.price).toLocaleString(
+                    {(
+                      Number(item.price) *
+                      Number(
+                        item.quantity
+                      )
+                    ).toLocaleString(
                       "en-IN"
-                    )}{" "}
-                    × {item.quantity}
-                  </span>
+                    )}
+                  </strong>
 
                 </div>
-
-
-                {/* Total */}
-
-                <strong>
-                  ₹
-                  {(
-                    Number(item.price) *
-                    Number(item.quantity)
-                  ).toLocaleString(
-                    "en-IN"
-                  )}
-                </strong>
-
-              </div>
-
-            ))}
+              );
+            })}
 
           </div>
-
 
           {/* ==========================================
               PRICE DETAILS
@@ -888,13 +856,12 @@ const Checkout = () => {
 
               <strong>
                 ₹
-                {cartSubtotal.toLocaleString(
+                {subtotal.toLocaleString(
                   "en-IN"
                 )}
               </strong>
 
             </div>
-
 
             <div className="summary-price-row">
 
@@ -911,7 +878,6 @@ const Checkout = () => {
             </div>
 
           </div>
-
 
           {/* ==========================================
               TOTAL
@@ -932,7 +898,6 @@ const Checkout = () => {
 
           </div>
 
-
           {/* ==========================================
               PLACE ORDER
           ========================================== */}
@@ -941,14 +906,12 @@ const Checkout = () => {
             type="submit"
             form="checkout-form"
             className="summary-place-order"
-            onClick={handlePlaceOrder}
             disabled={isSubmitting}
           >
             {isSubmitting
               ? "Placing order..."
               : "Place order"}
           </button>
-
 
           {/* ==========================================
               TRUST MESSAGE
@@ -973,6 +936,5 @@ const Checkout = () => {
     </main>
   );
 };
-
 
 export default Checkout;

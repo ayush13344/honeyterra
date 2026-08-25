@@ -6,7 +6,6 @@ function ProductCard({ product }) {
   const {
     _id,
     name,
-    description,
     price,
     compareAtPrice,
     category,
@@ -46,7 +45,7 @@ function ProductCard({ product }) {
 
       <div className="product-card-image">
 
-        {/* FEATURED / DISCOUNT BADGE */}
+        {/* BADGE */}
 
         {discount > 0 ? (
           <span className="product-card-badge">
@@ -58,6 +57,8 @@ function ProductCard({ product }) {
           </span>
         ) : null}
 
+        {/* IMAGE */}
+
         {productImage ? (
           <img
             src={productImage}
@@ -67,10 +68,8 @@ function ProductCard({ product }) {
         ) : (
           <div className="product-image-placeholder">
             <span>Product Image</span>
-            <small>No image available</small>
           </div>
         )}
-
       </div>
 
       {/* ==========================================
@@ -89,33 +88,25 @@ function ProductCard({ product }) {
 
         <h3>{name}</h3>
 
-        {/* DESCRIPTION */}
-
-        <p>{description}</p>
-
-        {/* ==========================================
+        {/* ========================================
             BOTTOM
-        ========================================== */}
+        ======================================== */}
 
         <div className="product-card-bottom">
 
-          <div>
+          {/* PRICE */}
 
-            {/* PRICE */}
+          <div className="product-card-price-wrapper">
 
             <span className="product-card-price">
               ₹{price}
             </span>
-
-            {/* OLD PRICE */}
 
             {compareAtPrice > price && (
               <span className="product-card-old-price">
                 ₹{compareAtPrice}
               </span>
             )}
-
-            {/* STOCK */}
 
             {stock <= 0 && (
               <span className="product-card-stock">
@@ -131,8 +122,8 @@ function ProductCard({ product }) {
             to={`/products/${_id}`}
             className="product-card-link"
           >
-            View Product
-            <ArrowRight size={16} />
+            View
+            <ArrowRight size={15} />
           </Link>
 
         </div>

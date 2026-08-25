@@ -26,6 +26,8 @@ import Orders from "../admin/pages/Orders/Orders";
 import Customers from "../admin/pages/Customers/Customers";
 import Settings from "../admin/pages/Settings/Settings";
 import AddProduct from "../admin/pages/Products/AddProduct";
+import UProducts from "../pages/Products/UProducts";
+import ProductDetails from "../pages/ProductDetails/ProductDetails";
 
 function AppRoutes() {
   return (
@@ -39,9 +41,16 @@ function AppRoutes() {
 
         <Route path="/shop" element={<Shop />} />
 
+        <Route path="/products" element={<UProducts />} />
+
         <Route path="/shop/wrap" element={<HoneycombWrap />} />
 
         <Route path="/shop/ash-tray" element={<GelAshTray />} />
+
+        <Route
+  path="/products/:id"
+  element={<ProductDetails />}
+/>
 
         <Route path="/cart" element={<CartDrawer />} />
 

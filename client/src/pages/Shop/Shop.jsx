@@ -5,9 +5,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-
 import ProductCard from "../../components/ProductCard/ProductCard";
-
 import "./Shop.css";
 
 function Shop() {
@@ -16,9 +14,9 @@ function Shop() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  /* =====================================================
-     FETCH PRODUCTS
-  ===================================================== */
+  // ==========================================
+  // FETCH PRODUCTS
+  // ==========================================
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -26,12 +24,8 @@ function Shop() {
         setLoading(true);
         setError("");
 
-        /*
-         * Change this URL if your backend uses
-         * a different products endpoint.
-         */
         const response = await fetch(
-          "http://localhost:5000/api/products"
+          "http://localhost:3000/api/products"
         );
 
         if (!response.ok) {
@@ -40,29 +34,19 @@ function Shop() {
 
         const data = await response.json();
 
-        /*
-         * Supports both:
-         *
-         * { products: [...] }
-         *
-         * and
-         *
-         * [...]
-         */
+        console.log("Products received:", data);
 
         const productList = Array.isArray(data)
           ? data
           : data.products || [];
 
         setProducts(productList);
-
       } catch (err) {
         console.error("Product fetch error:", err);
 
         setError(
           "Unable to load products right now."
         );
-
       } finally {
         setLoading(false);
       }
@@ -71,10 +55,9 @@ function Shop() {
     fetchProducts();
   }, []);
 
-
-  /* =====================================================
-     FILTER PRODUCTS
-  ===================================================== */
+  // ==========================================
+  // FILTER PRODUCTS
+  // ==========================================
 
   const filteredProducts = useMemo(() => {
     if (activeFilter === "all") {
@@ -83,7 +66,7 @@ function Shop() {
 
     return products.filter((product) => {
       const category =
-        product.category?.toLowerCase() || "";
+        product.category?.toLowerCase().trim() || "";
 
       if (activeFilter === "gel-ash-tray") {
         return (
@@ -104,25 +87,30 @@ function Shop() {
     });
   }, [products, activeFilter]);
 
-
-  /* =====================================================
-     FILTER HANDLER
-  ===================================================== */
+  // ==========================================
+  // FILTER HANDLER
+  // ==========================================
 
   const handleFilterChange = (filter) => {
     setActiveFilter(filter);
   };
 
+  // ==========================================
+  // RETRY
+  // ==========================================
+
+  const handleRetry = () => {
+    window.location.reload();
+  };
 
   return (
     <main className="shop-page">
 
-      {/* =====================================================
-          DARK SHOP HEADER
-      ===================================================== */}
+      {/* ==========================================
+          SHOP HEADER
+      ========================================== */}
 
       <section className="shop-header">
-
         <div className="shop-container">
 
           <span className="shop-header-eyebrow">
@@ -134,31 +122,28 @@ function Shop() {
           </h1>
 
           <p>
-            Thoughtfully made essentials for a cleaner home —
-            practical products designed for everyday life.
+            Thoughtfully made essentials for a cleaner
+            home — practical products designed for
+            everyday life.
           </p>
 
         </div>
-
       </section>
 
-
-      {/* =====================================================
+      {/* ==========================================
           PRODUCTS
-      ===================================================== */}
+      ========================================== */}
 
       <section className="shop-products">
-
         <div className="shop-container">
 
-          {/* =================================================
+          {/* ========================================
               HEADING
-          ================================================= */}
+          ======================================== */}
 
           <div className="shop-heading">
 
             <div>
-
               <span className="section-eyebrow">
                 OUR COLLECTION
               </span>
@@ -166,7 +151,6 @@ function Shop() {
               <h2>
                 All products
               </h2>
-
             </div>
 
             <p>
@@ -176,10 +160,9 @@ function Shop() {
 
           </div>
 
-
-          {/* =================================================
+          {/* ========================================
               FILTERS
-          ================================================= */}
+          ======================================== */}
 
           <div className="shop-filters">
 
@@ -197,7 +180,6 @@ function Shop() {
               All Products
             </button>
 
-
             <button
               type="button"
               className={
@@ -211,7 +193,6 @@ function Shop() {
             >
               Gel Ash Trays
             </button>
-
 
             <button
               type="button"
@@ -229,31 +210,25 @@ function Shop() {
 
           </div>
 
-
-          {/* =================================================
+          {/* ========================================
               PRODUCT COUNT
-          ================================================= */}
+          ======================================== */}
 
           <div className="shop-product-count">
-
             {loading
               ? "Loading products..."
               : `${filteredProducts.length} ${
                   filteredProducts.length === 1
                     ? "product"
                     : "products"
-                }`
-            }
-
+                }`}
           </div>
 
-
-          {/* =================================================
-              PRODUCTS
-          ================================================= */}
+          {/* ========================================
+              LOADING
+          ======================================== */}
 
           {loading ? (
-
             <div className="shop-loading">
 
               <div className="shop-loading-spinner"></div>
@@ -265,6 +240,10 @@ function Shop() {
             </div>
 
           ) : error ? (
+
+            /* ======================================
+               ERROR
+            ====================================== */
 
             <div className="shop-error">
 
@@ -278,7 +257,7 @@ function Shop() {
 
               <button
                 type="button"
-                onClick={() => window.location.reload()}
+                onClick={handleRetry}
               >
                 Try Again
               </button>
@@ -286,6 +265,10 @@ function Shop() {
             </div>
 
           ) : filteredProducts.length === 0 ? (
+
+            /* ======================================
+               EMPTY
+            ====================================== */
 
             <div className="shop-empty">
 
@@ -298,8 +281,8 @@ function Shop() {
               </h3>
 
               <p>
-                There are currently no products in
-                this category.
+                There are currently no products
+                in this category.
               </p>
 
               <button
@@ -315,15 +298,17 @@ function Shop() {
 
           ) : (
 
+            /* ======================================
+               PRODUCT CARDS
+            ====================================== */
+
             <div className="shop-product-grid">
 
               {filteredProducts.map((product) => (
-
                 <ProductCard
                   key={product._id}
                   product={product}
                 />
-
               ))}
 
             </div>
@@ -331,16 +316,13 @@ function Shop() {
           )}
 
         </div>
-
       </section>
 
-
-      {/* =====================================================
+      {/* ==========================================
           BENEFITS
-      ===================================================== */}
+      ========================================== */}
 
       <section className="shop-benefits">
-
         <div className="shop-container">
 
           <div className="shop-benefits-heading">
@@ -357,7 +339,6 @@ function Shop() {
 
           </div>
 
-
           <div className="shop-benefits-grid">
 
             <div className="shop-benefit">
@@ -371,12 +352,11 @@ function Shop() {
               </h3>
 
               <p>
-                Thoughtfully designed products with
-                sustainability in mind.
+                Thoughtfully designed products
+                with sustainability in mind.
               </p>
 
             </div>
-
 
             <div className="shop-benefit">
 
@@ -389,12 +369,11 @@ function Shop() {
               </h3>
 
               <p>
-                Practical products designed around
-                everyday needs.
+                Practical products designed
+                around everyday needs.
               </p>
 
             </div>
-
 
             <div className="shop-benefit">
 
@@ -407,22 +386,19 @@ function Shop() {
               </h3>
 
               <p>
-                Thoughtful design without unnecessary
-                complexity.
+                Thoughtful design without
+                unnecessary complexity.
               </p>
 
             </div>
 
           </div>
-
         </div>
-
       </section>
 
-
-      {/* =====================================================
+      {/* ==========================================
           CTA
-      ===================================================== */}
+      ========================================== */}
 
       <section className="shop-cta">
 

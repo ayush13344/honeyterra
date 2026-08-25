@@ -3,15 +3,12 @@ import {
   UserRound,
   ShoppingBag,
 } from "lucide-react";
-
 import {
   Link,
   NavLink,
   useLocation,
 } from "react-router-dom";
-
 import { useCart } from "../../context/CartContext";
-
 import "./Navbar.css";
 
 function Navbar() {
@@ -19,20 +16,18 @@ function Navbar() {
 
   const {
     openCart,
-    cartItems,
+    cartItems = [],
   } = useCart();
 
   // ==========================================
   // CHECKOUT PAGE
   // ==========================================
-
   const isCheckoutPage =
     location.pathname === "/checkout";
 
   // ==========================================
   // CART COUNT
   // ==========================================
-
   const cartCount = cartItems.reduce(
     (total, item) => total + Number(item.quantity || 0),
     0
@@ -41,7 +36,6 @@ function Navbar() {
   // ==========================================
   // NAV LINKS
   // ==========================================
-
   const navLinks = [
     {
       label: "Home",
@@ -82,13 +76,11 @@ function Navbar() {
         {/* ==========================================
             LOGO
         ========================================== */}
-
         <Link
           to="/"
           className="navbar-logo"
           aria-label="HoneyTerra Home"
         >
-
           <span className="navbar-logo-mark">
             <span className="logo-leaf logo-leaf-one" />
             <span className="logo-leaf logo-leaf-two" />
@@ -97,16 +89,12 @@ function Navbar() {
           <span className="navbar-logo-text">
             Honey<span>Terra</span>
           </span>
-
         </Link>
-
 
         {/* ==========================================
             DESKTOP NAVIGATION
         ========================================== */}
-
         <nav className="navbar-links">
-
           {navLinks.map((link) => (
             <NavLink
               key={link.path}
@@ -122,18 +110,14 @@ function Navbar() {
               {link.label}
             </NavLink>
           ))}
-
         </nav>
-
 
         {/* ==========================================
             ACTIONS
         ========================================== */}
-
         <div className="navbar-actions">
 
           {/* Account */}
-
           <Link
             to="/account"
             className="navbar-icon-btn"
@@ -145,16 +129,13 @@ function Navbar() {
             />
           </Link>
 
-
           {/* Cart */}
-
           <button
             type="button"
             className="navbar-cart-btn"
             onClick={openCart}
             aria-label={`Shopping cart with ${cartCount} items`}
           >
-
             <ShoppingBag
               size={22}
               strokeWidth={1.8}
@@ -167,11 +148,9 @@ function Navbar() {
                   : cartCount}
               </span>
             )}
-
           </button>
 
         </div>
-
       </div>
     </header>
   );

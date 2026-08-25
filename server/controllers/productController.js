@@ -1,8 +1,32 @@
 import Product from "../models/Product.js";
+import cloudinary from "../config/cloudinary.js";
+import streamifier from "streamifier";
 
 // ==========================================
-// CREATE PRODUCT - ADMIN
+// UPLOAD IMAGE TO CLOUDINARY
 // ==========================================
+
+const uploadToCloudinary = (fileBuffer) => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: "honeyterra/products",
+        resource_type: "image",
+      },
+      (error, result) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(result);
+        }
+      }
+    );
+
+    streamifier
+      .createReadStream(fileBuffer)
+      .pipe(uploadStream);
+  });
+};
 
 // ==========================================
 // CREATE PRODUCT - ADMIN
@@ -120,24 +144,59 @@ const createProduct = async (req, res) => {
     }
 
     // ==========================================
-    // IMAGES
+    // IMAGE VALIDATION
     // ==========================================
 
-    const formattedImages = Array.isArray(
-      req.files
-    )
-      ? req.files.map((file) => file.path)
-      : [];
-
-    // ==========================================
-    // IMAGE REQUIRED
-    // ==========================================
-
-    if (formattedImages.length === 0) {
+    if (
+      !req.files ||
+      !Array.isArray(req.files) ||
+      req.files.length === 0
+    ) {
       return res.status(400).json({
         success: false,
         message:
           "At least one product image is required",
+      });
+    }
+
+    // ==========================================
+    // UPLOAD IMAGES TO CLOUDINARY
+    // ==========================================
+
+    const uploadedImages = [];
+
+    for (const file of req.files) {
+      try {
+        const result =
+          await uploadToCloudinary(file.buffer);
+
+        if (result?.secure_url) {
+          uploadedImages.push(result.secure_url);
+        }
+      } catch (uploadError) {
+        console.error(
+          "Cloudinary Upload Error:",
+          uploadError
+        );
+
+        return res.status(500).json({
+          success: false,
+          message:
+            "Failed to upload product image",
+          error: uploadError.message,
+        });
+      }
+    }
+
+    // ==========================================
+    // CHECK UPLOADED IMAGES
+    // ==========================================
+
+    if (uploadedImages.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "No product images were uploaded",
       });
     }
 
@@ -158,12 +217,11 @@ const createProduct = async (req, res) => {
 
       category,
 
-      // Optional
       variants:
         formattedVariants,
 
       images:
-        formattedImages,
+        uploadedImages,
 
       stock:
         Number(stock) || 0,
@@ -234,6 +292,10 @@ const getProducts = async (req, res) => {
       page = 1,
       limit = 12,
     } = req.query;
+
+    // ==========================================
+    // FILTER
+    // ==========================================
 
     const filter = {
       isActive: true,
@@ -576,7 +638,20 @@ const updateProduct = async (req, res) => {
     // ==========================================
 
     if (variants !== undefined) {
-      if (!Array.isArray(variants)) {
+      let parsedVariants = variants;
+
+      if (typeof variants === "string") {
+        try {
+          parsedVariants = JSON.parse(variants);
+        } catch (error) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid variants data",
+          });
+        }
+      }
+
+      if (!Array.isArray(parsedVariants)) {
         return res.status(400).json({
           success: false,
           message:
@@ -584,7 +659,7 @@ const updateProduct = async (req, res) => {
         });
       }
 
-      product.variants = variants.map(
+      product.variants = parsedVariants.map(
         (variant) => {
           const formattedVariant = {
             name:
@@ -616,17 +691,66 @@ const updateProduct = async (req, res) => {
     }
 
     // ==========================================
-    // IMAGES
+    // EXISTING IMAGES
     // ==========================================
 
     if (images !== undefined) {
-      product.images = Array.isArray(images)
-        ? images.filter(
+      let parsedImages = images;
+
+      if (typeof images === "string") {
+        try {
+          parsedImages = JSON.parse(images);
+        } catch (error) {
+          parsedImages = [images];
+        }
+      }
+
+      product.images = Array.isArray(
+        parsedImages
+      )
+        ? parsedImages.filter(
             (image) =>
               typeof image === "string" &&
               image.trim() !== ""
           )
         : [];
+    }
+
+    // ==========================================
+    // NEW IMAGES
+    // ==========================================
+
+    if (
+      req.files &&
+      Array.isArray(req.files) &&
+      req.files.length > 0
+    ) {
+      for (const file of req.files) {
+        try {
+          const result =
+            await uploadToCloudinary(
+              file.buffer
+            );
+
+          if (result?.secure_url) {
+            product.images.push(
+              result.secure_url
+            );
+          }
+        } catch (uploadError) {
+          console.error(
+            "Cloudinary Upload Error:",
+            uploadError
+          );
+
+          return res.status(500).json({
+            success: false,
+            message:
+              "Failed to upload product image",
+            error: uploadError.message,
+          });
+        }
+      }
     }
 
     // ==========================================
@@ -656,7 +780,8 @@ const updateProduct = async (req, res) => {
 
     if (isActive !== undefined) {
       product.isActive =
-        Boolean(isActive);
+        isActive === "true" ||
+        isActive === true;
     }
 
     // ==========================================
@@ -665,7 +790,8 @@ const updateProduct = async (req, res) => {
 
     if (isFeatured !== undefined) {
       product.isFeatured =
-        Boolean(isFeatured);
+        isFeatured === "true" ||
+        isFeatured === true;
     }
 
     // ==========================================
