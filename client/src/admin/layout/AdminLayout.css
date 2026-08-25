@@ -4,12 +4,13 @@
 
 .admin-layout {
   min-height: 100vh;
+
   display: flex;
 
   background: #f8f7f2;
+
   color: #1d2722;
 }
-
 
 /* =========================================
    MAIN AREA
@@ -17,14 +18,27 @@
 
 .admin-main {
   flex: 1;
+
   min-width: 0;
 
   display: flex;
   flex-direction: column;
 
   margin-left: 250px;
+
+  transition:
+    margin-left 0.3s ease,
+    margin-right 0.3s ease;
 }
 
+/* =========================================
+   RIGHT SIDEBAR LAYOUT
+========================================= */
+
+.admin-layout.sidebar-right .admin-main {
+  margin-left: 0;
+  margin-right: 250px;
+}
 
 /* =========================================
    CONTENT
@@ -33,21 +47,24 @@
 .admin-content {
   flex: 1;
 
+  width: 100%;
+
+  min-width: 0;
+
   padding: 32px;
 
-  width: 100%;
   box-sizing: border-box;
 }
 
-
 /* =========================================
-   MOBILE OVERLAY
+   SIDEBAR OVERLAY
 ========================================= */
 
 .admin-sidebar-overlay {
   display: none;
 
   position: fixed;
+
   inset: 0;
 
   width: 100%;
@@ -63,53 +80,69 @@
   cursor: pointer;
 }
 
+/* =========================================
+   LARGE TABLET
+========================================= */
+
+@media (max-width: 1100px) {
+  .admin-main {
+    margin-left: 230px;
+  }
+
+  .admin-layout.sidebar-right .admin-main {
+    margin-left: 0;
+    margin-right: 230px;
+  }
+
+  .admin-content {
+    padding: 26px;
+  }
+}
 
 /* =========================================
    TABLET
 ========================================= */
 
-@media (max-width: 1024px) {
-
+@media (max-width: 900px) {
   .admin-main {
-    margin-left: 220px;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .admin-layout.sidebar-right .admin-main {
+    margin-left: 0;
+    margin-right: 0;
   }
 
   .admin-content {
-    padding: 24px;
+    padding: 22px;
   }
 
-}
+  .admin-sidebar-overlay {
+    display: none;
+  }
 
+  .admin-sidebar-overlay.show {
+    display: block;
+  }
+}
 
 /* =========================================
    MOBILE
 ========================================= */
 
-@media (max-width: 768px) {
-
-  .admin-main {
-    margin-left: 0;
-  }
-
+@media (max-width: 600px) {
   .admin-content {
-    padding: 20px 16px;
+    padding: 18px 14px;
   }
-
-  .admin-sidebar-overlay {
-    display: block;
-  }
-
 }
-
 
 /* =========================================
    SMALL MOBILE
 ========================================= */
 
 @media (max-width: 480px) {
-
   .admin-content {
     padding: 16px 12px;
   }
-
 }

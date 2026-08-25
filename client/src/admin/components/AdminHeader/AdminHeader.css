@@ -1,5 +1,6 @@
 .admin-header {
   height: 76px;
+  min-height: 76px;
 
   display: flex;
   align-items: center;
@@ -8,8 +9,12 @@
   padding: 0 30px;
 
   background: #ffffff;
-
   border-bottom: 1px solid #eae5dc;
+
+  box-sizing: border-box;
+
+  position: relative;
+  z-index: 50;
 }
 
 /* ==============================
@@ -20,6 +25,8 @@
   display: flex;
   align-items: center;
   gap: 14px;
+
+  min-width: 0;
 }
 
 .admin-header-left h1 {
@@ -30,6 +37,8 @@
   font-family: Georgia, serif;
   font-size: 22px;
   font-weight: 600;
+
+  white-space: nowrap;
 }
 
 .admin-header-left p {
@@ -38,7 +47,13 @@
   color: #89918c;
 
   font-size: 12px;
+
+  white-space: nowrap;
 }
+
+/* ==============================
+   MENU BUTTON
+============================== */
 
 .admin-menu-button {
   display: none;
@@ -49,6 +64,8 @@
   align-items: center;
   justify-content: center;
 
+  flex-shrink: 0;
+
   border: 1px solid #e3ded4;
   border-radius: 9px;
 
@@ -57,6 +74,15 @@
   color: #4e5a53;
 
   cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.admin-menu-button:hover {
+  background: #f3f7f4;
+  border-color: #cddbd4;
 }
 
 /* ==============================
@@ -67,9 +93,13 @@
   display: flex;
   align-items: center;
   gap: 14px;
+
+  flex-shrink: 0;
 }
 
-/* Search */
+/* ==============================
+   SEARCH
+============================== */
 
 .admin-header-search {
   width: 210px;
@@ -81,16 +111,25 @@
 
   padding: 0 12px;
 
+  box-sizing: border-box;
+
   border: 1px solid #e5e0d7;
   border-radius: 9px;
 
   background: #fffdf9;
 
   color: #87908a;
+
+  transition: border-color 0.2s ease;
+}
+
+.admin-header-search:focus-within {
+  border-color: #9abeb2;
 }
 
 .admin-header-search input {
   width: 100%;
+  min-width: 0;
 
   border: none;
   outline: none;
@@ -107,7 +146,9 @@
   color: #a0a6a2;
 }
 
-/* Icons */
+/* ==============================
+   ICON
+============================== */
 
 .admin-header-icon {
   position: relative;
@@ -119,6 +160,8 @@
   align-items: center;
   justify-content: center;
 
+  flex-shrink: 0;
+
   border: 1px solid #e5e0d7;
   border-radius: 9px;
 
@@ -127,6 +170,15 @@
   color: #536059;
 
   cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.admin-header-icon:hover {
+  background: #f3f7f4;
+  border-color: #cddbd4;
 }
 
 .notification-dot {
@@ -142,7 +194,9 @@
   background: #d48a22;
 }
 
-/* Profile */
+/* ==============================
+   PROFILE
+============================== */
 
 .admin-profile {
   display: flex;
@@ -166,10 +220,11 @@
   align-items: center;
   justify-content: center;
 
+  flex-shrink: 0;
+
   border-radius: 50%;
 
   background: #e7f1eb;
-
   color: #16745b;
 }
 
@@ -177,12 +232,16 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+
+  min-width: 0;
 }
 
 .admin-profile-info strong {
   color: #28312c;
 
   font-size: 12px;
+
+  white-space: nowrap;
 }
 
 .admin-profile-info span {
@@ -191,15 +250,58 @@
   color: #929994;
 
   font-size: 10px;
+
+  white-space: nowrap;
 }
 
 /* ==============================
-   MOBILE
+   SIDEBAR POSITION BUTTON
+============================== */
+
+.admin-sidebar-position-button {
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.admin-sidebar-position-button:hover {
+  background: #eaf3ee;
+  border-color: #c9ddd3;
+  color: #16745b;
+}
+
+.admin-sidebar-position-button:active {
+  transform: scale(0.96);
+}
+
+/* ==============================
+   TABLET
+============================== */
+
+@media (max-width: 1100px) {
+  .admin-header {
+    padding: 0 22px;
+  }
+
+  .admin-header-search {
+    width: 180px;
+  }
+
+  .admin-header-right {
+    gap: 10px;
+  }
+}
+
+/* ==============================
+   TABLET / MOBILE
 ============================== */
 
 @media (max-width: 900px) {
-
   .admin-header {
+    height: 70px;
+    min-height: 70px;
+
     padding: 0 18px;
   }
 
@@ -207,20 +309,90 @@
     display: flex;
   }
 
+  .admin-header-left {
+    gap: 11px;
+  }
+
+  .admin-header-left h1 {
+    font-size: 20px;
+  }
 }
 
-@media (max-width: 650px) {
+/* ==============================
+   SMALL TABLET
+============================== */
 
+@media (max-width: 750px) {
   .admin-header-search {
     display: none;
+  }
+}
+
+/* ==============================
+   MOBILE
+============================== */
+
+@media (max-width: 600px) {
+  .admin-header {
+    padding: 0 14px;
+  }
+
+  .admin-header-left h1 {
+    font-size: 18px;
+  }
+
+  .admin-header-left p {
+    display: none;
+  }
+
+  .admin-header-right {
+    gap: 7px;
+  }
+
+  .admin-profile {
+    padding: 3px;
   }
 
   .admin-profile-info {
     display: none;
   }
 
-  .admin-header-left h1 {
-    font-size: 19px;
+  .admin-header-icon {
+    width: 37px;
+    height: 37px;
   }
 
+  .admin-profile-avatar {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* ==============================
+   VERY SMALL MOBILE
+============================== */
+
+@media (max-width: 380px) {
+  .admin-header {
+    padding: 0 10px;
+  }
+
+  .admin-header-left h1 {
+    font-size: 17px;
+  }
+
+  .admin-menu-button {
+    width: 37px;
+    height: 37px;
+  }
+
+  .admin-header-icon {
+    width: 35px;
+    height: 35px;
+  }
+
+  .admin-profile-avatar {
+    width: 34px;
+    height: 34px;
+  }
 }

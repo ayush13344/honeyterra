@@ -9,13 +9,30 @@
   display: flex;
   flex-direction: column;
 
+  box-sizing: border-box;
+
   background: #fffdf8;
 
   border-right: 1px solid #e8e2d7;
 
   z-index: 1000;
 
-  transition: transform 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    left 0.3s ease,
+    right 0.3s ease;
+}
+
+/* ==============================
+   RIGHT SIDEBAR
+============================== */
+
+.admin-sidebar-right {
+  left: auto;
+  right: 0;
+
+  border-right: none;
+  border-left: 1px solid #e8e2d7;
 }
 
 /* ==============================
@@ -24,12 +41,15 @@
 
 .admin-sidebar-top {
   height: 88px;
+  min-height: 88px;
 
   padding: 0 22px;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
+
+  box-sizing: border-box;
 
   border-bottom: 1px solid #eee8dd;
 }
@@ -38,6 +58,8 @@
   display: flex;
   align-items: center;
   gap: 11px;
+
+  min-width: 0;
 }
 
 .admin-logo-icon {
@@ -47,6 +69,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+
+  flex-shrink: 0;
 
   border-radius: 10px;
 
@@ -65,6 +89,8 @@
 
   font-family: Georgia, serif;
   font-size: 18px;
+
+  white-space: nowrap;
 }
 
 .admin-sidebar-logo span {
@@ -75,6 +101,8 @@
   color: #8a918d;
 
   font-size: 11px;
+
+  white-space: nowrap;
 }
 
 /* ==============================
@@ -85,6 +113,11 @@
   flex: 1;
 
   padding: 28px 14px;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  scrollbar-width: thin;
 }
 
 .admin-nav-title {
@@ -118,7 +151,8 @@
 
   transition:
     background 0.2s ease,
-    color 0.2s ease;
+    color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .admin-nav-link:hover {
@@ -145,6 +179,8 @@
   padding: 18px 14px;
 
   border-top: 1px solid #eee8dd;
+
+  flex-shrink: 0;
 }
 
 .admin-logout-button {
@@ -185,12 +221,26 @@
 .admin-sidebar-close {
   display: none;
 
+  width: 34px;
+  height: 34px;
+
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
   border: none;
+  border-radius: 8px;
+
   background: transparent;
 
   color: #4d5852;
 
   cursor: pointer;
+}
+
+.admin-sidebar-close:hover {
+  background: #f1f3ef;
 }
 
 /* ==============================
@@ -199,38 +249,105 @@
 
 .admin-sidebar-overlay {
   display: none;
+
+  position: fixed;
+  inset: 0;
+
+  background: rgba(25, 31, 28, 0.35);
+
+  z-index: 999;
+
+  cursor: pointer;
 }
 
 /* ==============================
-   MOBILE
+   TABLET
+============================== */
+
+@media (max-width: 1100px) {
+  .admin-sidebar {
+    width: 230px;
+  }
+
+  .admin-sidebar-top {
+    padding: 0 18px;
+  }
+
+  .admin-sidebar-nav {
+    padding: 24px 12px;
+  }
+}
+
+/* ==============================
+   MOBILE DRAWER
 ============================== */
 
 @media (max-width: 900px) {
-
   .admin-sidebar {
-    transform: translateX(-100%);
+    width: min(280px, 85vw);
+
+    transform: translateX(-105%);
+
+    box-shadow: 8px 0 30px rgba(20, 30, 25, 0.08);
   }
 
   .admin-sidebar.open {
     transform: translateX(0);
   }
 
+  /* RIGHT SIDE MOBILE */
+
+  .admin-sidebar.admin-sidebar-right {
+    left: auto;
+    right: 0;
+
+    transform: translateX(105%);
+
+    box-shadow: -8px 0 30px rgba(20, 30, 25, 0.08);
+  }
+
+  .admin-sidebar.admin-sidebar-right.open {
+    transform: translateX(0);
+  }
+
   .admin-sidebar-close {
     display: flex;
-    align-items: center;
-    justify-content: center;
   }
 
   .admin-sidebar-overlay {
-    position: fixed;
-    inset: 0;
-
-    background: rgba(25, 31, 28, 0.35);
-
-    z-index: 999;
+    display: none;
   }
 
   .admin-sidebar-overlay.show {
     display: block;
+  }
+}
+
+/* ==============================
+   SMALL MOBILE
+============================== */
+
+@media (max-width: 600px) {
+  .admin-sidebar {
+    width: min(290px, 88vw);
+  }
+
+  .admin-sidebar-top {
+    height: 76px;
+    min-height: 76px;
+
+    padding: 0 16px;
+  }
+
+  .admin-sidebar-logo h2 {
+    font-size: 17px;
+  }
+
+  .admin-sidebar-nav {
+    padding: 22px 12px;
+  }
+
+  .admin-sidebar-bottom {
+    padding: 14px 12px;
   }
 }

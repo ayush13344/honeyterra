@@ -1,15 +1,25 @@
+/* =========================================
+   CUSTOMERS PAGE
+========================================= */
+
 .admin-customers-page {
   width: 100%;
+  min-width: 0;
 }
+
+/* =========================================
+   MINI STATS
+========================================= */
 
 .customer-mini-stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 15px;
   margin-bottom: 18px;
 }
 
 .customer-mini-stats > div {
+  min-width: 0;
   padding: 18px;
   border: 1px solid #e4dfd5;
   border-radius: 13px;
@@ -29,39 +39,67 @@
   font-size: 24px;
 }
 
+/* =========================================
+   SEARCH
+========================================= */
+
 .customers-search {
+  width: 100%;
   max-width: 430px;
   height: 43px;
+
   display: flex;
   align-items: center;
   gap: 9px;
+
   margin-bottom: 18px;
   padding: 0 13px;
+
+  box-sizing: border-box;
+
   border: 1px solid #dedad0;
   border-radius: 9px;
+
   background: #ffffff;
   color: #89918c;
 }
 
 .customers-search input {
   width: 100%;
+  min-width: 0;
+
   border: none;
   outline: none;
+
   background: transparent;
+
   color: #26302a;
   font-size: 13px;
 }
 
+/* =========================================
+   TABLE
+========================================= */
+
 .customers-table-card {
-  overflow: hidden;
+  width: 100%;
+  overflow-x: auto;
+
   border: 1px solid #e4dfd5;
   border-radius: 15px;
+
   background: #ffffff;
 }
 
+/* =========================================
+   CONTACT INFO
+========================================= */
+
 .customer-contact-info {
   display: flex;
+  flex-wrap: wrap;
   gap: 20px;
+
   margin-top: 18px;
 }
 
@@ -69,21 +107,70 @@
   display: flex;
   align-items: center;
   gap: 7px;
+
   color: #727b75;
   font-size: 12px;
+
+  min-width: 0;
 }
 
 .customer-contact-info svg {
+  flex-shrink: 0;
   color: #13765b;
 }
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 900px) {
+  .customer-mini-stats {
+    gap: 12px;
+  }
+
+  .customer-mini-stats > div {
+    padding: 16px;
+  }
+
+  .customer-mini-stats strong {
+    font-size: 22px;
+  }
+}
+
+/* =========================================
+   SMALL TABLET
+========================================= */
 
 @media (max-width: 700px) {
   .customer-mini-stats {
     grid-template-columns: 1fr;
   }
 
+  .customers-search {
+    max-width: 100%;
+  }
+
   .customer-contact-info {
     flex-direction: column;
     gap: 10px;
+  }
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 480px) {
+  .customer-mini-stats > div {
+    padding: 15px;
+    border-radius: 11px;
+  }
+
+  .customer-mini-stats strong {
+    font-size: 21px;
+  }
+
+  .customer-contact-info div {
+    font-size: 11px;
   }
 }
