@@ -23,6 +23,7 @@ import AdminLogin from "../admin/pages/AdminLogin/AdminLogin";
 import Dashboard from "../admin/pages/Dashboard/Dashboard";
 import Products from "../admin/pages/Products/Products";
 import Orders from "../admin/pages/Orders/Orders";
+import OrderDetails from "../admin/pages/Orders/OrderDetails";
 import Customers from "../admin/pages/Customers/Customers";
 import Settings from "../admin/pages/Settings/Settings";
 import AddProduct from "../admin/pages/Products/AddProduct";
@@ -47,10 +48,7 @@ function AppRoutes() {
 
         <Route path="/shop/ash-tray" element={<GelAshTray />} />
 
-        <Route
-  path="/products/:id"
-  element={<ProductDetails />}
-/>
+        <Route path="/products/:id" element={<ProductDetails />} />
 
         <Route path="/cart" element={<CartDrawer />} />
 
@@ -61,7 +59,7 @@ function AppRoutes() {
         <Route path="/about" element={<About />} />
 
         <Route path="/contact" element={<Contact />} />
-        
+
         <Route path="/checkout" element={<Checkout />} />
       </Route>
 
@@ -75,6 +73,7 @@ function AppRoutes() {
         <Route path="/admin/products/add" element={<AddProduct />} />
 
         <Route path="/admin/orders" element={<Orders />} />
+        <Route path="/admin/orders/:orderId" element={<OrderDetails />} />
 
         <Route path="/admin/customers" element={<Customers />} />
 
