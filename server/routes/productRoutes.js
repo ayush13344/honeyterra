@@ -22,16 +22,12 @@ const router = express.Router();
 // GET ALL ACTIVE PRODUCTS
 router.get("/", getProducts);
 
-// GET SINGLE ACTIVE PRODUCT
-router.get("/:id", getProductById);
-
-
 // ==========================================
 // ADMIN ROUTES
 // ==========================================
 
 // GET ALL PRODUCTS FOR ADMIN
-// IMPORTANT: Keep this BEFORE /:id
+// IMPORTANT: This MUST be before /:id
 router.get(
   "/admin/all",
   protect,
@@ -39,11 +35,7 @@ router.get(
   getAdminProducts
 );
 
-
-// ==========================================
 // CREATE PRODUCT
-// ==========================================
-
 router.post(
   "/",
   protect,
@@ -52,11 +44,7 @@ router.post(
   createProduct
 );
 
-
-// ==========================================
 // UPDATE PRODUCT
-// ==========================================
-
 router.put(
   "/:id",
   protect,
@@ -65,11 +53,7 @@ router.put(
   updateProduct
 );
 
-
-// ==========================================
 // DELETE PRODUCT
-// ==========================================
-
 router.delete(
   "/:id",
   protect,
@@ -77,5 +61,11 @@ router.delete(
   deleteProduct
 );
 
+// ==========================================
+// PUBLIC SINGLE PRODUCT
+// ==========================================
+
+// GET SINGLE ACTIVE PRODUCT
+router.get("/:id", getProductById);
 
 export default router;

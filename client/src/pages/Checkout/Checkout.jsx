@@ -1,6 +1,6 @@
 import { useState } from "react";
-
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 import {
   Truck,
@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 
 import { useCart } from "../../context/CartContext";
-
 import "./Checkout.css";
 
 const Checkout = () => {
@@ -29,12 +28,11 @@ const Checkout = () => {
   const items =
     cart?.items || cartItems || [];
 
-  const subtotal =
-    Number(
-      cartSubtotal ??
-        cart?.totalAmount ??
-        0
-    );
+  const subtotal = Number(
+    cartSubtotal ??
+      cart?.totalAmount ??
+      0
+  );
 
   // ==========================================
   // FORM STATE
@@ -186,39 +184,148 @@ const Checkout = () => {
   const handlePlaceOrder = async (event) => {
     event.preventDefault();
 
+    // ==========================================
+    // VALIDATE FORM
+    // ==========================================
+
     const isValid = validateForm();
 
     if (!isValid) {
       return;
     }
 
-    setIsSubmitting(true);
+    // ==========================================
+    // GET USER TOKEN
+    // ==========================================
 
-    /*
-      ==========================================
-      BACKEND ORDER API WILL GO HERE
-      ==========================================
+    const token =
+      localStorage.getItem("token");
 
-      Later this will become:
+    console.log(
+      "Checkout Token:",
+      token
+        ? "Token found"
+        : "Token missing"
+    );
 
-      await axios.post("/api/orders", {
-        shippingAddress: formData,
-        paymentMethod,
-        items,
-      });
+    // ==========================================
+    // CHECK LOGIN
+    // ==========================================
 
-    */
-
-    // Temporary frontend behavior
-    setTimeout(() => {
-      setIsSubmitting(false);
-
+    if (!token) {
       alert(
-        "Order placed successfully!"
+        "Please login before placing an order."
       );
 
-      navigate("/");
-    }, 1000);
+      navigate("/login");
+      return;
+    }
+
+    // ==========================================
+    // START SUBMITTING
+    // ==========================================
+
+    setIsSubmitting(true);
+
+    try {
+      // ==========================================
+      // CREATE ORDER
+      // ==========================================
+
+      const response = await axios.post(
+        "http://localhost:3000/api/orders",
+        {
+          fullName:
+            formData.fullName.trim(),
+
+          phone:
+            formData.mobile.trim(),
+
+          address:
+            formData.address.trim(),
+
+          city:
+            formData.city.trim(),
+
+          state:
+            formData.state.trim(),
+
+          pincode:
+            formData.pincode.trim(),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log(
+        "Create Order Response:",
+        response.data
+      );
+
+      // ==========================================
+      // ORDER SUCCESS
+      // ==========================================
+
+      if (response.data.success) {
+        alert(
+          "Order placed successfully!"
+        );
+
+        // Cart is already emptied by
+        // backend after successful order.
+
+        navigate("/");
+      } else {
+        alert(
+          response.data.message ||
+            "Failed to place order."
+        );
+      }
+    } catch (error) {
+      console.error(
+        "Place Order Error:",
+        error
+      );
+
+      console.error(
+        "Server Response:",
+        error.response?.data
+      );
+
+      // ==========================================
+      // UNAUTHORIZED
+      // ==========================================
+
+      if (
+        error.response?.status === 401
+      ) {
+        alert(
+          "Your session has expired. Please login again."
+        );
+
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
+        navigate("/login");
+
+        return;
+      }
+
+      // ==========================================
+      // OTHER SERVER ERROR
+      // ==========================================
+
+      alert(
+        error.response?.data?.message ||
+          "Failed to place order. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // ==========================================
@@ -228,9 +335,7 @@ const Checkout = () => {
   if (!items || items.length === 0) {
     return (
       <main className="checkout-page">
-
         <div className="checkout-empty">
-
           <div className="checkout-empty-icon">
             <ShoppingBag size={40} />
           </div>
@@ -252,16 +357,13 @@ const Checkout = () => {
           >
             Continue Shopping
           </button>
-
         </div>
-
       </main>
     );
   }
 
   return (
     <main className="checkout-page">
-
       <div className="checkout-container">
 
         {/* ==================================================
@@ -275,7 +377,6 @@ const Checkout = () => {
           ========================================== */}
 
           <div className="checkout-page-heading">
-
             <span className="checkout-eyebrow">
               HONEYTERRA
             </span>
@@ -289,7 +390,6 @@ const Checkout = () => {
               choose your preferred payment
               method.
             </p>
-
           </div>
 
           {/* ==========================================
@@ -301,11 +401,9 @@ const Checkout = () => {
             onSubmit={handlePlaceOrder}
             className="checkout-form"
           >
-
             <section className="checkout-form-block">
 
               <div className="checkout-section-heading">
-
                 <div className="checkout-section-number">
                   01
                 </div>
@@ -320,7 +418,6 @@ const Checkout = () => {
                     your order?
                   </p>
                 </div>
-
               </div>
 
               {/* ==========================================
@@ -328,7 +425,6 @@ const Checkout = () => {
               ========================================== */}
 
               <div className="checkout-field">
-
                 <label htmlFor="fullName">
                   Full name
                 </label>
@@ -352,7 +448,6 @@ const Checkout = () => {
                     {errors.fullName}
                   </span>
                 )}
-
               </div>
 
               {/* ==========================================
@@ -362,7 +457,6 @@ const Checkout = () => {
               <div className="checkout-two-column">
 
                 <div className="checkout-field">
-
                   <label htmlFor="email">
                     Email
                   </label>
@@ -386,11 +480,9 @@ const Checkout = () => {
                       {errors.email}
                     </span>
                   )}
-
                 </div>
 
                 <div className="checkout-field">
-
                   <label htmlFor="mobile">
                     Mobile number
                   </label>
@@ -415,7 +507,6 @@ const Checkout = () => {
                       {errors.mobile}
                     </span>
                   )}
-
                 </div>
 
               </div>
@@ -425,7 +516,6 @@ const Checkout = () => {
               ========================================== */}
 
               <div className="checkout-field">
-
                 <label htmlFor="address">
                   Address
                 </label>
@@ -449,7 +539,6 @@ const Checkout = () => {
                     {errors.address}
                   </span>
                 )}
-
               </div>
 
               {/* ==========================================
@@ -457,7 +546,6 @@ const Checkout = () => {
               ========================================== */}
 
               <div className="checkout-field">
-
                 <label htmlFor="landmark">
                   Apartment, landmark
                   <span>
@@ -475,7 +563,6 @@ const Checkout = () => {
                   placeholder="Landmark"
                   className="checkout-input"
                 />
-
               </div>
 
               {/* ==========================================
@@ -485,7 +572,6 @@ const Checkout = () => {
               <div className="checkout-two-column">
 
                 <div className="checkout-field">
-
                   <label htmlFor="city">
                     City
                   </label>
@@ -509,11 +595,9 @@ const Checkout = () => {
                       {errors.city}
                     </span>
                   )}
-
                 </div>
 
                 <div className="checkout-field">
-
                   <label htmlFor="state">
                     State
                   </label>
@@ -537,7 +621,6 @@ const Checkout = () => {
                       {errors.state}
                     </span>
                   )}
-
                 </div>
 
               </div>
@@ -547,7 +630,6 @@ const Checkout = () => {
               ========================================== */}
 
               <div className="checkout-field checkout-pincode-field">
-
                 <label htmlFor="pincode">
                   Pincode
                 </label>
@@ -573,7 +655,6 @@ const Checkout = () => {
                     {errors.pincode}
                   </span>
                 )}
-
               </div>
 
             </section>
@@ -616,9 +697,7 @@ const Checkout = () => {
                   setPaymentMethod("cod")
                 }
               >
-
                 <div className="payment-radio">
-
                   <div
                     className={
                       paymentMethod === "cod"
@@ -626,19 +705,13 @@ const Checkout = () => {
                         : ""
                     }
                   />
-
                 </div>
 
                 <div className="payment-icon">
-
-                  <CreditCard
-                    size={21}
-                  />
-
+                  <CreditCard size={21} />
                 </div>
 
                 <div className="payment-content">
-
                   <strong>
                     Cash on Delivery
                   </strong>
@@ -647,7 +720,6 @@ const Checkout = () => {
                     Pay in cash when your
                     order arrives.
                   </span>
-
                 </div>
 
                 {paymentMethod === "cod" && (
@@ -656,29 +728,22 @@ const Checkout = () => {
                     size={21}
                   />
                 )}
-
               </button>
 
-              {/* ONLINE PAYMENT PLACEHOLDER */}
+              {/* ONLINE PAYMENT */}
 
               <button
                 type="button"
                 className="payment-option payment-option-disabled"
                 disabled
               >
-
                 <div className="payment-radio" />
 
                 <div className="payment-icon">
-
-                  <CreditCard
-                    size={21}
-                  />
-
+                  <CreditCard size={21} />
                 </div>
 
                 <div className="payment-content">
-
                   <strong>
                     Online Payment
                   </strong>
@@ -686,9 +751,7 @@ const Checkout = () => {
                   <span>
                     Coming soon
                   </span>
-
                 </div>
-
               </button>
 
             </section>
@@ -708,7 +771,6 @@ const Checkout = () => {
             </button>
 
           </form>
-
         </section>
 
         {/* ==================================================
@@ -724,7 +786,6 @@ const Checkout = () => {
           <div className="order-summary-header">
 
             <div>
-
               <span className="checkout-eyebrow">
                 YOUR ORDER
               </span>
@@ -732,11 +793,9 @@ const Checkout = () => {
               <h2>
                 Order summary
               </h2>
-
             </div>
 
             <span className="summary-item-count">
-
               {items.reduce(
                 (total, item) =>
                   total +
@@ -746,7 +805,6 @@ const Checkout = () => {
                 0
               )}{" "}
               items
-
             </span>
 
           </div>
@@ -757,7 +815,7 @@ const Checkout = () => {
 
           <div className="summary-products">
 
-            {items.map((item) => {
+            {items.map((item, index) => {
 
               const product =
                 item.product;
@@ -772,7 +830,11 @@ const Checkout = () => {
               return (
                 <div
                   className="summary-product"
-                  key={product._id}
+                  key={
+                    product._id ||
+                    item._id ||
+                    index
+                  }
                 >
 
                   {/* IMAGE */}
@@ -932,7 +994,6 @@ const Checkout = () => {
         </aside>
 
       </div>
-
     </main>
   );
 };

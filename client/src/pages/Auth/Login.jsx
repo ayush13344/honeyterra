@@ -1,9 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
-
 import "./Auth.css";
-
 import { loginUser } from "../../services/authService";
 import { useAuth } from "../../context/AuthContext";
 
@@ -12,10 +10,8 @@ function Login() {
   const { login } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -72,32 +68,83 @@ function Login() {
       }
 
       // ==========================================
+      // CHECK USER ROLE
+      // ==========================================
+
+      const isAdmin = result.user.role === "admin";
+
+      // ==========================================
       // SAVE TOKEN
       // ==========================================
 
-      localStorage.setItem(
-        "token",
-        result.token
-      );
+      // Normal users use "token"
+      // Admin users use "adminToken"
+
+      if (isAdmin) {
+        localStorage.setItem(
+          "adminToken",
+          result.token
+        );
+
+        // Remove old admin token if needed
+        localStorage.removeItem("token");
+      } else {
+        localStorage.setItem(
+          "token",
+          result.token
+        );
+
+        // Remove old admin token if needed
+        localStorage.removeItem("adminToken");
+      }
 
       // ==========================================
       // SAVE USER
       // ==========================================
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify(result.user)
-      );
+      if (isAdmin) {
+        localStorage.setItem(
+          "adminUser",
+          JSON.stringify(result.user)
+        );
 
-      console.log(
-        "Token saved:",
-        localStorage.getItem("token")
-      );
+        // Remove old admin user if needed
+        localStorage.removeItem("user");
+      } else {
+        localStorage.setItem(
+          "user",
+          JSON.stringify(result.user)
+        );
 
-      console.log(
-        "User saved:",
-        localStorage.getItem("user")
-      );
+        // Remove old admin user if needed
+        localStorage.removeItem("adminUser");
+      }
+
+      // ==========================================
+      // DEBUG LOGS
+      // ==========================================
+
+      if (isAdmin) {
+        console.log(
+          "Admin Token saved:",
+          localStorage.getItem("adminToken")
+        );
+
+        console.log(
+          "Admin User saved:",
+          localStorage.getItem("adminUser")
+        );
+      } else {
+        console.log(
+          "User Token saved:",
+          localStorage.getItem("token")
+        );
+
+        console.log(
+          "User saved:",
+          localStorage.getItem("user")
+        );
+      }
 
       // ==========================================
       // UPDATE AUTH CONTEXT
@@ -112,7 +159,7 @@ function Login() {
       // ADMIN REDIRECT
       // ==========================================
 
-      if (result.user.role === "admin") {
+      if (isAdmin) {
         console.log(
           "Admin login detected"
         );
@@ -160,9 +207,7 @@ function Login() {
 
   return (
     <main className="auth-page">
-
       <div className="auth-container">
-
         <div className="auth-content">
 
           {/* ======================================
@@ -182,13 +227,11 @@ function Login() {
             </span>
           </Link>
 
-
           {/* ======================================
               HEADING
           ======================================= */}
 
           <div className="auth-heading">
-
             <h1>
               Welcome back
             </h1>
@@ -197,9 +240,7 @@ function Login() {
               Sign in to track orders and
               check out faster.
             </p>
-
           </div>
-
 
           {/* ======================================
               LOGIN FORM
@@ -215,7 +256,6 @@ function Login() {
             ======================================= */}
 
             <div className="form-group">
-
               <label htmlFor="email">
                 Email
               </label>
@@ -231,22 +271,18 @@ function Login() {
                 }
                 required
               />
-
             </div>
-
 
             {/* ======================================
                 PASSWORD
             ======================================= */}
 
             <div className="form-group">
-
               <label htmlFor="password">
                 Password
               </label>
 
               <div className="password-input">
-
                 <input
                   id="password"
                   type={
@@ -285,11 +321,8 @@ function Login() {
                     <Eye size={20} />
                   )}
                 </button>
-
               </div>
-
             </div>
-
 
             {/* ======================================
                 ERROR
@@ -301,7 +334,6 @@ function Login() {
               </p>
             )}
 
-
             {/* ======================================
                 SUBMIT
             ======================================= */}
@@ -311,34 +343,26 @@ function Login() {
               className="auth-submit"
               disabled={loading}
             >
-
               {loading
                 ? "Signing in..."
                 : "Sign in"}
-
             </button>
-
           </form>
-
 
           {/* ======================================
               SIGNUP
           ======================================= */}
 
           <p className="auth-switch">
-
             New to HoneyTerra?{" "}
 
             <Link to="/signup">
               Create an account
             </Link>
-
           </p>
 
         </div>
-
       </div>
-
     </main>
   );
 }

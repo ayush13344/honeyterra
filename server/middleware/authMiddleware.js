@@ -9,18 +9,17 @@ const protect = async (req, res, next) => {
     // GET TOKEN FROM AUTHORIZATION HEADER
     // ==========================================
 
-    if (
-      req.headers.authorization &&
-      req.headers.authorization.startsWith("Bearer ")
-    ) {
-      token = req.headers.authorization.split(" ")[1];
+    const authHeader = req.headers.authorization;
+
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.split(" ")[1];
     }
 
     // ==========================================
     // NO TOKEN
     // ==========================================
 
-    if (!token) {
+    if (!token || token === "undefined" || token === "null") {
       return res.status(401).json({
         success: false,
         message: "Not authorized, token missing",
@@ -59,7 +58,7 @@ const protect = async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error("Auth middleware error:", error);
+    console.error("Auth middleware error:", error.message);
 
     return res.status(401).json({
       success: false,

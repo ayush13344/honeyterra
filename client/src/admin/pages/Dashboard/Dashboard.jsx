@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+import axios from "axios";
+
 import {
   ShoppingBag,
   ShoppingCart,
@@ -12,36 +15,122 @@ import AdminTable from "../../components/AdminTable/AdminTable";
 import "./Dashboard.css";
 
 function Dashboard() {
-  const recentOrders = [
-    {
-      id: "#HT1005",
-      customer: "Rahul Sharma",
-      product: "Gel Ash Tray",
-      amount: "₹498",
-      status: "Paid",
-    },
-    {
-      id: "#HT1004",
-      customer: "Priya Singh",
-      product: "Honeycomb Wrap",
-      amount: "₹799",
-      status: "Pending",
-    },
-    {
-      id: "#HT1003",
-      customer: "Aman Verma",
-      product: "Gel Ash Tray",
-      amount: "₹249",
-      status: "Delivered",
-    },
-    {
-      id: "#HT1002",
-      customer: "Neha Patel",
-      product: "Gel Ash Tray",
-      amount: "₹498",
-      status: "Shipped",
-    },
-  ];
+  // ==========================================
+  // STATE
+  // ==========================================
+
+  const [stats, setStats] = useState({
+    totalSales: 0,
+    totalOrders: 0,
+    totalCustomers: 0,
+    totalProducts: 0,
+  });
+
+  const [recentOrders, setRecentOrders] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // ==========================================
+  // FETCH DASHBOARD DATA
+  // ==========================================
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      // ==========================================
+      // GET ADMIN TOKEN
+      // ==========================================
+
+      const token = localStorage.getItem("adminToken");
+
+      console.log("Dashboard Admin Token:", token);
+
+      // ==========================================
+      // CHECK TOKEN
+      // ==========================================
+
+      if (!token) {
+        setError("Admin authentication token not found. Please login again.");
+        setLoading(false);
+        return;
+      }
+
+      // ==========================================
+      // FETCH DASHBOARD
+      // ==========================================
+
+      const response = await axios.get(
+        "http://localhost:3000/api/admin/dashboard",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("Dashboard Response:", response.data);
+
+      // ==========================================
+      // SET DATA
+      // ==========================================
+
+      if (response.data.success) {
+        setStats(
+          response.data.stats || {
+            totalSales: 0,
+            totalOrders: 0,
+            totalCustomers: 0,
+            totalProducts: 0,
+          }
+        );
+
+        setRecentOrders(
+          response.data.recentOrders || []
+        );
+
+        setProducts(
+          response.data.products || []
+        );
+      }
+    } catch (error) {
+      console.error(
+        "Dashboard Fetch Error:",
+        error
+      );
+
+      // ==========================================
+      // HANDLE UNAUTHORIZED
+      // ==========================================
+
+      if (error.response?.status === 401) {
+        setError(
+          "Admin session expired or invalid. Please login again."
+        );
+
+        // Remove invalid token
+        localStorage.removeItem("adminToken");
+        localStorage.removeItem("adminUser");
+      } else {
+        setError(
+          error.response?.data?.message ||
+            "Failed to load dashboard"
+        );
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ==========================================
+  // ORDER TABLE COLUMNS
+  // ==========================================
 
   const columns = [
     {
@@ -66,13 +155,99 @@ function Dashboard() {
     },
   ];
 
+  // ==========================================
+  // FORMAT ORDERS FOR TABLE
+  // ==========================================
+
+  const formattedOrders = recentOrders.map(
+    (order) => ({
+      id: order._id
+        ? `#${order._id.slice(-6).toUpperCase()}`
+        : "#N/A",
+
+      customer:
+        order.user?.name ||
+        "Unknown Customer",
+
+      product:
+        order.items?.length > 1
+          ? `${order.items[0]?.name || "Product"} + ${
+              order.items.length - 1
+            } more`
+          : order.items?.[0]?.name ||
+            "Unknown Product",
+
+      amount: `₹${Number(
+        order.totalAmount || 0
+      ).toLocaleString("en-IN")}`,
+
+      status: order.orderStatus
+        ? order.orderStatus
+            .charAt(0)
+            .toUpperCase() +
+          order.orderStatus.slice(1)
+        : "Pending",
+    })
+  );
+
+  // ==========================================
+  // LOADING
+  // ==========================================
+
+  if (loading) {
+    return (
+      <div className="admin-dashboard-page">
+        <div className="admin-page-heading">
+          <div>
+            <span className="admin-page-eyebrow">
+              OVERVIEW
+            </span>
+
+            <h1>Dashboard</h1>
+
+            <p>
+              Loading your HoneyTerra store data...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // ERROR
+  // ==========================================
+
+  if (error) {
+    return (
+      <div className="admin-dashboard-page">
+        <div className="admin-page-heading">
+          <div>
+            <span className="admin-page-eyebrow">
+              OVERVIEW
+            </span>
+
+            <h1>Dashboard</h1>
+
+            <p>{error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // DASHBOARD
+  // ==========================================
+
   return (
     <div className="admin-dashboard-page">
 
-      {/* Header */}
+      {/* ==========================================
+          HEADER
+      ========================================== */}
 
       <div className="admin-page-heading">
-
         <div>
           <span className="admin-page-eyebrow">
             OVERVIEW
@@ -81,59 +256,67 @@ function Dashboard() {
           <h1>Dashboard</h1>
 
           <p>
-            Here's what's happening with your HoneyTerra store.
+            Here's what's happening with your
+            HoneyTerra store.
           </p>
         </div>
 
         <div className="dashboard-date">
           Today
         </div>
+      </div>
+
+      {/* ==========================================
+          STATS
+      ========================================== */}
+
+      <div className="dashboard-stats">
+
+        <StatCard
+          title="Total Sales"
+          value={`₹${Number(
+            stats.totalSales || 0
+          ).toLocaleString("en-IN")}`}
+          icon={IndianRupee}
+          change="All time"
+          positive={true}
+        />
+
+        <StatCard
+          title="Total Orders"
+          value={stats.totalOrders || 0}
+          icon={ShoppingCart}
+          change="All time"
+          positive={true}
+        />
+
+        <StatCard
+          title="Customers"
+          value={stats.totalCustomers || 0}
+          icon={Users}
+          change="Registered"
+          positive={true}
+        />
+
+        <StatCard
+          title="Products"
+          value={stats.totalProducts || 0}
+          icon={ShoppingBag}
+          change="Total"
+          positive={true}
+        />
 
       </div>
 
-      {/* Stats */}
-
-     <div className="dashboard-stats">
-
-  <StatCard
-    title="Total Sales"
-    value="₹12,450"
-    icon={IndianRupee}
-    change="+12.5%"
-    positive={true}
-  />
-
-  <StatCard
-    title="Total Orders"
-    value="42"
-    icon={ShoppingCart}
-    change="+8.2%"
-    positive={true}
-  />
-
-  <StatCard
-    title="Customers"
-    value="31"
-    icon={Users}
-    change="+5.4%"
-    positive={true}
-  />
-
-  <StatCard
-    title="Products"
-    value="2"
-    icon={ShoppingBag}
-    change="Active"
-    positive={true}
-  />
-
-</div>
-
-      {/* Main grid */}
+      {/* ==========================================
+          MAIN GRID
+      ========================================== */}
 
       <div className="dashboard-content-grid">
 
-        {/* Recent Orders */}
+        {/* ==========================================
+            RECENT ORDERS
+        ========================================== */}
 
         <section className="dashboard-section dashboard-orders">
 
@@ -141,7 +324,10 @@ function Dashboard() {
 
             <div>
               <h2>Recent Orders</h2>
-              <p>Latest activity from your store.</p>
+
+              <p>
+                Latest activity from your store.
+              </p>
             </div>
 
             <button className="dashboard-view-button">
@@ -153,12 +339,14 @@ function Dashboard() {
 
           <AdminTable
             columns={columns}
-            data={recentOrders}
+            data={formattedOrders}
           />
 
         </section>
 
-        {/* Products */}
+        {/* ==========================================
+            PRODUCTS
+        ========================================== */}
 
         <section className="dashboard-section">
 
@@ -166,42 +354,82 @@ function Dashboard() {
 
             <div>
               <h2>Products</h2>
-              <p>Current store inventory.</p>
+
+              <p>
+                Current store inventory.
+              </p>
             </div>
 
           </div>
 
           <div className="dashboard-product-list">
 
-            <div className="dashboard-product">
+            {products.length === 0 ? (
 
-              <div className="dashboard-product-image">
-                HT
-              </div>
+              <p>
+                No products found.
+              </p>
 
-              <div>
-                <h3>Gel Ash Tray</h3>
-                <span>24 units in stock</span>
-              </div>
+            ) : (
 
-              <strong>₹249</strong>
+              products.map((product) => (
 
-            </div>
+                <div
+                  className="dashboard-product"
+                  key={product._id}
+                >
 
-            <div className="dashboard-product">
+                  {/* PRODUCT IMAGE */}
 
-              <div className="dashboard-product-image">
-                HW
-              </div>
+                  <div className="dashboard-product-image">
 
-              <div>
-                <h3>Honeycomb Wrap</h3>
-                <span>Coming soon</span>
-              </div>
+                    {product.images?.[0] ? (
 
-              <strong>—</strong>
+                      <img
+                        src={product.images[0]}
+                        alt={product.name}
+                      />
 
-            </div>
+                    ) : (
+
+                      "HT"
+
+                    )}
+
+                  </div>
+
+                  {/* PRODUCT DETAILS */}
+
+                  <div>
+
+                    <h3>
+                      {product.name}
+                    </h3>
+
+                    <span>
+
+                      {product.stock > 0
+                        ? `${product.stock} units in stock`
+                        : "Out of stock"}
+
+                    </span>
+
+                  </div>
+
+                  {/* PRODUCT PRICE */}
+
+                  <strong>
+                    ₹
+                    {Number(
+                      product.price || 0
+                    ).toLocaleString("en-IN")}
+                  </strong>
+
+                </div>
+
+              ))
+
+            )}
 
           </div>
 

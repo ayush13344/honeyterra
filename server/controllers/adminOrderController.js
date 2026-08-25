@@ -1,16 +1,17 @@
-import Order from "../models/Order.js";
 
+import Order from "../models/Order.js";
 
 // ==========================================
 // GET ALL ORDERS - ADMIN
 // ==========================================
+
 export const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find()
       .populate("user", "name email")
       .populate(
         "items.product",
-        "name slug images price category"
+        "name slug images price category stock"
       )
       .sort({ createdAt: -1 });
 
@@ -30,10 +31,10 @@ export const getAllOrders = async (req, res) => {
   }
 };
 
-
 // ==========================================
 // GET SINGLE ORDER - ADMIN
 // ==========================================
+
 export const getAdminOrderById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -67,10 +68,10 @@ export const getAdminOrderById = async (req, res) => {
   }
 };
 
-
 // ==========================================
 // UPDATE ORDER STATUS - ADMIN
 // ==========================================
+
 export const updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -108,7 +109,7 @@ export const updateOrderStatus = async (req, res) => {
       });
     }
 
-    // Don't allow changing delivered order
+    // Delivered orders cannot be changed
     if (
       order.orderStatus === "delivered" &&
       orderStatus !== "delivered"
@@ -123,10 +124,17 @@ export const updateOrderStatus = async (req, res) => {
 
     await order.save();
 
+    const updatedOrder = await Order.findById(id)
+      .populate("user", "name email")
+      .populate(
+        "items.product",
+        "name slug images price category stock"
+      );
+
     return res.status(200).json({
       success: true,
       message: "Order status updated successfully",
-      order,
+      order: updatedOrder,
     });
   } catch (error) {
     console.error("Update Order Status Error:", error);
@@ -139,10 +147,10 @@ export const updateOrderStatus = async (req, res) => {
   }
 };
 
-
 // ==========================================
 // UPDATE PAYMENT STATUS - ADMIN
 // ==========================================
+
 export const updatePaymentStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -182,10 +190,17 @@ export const updatePaymentStatus = async (req, res) => {
 
     await order.save();
 
+    const updatedOrder = await Order.findById(id)
+      .populate("user", "name email")
+      .populate(
+        "items.product",
+        "name slug images price category stock"
+      );
+
     return res.status(200).json({
       success: true,
       message: "Payment status updated successfully",
-      order,
+      order: updatedOrder,
     });
   } catch (error) {
     console.error("Update Payment Status Error:", error);
@@ -197,3 +212,4 @@ export const updatePaymentStatus = async (req, res) => {
     });
   }
 };
+

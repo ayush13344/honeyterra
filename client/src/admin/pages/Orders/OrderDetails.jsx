@@ -1,5 +1,7 @@
-import React, { useMemo, useState } from "react";
+
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+
 import {
   ArrowLeft,
   Package,
@@ -17,121 +19,33 @@ import {
 
 import "./OrderDetails.css";
 
-const orders = [
-  {
-    id: "HT1005",
-    customer: "Rahul Sharma",
-    email: "rahul.sharma@gmail.com",
-    phone: "+91 98765 43210",
-    product: "Gel Ash Tray",
-    quantity: 1,
-    date: "22 Aug 2026",
-    amount: 498,
-    status: "Paid",
-    payment: "Paid",
-    paymentMethod: "UPI",
-    address: "42 Green Park, New Delhi, India",
-    subtotal: 498,
-    shipping: 0,
-    tax: 0,
-  },
-  {
-    id: "HT1004",
-    customer: "Priya Singh",
-    email: "priya.singh@gmail.com",
-    phone: "+91 98765 12345",
-    product: "Honeycomb Wrap",
-    quantity: 1,
-    date: "21 Aug 2026",
-    amount: 799,
-    status: "Pending",
-    payment: "Pending",
-    paymentMethod: "Credit Card",
-    address: "18 MG Road, Bengaluru, India",
-    subtotal: 749,
-    shipping: 50,
-    tax: 0,
-  },
-  {
-    id: "HT1003",
-    customer: "Aman Verma",
-    email: "aman.verma@gmail.com",
-    phone: "+91 99887 66554",
-    product: "Gel Ash Tray",
-    quantity: 1,
-    date: "20 Aug 2026",
-    amount: 249,
-    status: "Delivered",
-    payment: "Paid",
-    paymentMethod: "UPI",
-    address: "23 Sector 15, Chandigarh, India",
-    subtotal: 249,
-    shipping: 0,
-    tax: 0,
-  },
-  {
-    id: "HT1002",
-    customer: "Neha Patel",
-    email: "neha.patel@gmail.com",
-    phone: "+91 98761 23456",
-    product: "Gel Ash Tray",
-    quantity: 2,
-    date: "19 Aug 2026",
-    amount: 498,
-    status: "Shipped",
-    payment: "Paid",
-    paymentMethod: "Debit Card",
-    address: "72 Satellite Road, Ahmedabad, India",
-    subtotal: 498,
-    shipping: 0,
-    tax: 0,
-  },
-  {
-    id: "HT1001",
-    customer: "Arjun Mehta",
-    email: "arjun.mehta@gmail.com",
-    phone: "+91 98123 45678",
-    product: "Gel Ash Tray",
-    quantity: 1,
-    date: "18 Aug 2026",
-    amount: 249,
-    status: "Cancelled",
-    payment: "Refunded",
-    paymentMethod: "UPI",
-    address: "9 Civil Lines, Jaipur, India",
-    subtotal: 249,
-    shipping: 0,
-    tax: 0,
-  },
-];
-
 const trackingSteps = [
   {
-    key: "Pending",
+    key: "pending",
     title: "Order Placed",
     description: "Order has been placed by the customer.",
     icon: Clock3,
   },
   {
-    key: "Paid",
-    title: "Payment Confirmed",
-    description: "Payment has been successfully confirmed.",
-    icon: CreditCard,
+    key: "confirmed",
+    title: "Order Confirmed",
+    description: "Order has been confirmed.",
+    icon: Check,
   },
   {
-    key: "Processing",
+    key: "processing",
     title: "Processing",
     description: "Order is being prepared for shipment.",
     icon: Package,
   },
   {
-    key: "Shipped",
+    key: "shipped",
     title: "Shipped",
     description: "Order has left the warehouse.",
     icon: Truck,
   },
   {
-    key: "Delivered",
+    key: "delivered",
     title: "Delivered",
     description: "Order has been delivered to the customer.",
     icon: Check,
@@ -139,20 +53,23 @@ const trackingSteps = [
 ];
 
 const statusOrder = [
-  "Pending",
-  "Paid",
-  "Processing",
-  "Shipped",
-  "Delivered",
+  "pending",
+  "confirmed",
+  "processing",
+  "shipped",
+  "delivered",
 ];
 
-const getStatusClass = (status) => {
+const getStatusClass = (status = "") => {
   switch (status.toLowerCase()) {
     case "paid":
       return "details-status-paid";
 
     case "pending":
       return "details-status-pending";
+
+    case "confirmed":
+      return "details-status-processing";
 
     case "processing":
       return "details-status-processing";
@@ -166,37 +83,285 @@ const getStatusClass = (status) => {
     case "cancelled":
       return "details-status-cancelled";
 
+    case "failed":
+      return "details-status-cancelled";
+
+    case "refunded":
+      return "details-status-cancelled";
+
     default:
       return "";
   }
+};
+
+const formatStatus = (status = "") => {
+  return status.charAt(0).toUpperCase() + status.slice(1);
 };
 
 const OrderDetails = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
 
-  const order = useMemo(
-    () => orders.find((item) => item.id === orderId),
-    [orderId]
-  );
+  const [order, setOrder] = useState(null);
 
-  const [currentStatus, setCurrentStatus] = useState(
-    order?.status || "Pending"
-  );
+  const [currentStatus, setCurrentStatus] = useState("pending");
 
-  const [selectedStatus, setSelectedStatus] = useState(
-    order?.status || "Pending"
-  );
+  const [selectedStatus, setSelectedStatus] = useState("pending");
 
-  if (!order) {
+  const [selectedPaymentStatus, setSelectedPaymentStatus] =
+    useState("pending");
+
+  const [loading, setLoading] = useState(true);
+
+  const [error, setError] = useState("");
+
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+
+  const [updatingPayment, setUpdatingPayment] = useState(false);
+
+  // ==========================================
+  // FETCH ADMIN ORDER
+  // ==========================================
+
+  const fetchOrder = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const token = localStorage.getItem("adminToken");
+
+      console.log("Admin Token:", token);
+
+      if (!token) {
+        throw new Error("Admin token not found");
+      }
+
+      console.log(
+        "Fetching Admin Order:",
+        `http://localhost:3000/api/admin/orders/${orderId}`
+      );
+
+      const response = await fetch(
+        `http://localhost:3000/api/admin/orders/${orderId}`,
+        {
+          method: "GET",
+
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      console.log("Admin Order Details Response:", data);
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Failed to fetch order"
+        );
+      }
+
+      if (!data.success || !data.order) {
+        throw new Error("Order not found");
+      }
+
+      setOrder(data.order);
+
+      setCurrentStatus(data.order.orderStatus);
+
+      setSelectedStatus(data.order.orderStatus);
+
+      setSelectedPaymentStatus(data.order.paymentStatus);
+    } catch (error) {
+      console.error("Fetch Admin Order Error:", error);
+
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ==========================================
+  // FETCH ORDER WHEN ID CHANGES
+  // ==========================================
+
+  useEffect(() => {
+    if (orderId) {
+      fetchOrder();
+    }
+  }, [orderId]);
+
+  // ==========================================
+  // UPDATE ORDER STATUS
+  // ==========================================
+
+  const handleStatusUpdate = async () => {
+    try {
+      if (!order?._id) {
+        return;
+      }
+
+      if (selectedStatus === currentStatus) {
+        return;
+      }
+
+      setUpdatingStatus(true);
+
+      const token = localStorage.getItem("adminToken");
+
+      if (!token) {
+        throw new Error("Admin token not found");
+      }
+
+      const response = await fetch(
+        `http://localhost:3000/api/admin/orders/${order._id}/status`,
+        {
+          method: "PATCH",
+
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            orderStatus: selectedStatus,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      console.log("Update Order Status Response:", data);
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Failed to update order status"
+        );
+      }
+
+      setOrder(data.order);
+
+      setCurrentStatus(data.order.orderStatus);
+
+      setSelectedStatus(data.order.orderStatus);
+
+      alert("Order status updated successfully");
+    } catch (error) {
+      console.error("Update Status Error:", error);
+
+      alert(error.message);
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  // ==========================================
+  // UPDATE PAYMENT STATUS
+  // ==========================================
+
+  const handlePaymentUpdate = async () => {
+    try {
+      if (!order?._id) {
+        return;
+      }
+
+      if (
+        selectedPaymentStatus === order.paymentStatus
+      ) {
+        return;
+      }
+
+      setUpdatingPayment(true);
+
+      const token = localStorage.getItem("adminToken");
+
+      if (!token) {
+        throw new Error("Admin token not found");
+      }
+
+      const response = await fetch(
+        `http://localhost:3000/api/admin/orders/${order._id}/payment-status`,
+        {
+          method: "PATCH",
+
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            paymentStatus: selectedPaymentStatus,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      console.log(
+        "Update Payment Status Response:",
+        data
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+            "Failed to update payment status"
+        );
+      }
+
+      setOrder(data.order);
+
+      setSelectedPaymentStatus(
+        data.order.paymentStatus
+      );
+
+      alert("Payment status updated successfully");
+    } catch (error) {
+      console.error(
+        "Update Payment Error:",
+        error
+      );
+
+      alert(error.message);
+    } finally {
+      setUpdatingPayment(false);
+    }
+  };
+
+  // ==========================================
+  // LOADING
+  // ==========================================
+
+  if (loading) {
     return (
       <div className="order-not-found">
         <Package size={40} />
 
+        <h2>Loading Order...</h2>
+
+        <p>
+          Please wait while we load the order details.
+        </p>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // ERROR
+  // ==========================================
+
+  if (error || !order) {
+    return (
+      <div className="order-not-found">
+        <XCircle size={40} />
+
         <h2>Order not found</h2>
 
         <p>
-          The order you are trying to view does not exist.
+          {error ||
+            "The order you are trying to view does not exist."}
         </p>
 
         <button
@@ -204,52 +369,110 @@ const OrderDetails = () => {
           className="back-orders-btn"
         >
           <ArrowLeft size={17} />
+
           Back to Orders
         </button>
       </div>
     );
   }
 
-  const currentStepIndex = statusOrder.indexOf(currentStatus);
+  // ==========================================
+  // TRACKING
+  // ==========================================
 
-  const handleStatusUpdate = () => {
-    setCurrentStatus(selectedStatus);
+  const isCancelled =
+    order.orderStatus === "cancelled";
 
-    // When backend/API is connected,
-    // make your PUT/PATCH request here.
-    console.log(
-      `Order #${order.id} updated to ${selectedStatus}`
-    );
-  };
+  const currentStepIndex =
+    statusOrder.indexOf(currentStatus);
 
-  const isCancelled = currentStatus === "Cancelled";
+  // ==========================================
+  // DATE
+  // ==========================================
+
+  const orderDate = new Date(
+    order.createdAt
+  ).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+
+  // ==========================================
+  // CUSTOMER
+  // ==========================================
+
+  const customerName =
+    order.user?.name ||
+    order.shippingAddress?.fullName ||
+    "Customer";
+
+  const customerEmail =
+    order.user?.email || "No email available";
+
+  const customerPhone =
+    order.shippingAddress?.phone ||
+    "No phone available";
+
+  // ==========================================
+  // SHIPPING ADDRESS
+  // ==========================================
+
+  const shippingAddress =
+    order.shippingAddress;
+
+  const completeAddress = [
+    shippingAddress?.address,
+    shippingAddress?.city,
+    shippingAddress?.state,
+    shippingAddress?.pincode,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  // ==========================================
+  // PAYMENT
+  // ==========================================
+
+  const paymentStatus =
+    order.paymentStatus || "pending";
 
   return (
     <div className="order-details-page">
-      {/* =========================
+
+      {/* ==========================================
           TOP HEADER
-      ========================= */}
+      ========================================== */}
 
       <div className="order-details-top">
+
         <button
           className="back-button"
-          onClick={() => navigate("/admin/orders")}
+          onClick={() =>
+            navigate("/admin/orders")
+          }
         >
           <ArrowLeft size={18} />
+
           Back to Orders
         </button>
 
         <div className="order-title-row">
+
           <div>
+
             <span className="details-eyebrow">
               ORDER DETAILS
             </span>
 
-            <h1>#{order.id}</h1>
+            <h1>
+              #{order._id}
+            </h1>
 
             <p>
-              Placed on {order.date}
+              Placed on {orderDate}
             </p>
+
           </div>
 
           <span
@@ -257,284 +480,622 @@ const OrderDetails = () => {
               currentStatus
             )}`}
           >
-            {currentStatus}
+            {formatStatus(currentStatus)}
           </span>
+
         </div>
+
       </div>
 
-      {/* =========================
-          TRACKING
-      ========================= */}
+      {/* ==========================================
+          ORDER TRACKING
+      ========================================== */}
 
       <section className="details-card tracking-card">
+
         <div className="card-heading">
+
           <div>
-            <h2>Order Tracking</h2>
+
+            <h2>
+              Order Tracking
+            </h2>
+
             <p>
               Track the current progress of this order.
             </p>
+
           </div>
 
           <Truck size={23} />
+
         </div>
 
         {isCancelled ? (
+
           <div className="cancelled-order">
+
             <div className="cancelled-icon">
               <XCircle size={28} />
             </div>
 
             <div>
-              <h3>Order Cancelled</h3>
+
+              <h3>
+                Order Cancelled
+              </h3>
 
               <p>
-                This order has been cancelled and will not
-                continue through the delivery process.
+                This order has been cancelled and
+                will not continue through the
+                delivery process.
               </p>
+
             </div>
+
           </div>
+
         ) : (
+
           <div className="tracking-timeline">
-            {trackingSteps.map((step, index) => {
-              const StepIcon = step.icon;
 
-              const isCompleted =
-                index < currentStepIndex;
+            {trackingSteps.map(
+              (step, index) => {
 
-              const isCurrent =
-                index === currentStepIndex;
+                const StepIcon = step.icon;
 
-              return (
-                <div
-                  className={`tracking-step ${
-                    isCompleted ? "completed" : ""
-                  } ${isCurrent ? "current" : ""}`}
-                  key={step.key}
-                >
-                  <div className="tracking-step-left">
-                    <div className="tracking-icon">
-                      <StepIcon size={17} />
+                const isCompleted =
+                  index < currentStepIndex;
+
+                const isCurrent =
+                  index === currentStepIndex;
+
+                return (
+                  <div
+                    className={`tracking-step ${
+                      isCompleted
+                        ? "completed"
+                        : ""
+                    } ${
+                      isCurrent
+                        ? "current"
+                        : ""
+                    }`}
+                    key={step.key}
+                  >
+
+                    <div className="tracking-step-left">
+
+                      <div className="tracking-icon">
+                        <StepIcon size={17} />
+                      </div>
+
+                      {index !==
+                        trackingSteps.length - 1 && (
+                        <div className="tracking-line" />
+                      )}
+
                     </div>
 
-                    {index !== trackingSteps.length - 1 && (
-                      <div className="tracking-line" />
-                    )}
+                    <div className="tracking-content">
+
+                      <h3>
+                        {step.title}
+                      </h3>
+
+                      <p>
+                        {step.description}
+                      </p>
+
+                      {isCurrent && (
+                        <span className="current-label">
+                          Current status
+                        </span>
+                      )}
+
+                    </div>
+
                   </div>
+                );
+              }
+            )}
 
-                  <div className="tracking-content">
-                    <h3>{step.title}</h3>
-
-                    <p>{step.description}</p>
-
-                    {isCurrent && (
-                      <span className="current-label">
-                        Current status
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
           </div>
+
         )}
+
       </section>
 
-      {/* =========================
+      {/* ==========================================
           STATUS UPDATE
-      ========================= */}
+      ========================================== */}
 
       <section className="details-card status-update-card">
+
         <div className="card-heading">
+
           <div>
-            <h2>Update Order Status</h2>
+
+            <h2>
+              Update Order Status
+            </h2>
 
             <p>
               Change the current status of this order.
             </p>
+
           </div>
+
         </div>
 
         <div className="status-update-form">
+
           <div className="status-select-wrapper">
-            <label>Order Status</label>
+
+            <label>
+              Order Status
+            </label>
 
             <select
               value={selectedStatus}
               onChange={(e) =>
-                setSelectedStatus(e.target.value)
+                setSelectedStatus(
+                  e.target.value
+                )
               }
             >
-              <option value="Pending">Pending</option>
-              <option value="Paid">Paid</option>
-              <option value="Processing">
+              <option value="pending">
+                Pending
+              </option>
+
+              <option value="confirmed">
+                Confirmed
+              </option>
+
+              <option value="processing">
                 Processing
               </option>
-              <option value="Shipped">Shipped</option>
-              <option value="Delivered">
+
+              <option value="shipped">
+                Shipped
+              </option>
+
+              <option value="delivered">
                 Delivered
               </option>
-              <option value="Cancelled">
+
+              <option value="cancelled">
                 Cancelled
               </option>
             </select>
+
           </div>
 
           <button
             className="save-status-btn"
             onClick={handleStatusUpdate}
-            disabled={selectedStatus === currentStatus}
+            disabled={
+              updatingStatus ||
+              selectedStatus === currentStatus
+            }
           >
             <Save size={17} />
-            Update Status
+
+            {updatingStatus
+              ? "Updating..."
+              : "Update Status"}
           </button>
+
         </div>
+
       </section>
 
-      {/* =========================
-          DETAILS GRID
-      ========================= */}
+      {/* ==========================================
+          PAYMENT STATUS
+      ========================================== */}
+
+      <section className="details-card status-update-card">
+
+        <div className="card-heading">
+
+          <div>
+
+            <h2>
+              Update Payment Status
+            </h2>
+
+            <p>
+              Change the payment status of this order.
+            </p>
+
+          </div>
+
+        </div>
+
+        <div className="status-update-form">
+
+          <div className="status-select-wrapper">
+
+            <label>
+              Payment Status
+            </label>
+
+            <select
+              value={selectedPaymentStatus}
+              onChange={(e) =>
+                setSelectedPaymentStatus(
+                  e.target.value
+                )
+              }
+            >
+              <option value="pending">
+                Pending
+              </option>
+
+              <option value="paid">
+                Paid
+              </option>
+
+              <option value="failed">
+                Failed
+              </option>
+
+              <option value="refunded">
+                Refunded
+              </option>
+            </select>
+
+          </div>
+
+          <button
+            className="save-status-btn"
+            onClick={handlePaymentUpdate}
+            disabled={
+              updatingPayment ||
+              selectedPaymentStatus ===
+                paymentStatus
+            }
+          >
+            <Save size={17} />
+
+            {updatingPayment
+              ? "Updating..."
+              : "Update Payment"}
+          </button>
+
+        </div>
+
+      </section>
+
+      {/* ==========================================
+          CUSTOMER + SHIPPING
+      ========================================== */}
 
       <div className="details-grid">
+
         {/* CUSTOMER */}
 
         <section className="details-card">
+
           <div className="card-heading">
+
             <div>
-              <h2>Customer Information</h2>
-              <p>Details about the customer.</p>
+
+              <h2>
+                Customer Information
+              </h2>
+
+              <p>
+                Details about the customer.
+              </p>
+
             </div>
 
             <User size={22} />
+
           </div>
 
           <div className="customer-details">
+
             <div className="customer-avatar">
-              {order.customer.charAt(0)}
+              {customerName.charAt(0).toUpperCase()}
             </div>
 
             <div>
-              <h3>{order.customer}</h3>
+
+              <h3>
+                {customerName}
+              </h3>
 
               <div className="contact-line">
+
                 <Mail size={15} />
-                <span>{order.email}</span>
+
+                <span>
+                  {customerEmail}
+                </span>
+
               </div>
 
               <div className="contact-line">
+
                 <Phone size={15} />
-                <span>{order.phone}</span>
+
+                <span>
+                  {customerPhone}
+                </span>
+
               </div>
+
             </div>
+
           </div>
+
         </section>
 
         {/* SHIPPING */}
 
         <section className="details-card">
+
           <div className="card-heading">
+
             <div>
-              <h2>Shipping Address</h2>
-              <p>Delivery information.</p>
+
+              <h2>
+                Shipping Address
+              </h2>
+
+              <p>
+                Delivery information.
+              </p>
+
             </div>
 
             <MapPin size={22} />
+
           </div>
 
           <div className="address-box">
+
             <MapPin size={18} />
 
-            <p>{order.address}</p>
+            <p>
+              {completeAddress ||
+                "No shipping address available"}
+            </p>
+
           </div>
+
         </section>
+
       </div>
 
-      {/* =========================
-          PRODUCT + PAYMENT
-      ========================= */}
+      {/* ==========================================
+          PRODUCTS + PAYMENT
+      ========================================== */}
 
       <div className="details-grid">
+
+        {/* ORDER ITEMS */}
+
         <section className="details-card">
+
           <div className="card-heading">
+
             <div>
-              <h2>Order Items</h2>
-              <p>Products included in this order.</p>
+
+              <h2>
+                Order Items
+              </h2>
+
+              <p>
+                Products included in this order.
+              </p>
+
             </div>
 
             <Package size={22} />
+
           </div>
 
-          <div className="product-detail-row">
-            <div className="product-placeholder">
-              <Package size={25} />
-            </div>
+          <div>
 
-            <div className="product-detail-info">
-              <h3>{order.product}</h3>
+            {order.items?.map(
+              (item, index) => {
 
-              <p>
-                Quantity: {order.quantity}
-              </p>
-            </div>
+                const productImage =
+                  item.image ||
+                  item.product?.images?.[0] ||
+                  "";
 
-            <strong>
-              ₹{order.amount}
-            </strong>
+                return (
+                  <div
+                    className="product-detail-row"
+                    key={
+                      item.product?._id ||
+                      `${order._id}-${index}`
+                    }
+                  >
+
+                    <div className="product-placeholder">
+
+                      {productImage ? (
+
+                        <img
+                          src={productImage}
+                          alt={item.name}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            borderRadius: "8px",
+                          }}
+                        />
+
+                      ) : (
+
+                        <Package size={25} />
+
+                      )}
+
+                    </div>
+
+                    <div className="product-detail-info">
+
+                      <h3>
+                        {item.name}
+                      </h3>
+
+                      <p>
+                        Quantity: {item.quantity}
+                      </p>
+
+                      <p>
+                        Price: ₹{item.price}
+                      </p>
+
+                    </div>
+
+                    <strong>
+                      ₹
+                      {(
+                        item.price *
+                        item.quantity
+                      ).toFixed(2)}
+                    </strong>
+
+                  </div>
+                );
+              }
+            )}
+
           </div>
+
         </section>
 
+        {/* PAYMENT */}
+
         <section className="details-card">
+
           <div className="card-heading">
+
             <div>
-              <h2>Payment Information</h2>
-              <p>Payment details for this order.</p>
+
+              <h2>
+                Payment Information
+              </h2>
+
+              <p>
+                Payment details for this order.
+              </p>
+
             </div>
 
             <CreditCard size={22} />
+
           </div>
 
           <div className="payment-info">
+
             <div className="payment-row">
-              <span>Payment Status</span>
+
+              <span>
+                Payment Status
+              </span>
 
               <span
                 className={`payment-badge ${getStatusClass(
-                  order.payment
+                  paymentStatus
                 )}`}
               >
-                {order.payment}
+                {formatStatus(
+                  paymentStatus
+                )}
               </span>
+
             </div>
 
             <div className="payment-row">
-              <span>Payment Method</span>
 
-              <strong>{order.paymentMethod}</strong>
+              <span>
+                Payment Method
+              </span>
+
+              <strong>
+                {order.razorpayPaymentId
+                  ? "Razorpay"
+                  : "Pending"}
+              </strong>
+
             </div>
 
+            {order.razorpayOrderId && (
+              <div className="payment-row">
+
+                <span>
+                  Razorpay Order ID
+                </span>
+
+                <strong>
+                  {order.razorpayOrderId}
+                </strong>
+
+              </div>
+            )}
+
+            {order.razorpayPaymentId && (
+              <div className="payment-row">
+
+                <span>
+                  Payment ID
+                </span>
+
+                <strong>
+                  {order.razorpayPaymentId}
+                </strong>
+
+              </div>
+            )}
+
             <div className="payment-row">
-              <span>Subtotal</span>
 
-              <strong>₹{order.subtotal}</strong>
-            </div>
+              <span>
+                Total Items
+              </span>
 
-            <div className="payment-row">
-              <span>Shipping</span>
+              <strong>
+                {order.items?.reduce(
+                  (total, item) =>
+                    total + item.quantity,
+                  0
+                )}
+              </strong>
 
-              <strong>₹{order.shipping}</strong>
             </div>
 
             <div className="payment-divider" />
 
             <div className="payment-row total-row">
-              <span>Total</span>
 
-              <strong>₹{order.amount}</strong>
+              <span>
+                Total
+              </span>
+
+              <strong>
+                ₹{order.totalAmount}
+              </strong>
+
             </div>
+
           </div>
+
         </section>
+
       </div>
+
     </div>
   );
 };
 
 export default OrderDetails;
+
