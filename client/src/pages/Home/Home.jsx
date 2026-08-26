@@ -296,7 +296,7 @@ function Home() {
         <div className="story-image">
 
           <img
-            src="/images/ash-tray.jpg"
+            src="../../assets/gelashtray.jpeg"
             alt="HoneyTerra Gel Ash Tray"
           />
 
@@ -481,7 +481,7 @@ function Home() {
         <div className="story-image">
 
           <img
-            src="/images/honeycomb-wrap.jpg"
+            src="../assets/honeycomb-wrap.jpg"
             alt="Honeycomb Wrap"
           />
 

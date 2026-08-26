@@ -2,13 +2,16 @@ import {
   ArrowRight,
   Mail,
   MessageCircle,
-  Package,
+  Phone,
+  AtSign,
+  Globe,
 } from "lucide-react";
+
 import { Link } from "react-router-dom";
+
 import "./Contact.css";
 
 function Contact() {
-
   const handleSubmit = (event) => {
     event.preventDefault();
 
@@ -18,7 +21,6 @@ function Contact() {
 
   return (
     <main className="contact-page">
-
 
       {/* =====================================================
           HERO
@@ -57,7 +59,6 @@ function Contact() {
       <section className="contact-main section-container">
 
         <div className="contact-grid">
-
 
           {/* =================================================
               FORM
@@ -167,108 +168,174 @@ function Contact() {
 
 
           {/* =================================================
-              INFORMATION
+              CONTACT OPTIONS
           ================================================= */}
 
           <div className="contact-info">
 
-
-            <div className="contact-info-intro">
+            <div className="contact-info-heading">
 
               <span className="section-eyebrow">
                 GET IN TOUCH
               </span>
 
               <h2>
-                Let's talk.
+                Connect with us.
               </h2>
 
               <p>
-                Whether you have a question about our products,
-                an order or simply want to say hello, we're here.
+                Reach out to HoneyTerra through any of the
+                channels below — we usually reply within one
+                business day.
               </p>
 
             </div>
 
 
-            {/* Email */}
+            {/* =================================================
+                EMAIL
+            ================================================= */}
 
-            <div className="contact-info-card">
-
-              <div className="contact-info-icon">
-                <Mail size={20} />
-              </div>
-
-              <div>
-
-                <h3>Email us</h3>
-
-                <p>
-                  Have a question? Send us a message and our
-                  team will get back to you.
-                </p>
-
-                <a href="mailto:hello@honeyterra.com">
-                  hello@honeyterra.com
-                </a>
-
-              </div>
-
-            </div>
-
-
-            {/* Order */}
-
-            <div className="contact-info-card">
+            <a
+              href="mailto:honeyterra.in@gmail.com"
+              className="contact-info-card"
+            >
 
               <div className="contact-info-icon">
-                <Package size={20} />
+                <Mail size={23} />
               </div>
 
-              <div>
+              <div className="contact-info-content">
 
-                <h3>Need help with an order?</h3>
+                <span className="contact-info-label">
+                  EMAIL
+                </span>
 
-                <p>
-                  Questions about shipping, delivery or your
-                  order? We're happy to help.
-                </p>
-
-                <Link to="/track-order">
-                  Track your order
-                  <ArrowRight size={15} />
-                </Link>
+                <strong>
+                  honeyterra.in@gmail.com
+                </strong>
 
               </div>
 
-            </div>
+            </a>
 
 
-            {/* FAQ */}
+            {/* =================================================
+                PHONE
+            ================================================= */}
 
-            <div className="contact-info-card">
+            <a
+              href="tel:+917489075572"
+              className="contact-info-card"
+            >
 
               <div className="contact-info-icon">
-                <MessageCircle size={20} />
+                <Phone size={23} />
               </div>
 
-              <div>
+              <div className="contact-info-content">
 
-                <h3>Frequently asked questions</h3>
+                <span className="contact-info-label">
+                  PHONE
+                </span>
 
-                <p>
-                  Find quick answers to common questions about
-                  HoneyTerra products and orders.
-                </p>
-
-                <Link to="/faqs">
-                  Visit FAQs
-                  <ArrowRight size={15} />
-                </Link>
+                <strong>
+                  +91 74890 75572
+                </strong>
 
               </div>
 
-            </div>
+            </a>
+
+
+            {/* =================================================
+                WHATSAPP
+            ================================================= */}
+
+            <a
+              href="https://wa.me/917489075572"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="contact-info-card"
+            >
+
+              <div className="contact-info-icon">
+                <MessageCircle size={23} />
+              </div>
+
+              <div className="contact-info-content">
+
+                <span className="contact-info-label">
+                  WHATSAPP
+                </span>
+
+                <strong>
+                  +91 74890 75572
+                </strong>
+
+              </div>
+
+            </a>
+
+
+            {/* =================================================
+                INSTAGRAM
+            ================================================= */}
+
+            <a
+              href="https://www.instagram.com/honeyterra.in/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="contact-info-card"
+            >
+
+              <div className="contact-info-icon">
+                <AtSign size={23} />
+              </div>
+
+              <div className="contact-info-content">
+
+                <span className="contact-info-label">
+                  INSTAGRAM
+                </span>
+
+                <strong>
+                  @honeyterra.in
+                </strong>
+
+              </div>
+
+            </a>
+
+
+            {/* =================================================
+                WEBSITE
+            ================================================= */}
+
+            <a
+              href="https://honeyterra.in"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="contact-info-card"
+            >
+
+              <div className="contact-info-icon">
+                <Globe size={23} />
+              </div>
+
+              <div className="contact-info-content">
+
+                <span className="contact-info-label">
+                  WEBSITE
+                </span>
+
+                <strong>
+                  honeyterra.in
+                </strong>
+
+              </div>
+
+            </a>
 
           </div>
 

@@ -310,7 +310,7 @@ function About() {
                 and gifting.
               </p>
 
-              <Link to="/honey-comb-wrap">
+              <Link to="/shop/wrap">
                 Explore Honeycomb Wrap
                 <ArrowRight size={17} />
               </Link>
@@ -351,7 +351,7 @@ function About() {
                 and odour while keeping your space cleaner.
               </p>
 
-              <Link to="/gel-ash-tray">
+              <Link to="/shop/ash-tray">
                 Explore Gel Ash Tray
                 <ArrowRight size={17} />
               </Link>

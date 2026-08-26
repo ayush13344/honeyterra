@@ -1,7 +1,13 @@
 import AppRoutes from "./routes/AppRoutes";
+import ScrollToTop from "./components/layout/ScrollToTop.jsx";
 
 function App() {
-  return <AppRoutes />;
+  return (
+    <>
+      <ScrollToTop />
+      <AppRoutes />
+    </>
+  );
 }
 
 export default App;
