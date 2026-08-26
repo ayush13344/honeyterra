@@ -29,6 +29,8 @@ import Settings from "../admin/pages/Settings/Settings";
 import AddProduct from "../admin/pages/Products/AddProduct";
 import UProducts from "../pages/Products/UProducts";
 import ProductDetails from "../pages/ProductDetails/ProductDetails";
+import MyOrders from "../pages/MyOrders/MyOrders";
+import TrackOrder from "../pages/Orders/TrackOrder";
 
 function AppRoutes() {
   return (
@@ -49,6 +51,10 @@ function AppRoutes() {
         <Route path="/shop/ash-tray" element={<GelAshTray />} />
 
         <Route path="/products/:id" element={<ProductDetails />} />
+
+        <Route path="/my-orders" element={<MyOrders />}/>
+
+        <Route path="/my-orders/:id" element={<TrackOrder />} />
 
         <Route path="/cart" element={<CartDrawer />} />
 

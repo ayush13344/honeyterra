@@ -18,49 +18,25 @@ const router = express.Router();
 // ==================================================
 
 // Create new order
-router.post(
-  "/",
-  protect,
-  createOrder
-);
+router.post("/", protect, createOrder);
 
 // Get logged-in user's orders
-router.get(
-  "/my-orders",
-  protect,
-  getMyOrders
-);
+router.get("/my-orders", protect, getMyOrders);
 
 // Get logged-in user's single order
-router.get(
-  "/:id",
-  protect,
-  getOrderById
-);
+router.get("/:id", protect, getOrderById);
 
 // Cancel logged-in user's order
-router.patch(
-  "/:id/cancel",
-  protect,
-  cancelOrder
-);
+router.patch("/:id/cancel", protect, cancelOrder);
 
 // ==================================================
 // ADMIN ROUTES
 // ==================================================
 
 // Admin gets any order
-router.get(
-  "/admin/:id",
-  protect,
-  getAdminOrderById
-);
+router.get("/admin/:id", protect, getAdminOrderById);
 
 // Admin updates order status
-router.patch(
-  "/admin/:id/status",
-  protect,
-  updateOrderStatus
-);
+router.patch("/admin/:id/status", protect, updateOrderStatus);
 
-export default router;
+export default router;  
