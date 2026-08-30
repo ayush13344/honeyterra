@@ -1683,3 +1683,114 @@
     display: none;
   }
 }
+/* =========================================================
+   INTRO / WHAT IS HONEYTERRA
+   IMAGE AS OPAQUE BACKGROUND + BEIGE TINT
+========================================================= */
+
+.intro-section {
+  position: relative;
+  min-height: 680px;
+  padding: 0 7vw;
+  overflow: hidden;
+
+  display: flex;
+  align-items: center;
+
+  background-color: #f4f0e5 !important;
+
+  background-image:
+    url("/images/honeyterra-intro.png") !important;
+
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+}
+
+
+/* SOFT BEIGE OVERLAY */
+
+.intro-section::before {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  z-index: 0;
+
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(244, 240, 229, 0.96) 0%,
+      rgba(244, 240, 229, 0.88) 28%,
+      rgba(244, 240, 229, 0.52) 50%,
+      rgba(244, 240, 229, 0.18) 72%,
+      rgba(244, 240, 229, 0.04) 100%
+    );
+}
+
+
+/* CONTENT */
+
+.intro-content {
+  position: relative;
+
+  z-index: 2;
+
+  width: 100%;
+  max-width: 1180px;
+
+  margin: 0 auto;
+
+  padding: 110px 0;
+
+  text-align: left;
+}
+
+
+.intro-content h2 {
+  margin: 0;
+
+  max-width: 700px;
+
+  font-size: clamp(
+    44px,
+    5vw,
+    76px
+  );
+
+  line-height: 0.95;
+
+  letter-spacing: -0.055em;
+
+  font-weight: 500;
+
+  color: #26312d;
+}
+
+
+.intro-content > p:not(.eyebrow) {
+  max-width: 620px;
+
+  margin: 25px 0 0;
+
+  color: #59635c;
+
+  font-size: 16px;
+
+  line-height: 1.7;
+}
+
+
+.intro-content .text-link {
+  margin-top: 30px;
+}
+
+
+/* OLD SEPARATE IMAGE IS REMOVED */
+
+.intro-image {
+  display: none;
+}

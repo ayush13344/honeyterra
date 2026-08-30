@@ -249,15 +249,65 @@ function Home() {
 
 
       {/* ======================================
-          INTRODUCTION
+          INTRODUCTION / WHAT IS HONEYTERRA
+          IMAGE IS ONLY HERE - BELOW HERO
       ====================================== */}
 
       <section
-        className="intro-section"
+        className="intro-section honeyterra-intro-section"
         id="discover"
+        style={{
+          position: "relative",
+          overflow: "hidden",
+          backgroundColor: "#fffdf5",
+          backgroundImage:
+            "url('/images/honeyterra-intro.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center center",
+          backgroundRepeat: "no-repeat",
+          minHeight: "680px",
+          display: "flex",
+          alignItems: "center",
+        }}
       >
 
-        <div className="intro-content">
+        {/* ==================================
+            SOFT COLOR OVERLAY
+
+            Keeps your original cream/
+            beige background feeling while
+            allowing the product image to
+            remain clearly visible.
+        ================================== */}
+
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(90deg, rgba(255,253,245,0.97) 0%, rgba(255,253,245,0.91) 32%, rgba(255,253,245,0.55) 55%, rgba(255,253,245,0.08) 78%, rgba(255,253,245,0.02) 100%)",
+            pointerEvents: "none",
+            zIndex: 1,
+          }}
+        />
+
+
+        {/* ==================================
+            CONTENT
+        ================================== */}
+
+        <div
+          className="intro-content"
+          style={{
+            position: "relative",
+            zIndex: 2,
+            width: "100%",
+            maxWidth: "1180px",
+            margin: "0 auto",
+            padding:
+              "90px 48px",
+          }}
+        >
 
           <p className="eyebrow">
             WHAT IS HONEYTERRA?
@@ -286,6 +336,106 @@ function Home() {
           </p>
 
 
+          {/* ==================================
+              SMALL BENEFITS
+          ================================== */}
+
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "28px",
+              marginTop: "30px",
+              marginBottom: "30px",
+            }}
+          >
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+              }}
+            >
+              <span
+                style={{
+                  width: "34px",
+                  height: "34px",
+                  borderRadius: "50%",
+                  background: "#e8eedc",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#29452f",
+                }}
+              >
+                <Check size={17} />
+              </span>
+
+              <span>
+                Eco-Friendly
+              </span>
+            </div>
+
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+              }}
+            >
+              <span
+                style={{
+                  width: "34px",
+                  height: "34px",
+                  borderRadius: "50%",
+                  background: "#e8eedc",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#29452f",
+                }}
+              >
+                <Check size={17} />
+              </span>
+
+              <span>
+                Practical Design
+              </span>
+            </div>
+
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+              }}
+            >
+              <span
+                style={{
+                  width: "34px",
+                  height: "34px",
+                  borderRadius: "50%",
+                  background: "#e8eedc",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#29452f",
+                }}
+              >
+                <Check size={17} />
+              </span>
+
+              <span>
+                Made for Everyday
+              </span>
+            </div>
+
+          </div>
+
+
           <Link
             to="/about"
             className="text-link"
@@ -294,16 +444,6 @@ function Home() {
 
             <ArrowRight size={17} />
           </Link>
-
-        </div>
-
-
-        <div className="intro-image">
-
-          <img
-            src="/images/honeyterra-intro.jpg"
-            alt="HoneyTerra products"
-          />
 
         </div>
 
