@@ -12,6 +12,7 @@ import orderRoutes from "./routes/orderRoutes.js";
 import adminOrderRoutes from "./routes/adminOrderRoutes.js";
 import adminDashboardRoutes from "./routes/adminDashboardRoutes.js";
 import adminCustomerRoutes from "./routes/adminCustomerRoutes.js";
+import reviewRoutes from "./routes/reviewRoutes.js";
 
 const app = express();
 
@@ -43,6 +44,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/admin/orders", adminOrderRoutes);
 app.use("/api/admin/dashboard",adminDashboardRoutes);
 app.use("/api/admin/customers", adminCustomerRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 // ==========================================
 // ROOT
