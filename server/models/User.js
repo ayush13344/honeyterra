@@ -1,6 +1,10 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 
+// ==========================================
+// ADDRESS SCHEMA
+// ==========================================
+
 const addressSchema = new mongoose.Schema(
   {
     fullName: {
@@ -48,6 +52,10 @@ const addressSchema = new mongoose.Schema(
     _id: true,
   }
 );
+
+// ==========================================
+// USER SCHEMA
+// ==========================================
 
 const userSchema = new mongoose.Schema(
   {
@@ -126,17 +134,15 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-
 // ==========================================
 // HASH PASSWORD BEFORE SAVE
 // ==========================================
 
-userSchema.pre("save", async function (next) {
-  // If password has not changed,
-  // don't hash it again.
-
+userSchema.pre("save", async function () {
+  // Password has not changed
+  // so don't hash it again.
   if (!this.isModified("password")) {
-    return next();
+    return;
   }
 
   try {
@@ -146,13 +152,10 @@ userSchema.pre("save", async function (next) {
       this.password,
       salt
     );
-
-    next();
   } catch (error) {
-    next(error);
+    throw error;
   }
 });
-
 
 // ==========================================
 // COMPARE PASSWORD
@@ -161,12 +164,11 @@ userSchema.pre("save", async function (next) {
 userSchema.methods.comparePassword = async function (
   enteredPassword
 ) {
-  return await bcrypt.compare(
+  return bcrypt.compare(
     enteredPassword,
     this.password
   );
 };
-
 
 // ==========================================
 // MODEL

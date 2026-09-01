@@ -1,4 +1,3 @@
-import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
 import jwt from "jsonwebtoken";
@@ -6,21 +5,48 @@ import jwt from "jsonwebtoken";
 // ==========================================
 // REGISTER USER
 // ==========================================
+
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password, phone } = req.body;
+    const {
+      name,
+      email,
+      password,
+      phone,
+    } = req.body;
 
-    // Validate required fields
+    // ==========================================
+    // VALIDATION
+    // ==========================================
+
     if (!name || !email || !password) {
       return res.status(400).json({
         success: false,
-        message: "Name, email and password are required",
+        message:
+          "Name, email and password are required",
       });
     }
 
-    const normalizedEmail = email.toLowerCase().trim();
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Password must be at least 6 characters",
+      });
+    }
 
-    // Check existing user
+    // ==========================================
+    // NORMALIZE EMAIL
+    // ==========================================
+
+    const normalizedEmail = email
+      .trim()
+      .toLowerCase();
+
+    // ==========================================
+    // CHECK EXISTING USER
+    // ==========================================
+
     const existingUser = await User.findOne({
       email: normalizedEmail,
     });
@@ -28,32 +54,54 @@ const registerUser = async (req, res) => {
     if (existingUser) {
       return res.status(409).json({
         success: false,
-        message: "User with this email already exists",
+        message:
+          "User with this email already exists",
       });
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // ==========================================
+    // CHECK ADMIN EMAIL
+    // ==========================================
 
-    // Check if this is the admin email
+    const adminEmail = process.env.ADMIN_EMAIL
+      ?.trim()
+      .toLowerCase();
+
     const isAdmin =
-      normalizedEmail ===
-      process.env.ADMIN_EMAIL.toLowerCase().trim();
+      adminEmail &&
+      normalizedEmail === adminEmail;
 
-    // Create user
+    // ==========================================
+    // CREATE USER
+    // ==========================================
+    // DO NOT HASH PASSWORD HERE.
+    // User.js pre-save middleware handles it.
+
     const user = await User.create({
-      name,
+      name: name.trim(),
+
       email: normalizedEmail,
-      password: hashedPassword,
-      phone,
+
+      password,
+
+      phone: phone?.trim() || "",
+
       role: isAdmin ? "admin" : "user",
     });
 
-    // Generate token
+    // ==========================================
+    // GENERATE TOKEN
+    // ==========================================
+
     const token = generateToken(user._id);
 
-    res.status(201).json({
+    // ==========================================
+    // RESPONSE
+    // ==========================================
+
+    return res.status(201).json({
       success: true,
+
       message: isAdmin
         ? "Admin account created successfully"
         : "Account created successfully",
@@ -61,6 +109,7 @@ const registerUser = async (req, res) => {
       token,
 
       user: {
+        _id: user._id,
         id: user._id,
         name: user.name,
         email: user.email,
@@ -69,25 +118,50 @@ const registerUser = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Register Error:", error);
+    console.error(
+      "Register Error:",
+      error
+    );
 
-    res.status(500).json({
+    // Duplicate email protection
+    if (error.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "User with this email already exists",
+      });
+    }
+
+    // Mongoose validation error
+    if (error.name === "ValidationError") {
+      const messages = Object.values(
+        error.errors
+      ).map((err) => err.message);
+
+      return res.status(400).json({
+        success: false,
+        message: messages.join(", "),
+      });
+    }
+
+    return res.status(500).json({
       success: false,
-      message: "Server error during registration",
+      message:
+        "Server error during registration",
     });
   }
 };
 
-// ==========================================
-// LOGIN USER
-// ==========================================
 // ==========================================
 // LOGIN USER / ADMIN
 // ==========================================
 
 const loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const {
+      email,
+      password,
+    } = req.body;
 
     // ==========================================
     // VALIDATION
@@ -96,9 +170,14 @@ const loginUser = async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: "Email and password are required",
+        message:
+          "Email and password are required",
       });
     }
+
+    // ==========================================
+    // NORMALIZE EMAIL
+    // ==========================================
 
     const normalizedEmail = email
       .trim()
@@ -115,7 +194,20 @@ const loginUser = async (req, res) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: "Invalid email or password",
+        message:
+          "Invalid email or password",
+      });
+    }
+
+    // ==========================================
+    // CHECK ACTIVE STATUS
+    // ==========================================
+
+    if (user.isActive === false) {
+      return res.status(403).json({
+        success: false,
+        message:
+          "Your account has been deactivated",
       });
     }
 
@@ -124,12 +216,15 @@ const loginUser = async (req, res) => {
     // ==========================================
 
     const isPasswordCorrect =
-      await user.comparePassword(password);
+      await user.comparePassword(
+        password
+      );
 
     if (!isPasswordCorrect) {
       return res.status(401).json({
         success: false,
-        message: "Invalid email or password",
+        message:
+          "Invalid email or password",
       });
     }
 
@@ -137,12 +232,15 @@ const loginUser = async (req, res) => {
     // DETERMINE ROLE
     // ==========================================
 
-    let role = "user";
+    let role = user.role || "user";
 
     const adminEmail =
       process.env.ADMIN_EMAIL
         ?.trim()
         .toLowerCase();
+
+    // If logged-in email matches ADMIN_EMAIL,
+    // make sure user is admin.
 
     if (
       adminEmail &&
@@ -150,12 +248,11 @@ const loginUser = async (req, res) => {
     ) {
       role = "admin";
 
-      // ========================================
-      // MAKE SURE ADMIN USER HAS ADMIN ROLE
-      // ========================================
-
       if (user.role !== "admin") {
         user.role = "admin";
+
+        // Password is NOT modified,
+        // so it will not be hashed again.
         await user.save();
       }
     }
@@ -182,6 +279,7 @@ const loginUser = async (req, res) => {
 
     return res.status(200).json({
       success: true,
+
       message:
         role === "admin"
           ? "Admin login successful"
@@ -191,17 +289,23 @@ const loginUser = async (req, res) => {
 
       user: {
         _id: user._id,
+        id: user._id,
         name: user.name,
         email: user.email,
+        phone: user.phone,
         role,
       },
     });
   } catch (error) {
-    console.error("Login Error:", error);
+    console.error(
+      "Login Error:",
+      error
+    );
 
     return res.status(500).json({
       success: false,
-      message: "Server error during login",
+      message:
+        "Server error during login",
     });
   }
 };
@@ -209,11 +313,12 @@ const loginUser = async (req, res) => {
 // ==========================================
 // GET CURRENT USER
 // ==========================================
+
 const getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select(
-      "-password"
-    );
+    const user = await User.findById(
+      req.user._id
+    ).select("-password");
 
     if (!user) {
       return res.status(404).json({
@@ -222,19 +327,26 @@ const getMe = async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       user,
     });
   } catch (error) {
-    console.error("Get Me Error:", error);
+    console.error(
+      "Get Me Error:",
+      error
+    );
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Server error",
     });
   }
 };
+
+// ==========================================
+// EXPORT
+// ==========================================
 
 export {
   registerUser,

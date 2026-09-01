@@ -1,6 +1,4 @@
-
 import { useEffect, useState } from "react";
-
 import {
   ArrowLeft,
   Minus,
@@ -13,12 +11,10 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-
 import { Link, useParams } from "react-router-dom";
-
 import { useCart } from "../../context/CartContext";
-
 import "./ProductDetails.css";
+import "../../components/Reviews/Reviews.css";
 
 const API_URL =
   import.meta.env.VITE_API_URL || "http://localhost:3000";
@@ -32,16 +28,11 @@ function ProductDetails() {
   const [error, setError] = useState("");
 
   const [quantity, setQuantity] = useState(1);
-
-  // ==========================================
-  // IMAGE GALLERY STATE
-  // ==========================================
-
   const [selectedImage, setSelectedImage] = useState(0);
 
-  // ==========================================
+  // =====================================================
   // REVIEW STATES
-  // ==========================================
+  // =====================================================
 
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
@@ -54,18 +45,22 @@ function ProductDetails() {
   const [reviewImage, setReviewImage] = useState(null);
   const [reviewImagePreview, setReviewImagePreview] = useState("");
 
-  const [submittingReview, setSubmittingReview] =
-    useState(false);
-
+  const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewSuccess, setReviewSuccess] = useState("");
 
-  // Popup state
-  const [showReviewModal, setShowReviewModal] =
-    useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
 
-  // ==========================================
+  // =====================================================
+  // GET TOKEN
+  // =====================================================
+
+  const getToken = () => {
+    return localStorage.getItem("token");
+  };
+
+  // =====================================================
   // FETCH PRODUCT
-  // ==========================================
+  // =====================================================
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -77,26 +72,28 @@ function ProductDetails() {
           `${API_URL}/api/products/${id}`
         );
 
-        if (!response.ok) {
-          throw new Error("Product not found");
-        }
-
         const data = await response.json();
 
         console.log("Product details:", data);
+
+        if (!response.ok) {
+          throw new Error(
+            data.message || "Product not found"
+          );
+        }
 
         if (!data.success || !data.product) {
           throw new Error("Product not found");
         }
 
         setProduct(data.product);
-
-        // Reset gallery to first image whenever product changes
         setSelectedImage(0);
+        setQuantity(1);
       } catch (err) {
         console.error("Product details error:", err);
-
-        setError("Unable to load this product.");
+        setError(
+          err.message || "Unable to load this product."
+        );
       } finally {
         setLoading(false);
       }
@@ -107,9 +104,9 @@ function ProductDetails() {
     }
   }, [id]);
 
-  // ==========================================
+  // =====================================================
   // FETCH REVIEWS
-  // ==========================================
+  // =====================================================
 
   const fetchReviews = async () => {
     if (!id) return;
@@ -132,7 +129,11 @@ function ProductDetails() {
         );
       }
 
-      setReviews(data.reviews || []);
+      setReviews(
+        Array.isArray(data.reviews)
+          ? data.reviews
+          : []
+      );
     } catch (err) {
       console.error("Fetch Reviews Error:", err);
 
@@ -145,76 +146,97 @@ function ProductDetails() {
   };
 
   useEffect(() => {
-    fetchReviews();
+    if (id) {
+      fetchReviews();
+    }
   }, [id]);
 
-  // ==========================================
+  // =====================================================
   // OPEN REVIEW MODAL
-  // ==========================================
+  // =====================================================
 
   const openReviewModal = () => {
-    const token = localStorage.getItem("token");
+    const token = getToken();
 
     setReviewError("");
     setReviewSuccess("");
 
     if (!token) {
-      setReviewError("Please login to write a review.");
+      setReviewError(
+        "Please login to write a review."
+      );
+
       return;
     }
+
+    // Reset only when opening a fresh review
+    setRating(0);
+    setHoverRating(0);
+    setReviewText("");
+    setReviewImage(null);
+    setReviewImagePreview("");
 
     setShowReviewModal(true);
   };
 
-  // ==========================================
+  // =====================================================
   // CLOSE REVIEW MODAL
-  // ==========================================
+  // =====================================================
 
   const closeReviewModal = () => {
     if (submittingReview) return;
 
     setShowReviewModal(false);
+
     setReviewError("");
     setReviewSuccess("");
+
+    setRating(0);
+    setHoverRating(0);
+    setReviewText("");
+    setReviewImage(null);
+    setReviewImagePreview("");
   };
 
-  // ==========================================
+  // =====================================================
   // QUANTITY
-  // ==========================================
+  // =====================================================
 
   const decreaseQuantity = () => {
-    setQuantity((current) => Math.max(1, current - 1));
+    setQuantity((current) =>
+      Math.max(1, current - 1)
+    );
   };
 
   const increaseQuantity = () => {
     setQuantity((current) =>
-      Math.min(product?.stock || 1, current + 1)
+      Math.min(
+        product?.stock || 1,
+        current + 1
+      )
     );
   };
 
-  // ==========================================
+  // =====================================================
   // ADD TO CART
-  // ==========================================
+  // =====================================================
 
   const handleAddToCart = () => {
+    if (!product || product.stock <= 0) {
+      return;
+    }
+
     addToCart(product, quantity);
   };
 
-  // ==========================================
-  // HANDLE REVIEW IMAGE
-  // ==========================================
+  // =====================================================
+  // REVIEW IMAGE
+  // =====================================================
 
   const handleReviewImageChange = (event) => {
     const file = event.target.files?.[0];
 
     if (!file) return;
-
-    if (file.size > 5 * 1024 * 1024) {
-      setReviewError(
-        "Image size should be less than 5MB."
-      );
-      return;
-    }
 
     if (!file.type.startsWith("image/")) {
       setReviewError(
@@ -223,18 +245,30 @@ function ProductDetails() {
       return;
     }
 
+    if (file.size > 5 * 1024 * 1024) {
+      setReviewError(
+        "Image size should be less than 5MB."
+      );
+      return;
+    }
+
     setReviewError("");
+
+    if (reviewImagePreview) {
+      URL.revokeObjectURL(reviewImagePreview);
+    }
 
     setReviewImage(file);
 
-    const previewUrl = URL.createObjectURL(file);
+    const previewUrl =
+      URL.createObjectURL(file);
 
     setReviewImagePreview(previewUrl);
   };
 
-  // ==========================================
+  // =====================================================
   // REMOVE REVIEW IMAGE
-  // ==========================================
+  // =====================================================
 
   const removeReviewImage = () => {
     if (reviewImagePreview) {
@@ -245,9 +279,9 @@ function ProductDetails() {
     setReviewImagePreview("");
   };
 
-  // ==========================================
+  // =====================================================
   // SUBMIT REVIEW
-  // ==========================================
+  // =====================================================
 
   const handleSubmitReview = async (event) => {
     event.preventDefault();
@@ -255,7 +289,7 @@ function ProductDetails() {
     setReviewError("");
     setReviewSuccess("");
 
-    const token = localStorage.getItem("token");
+    const token = getToken();
 
     if (!token) {
       setReviewError(
@@ -290,8 +324,6 @@ function ProductDetails() {
 
       const formData = new FormData();
 
-      // IMPORTANT:
-      // Backend expects productId
       formData.append(
         "productId",
         product._id
@@ -299,7 +331,7 @@ function ProductDetails() {
 
       formData.append(
         "rating",
-        rating
+        String(rating)
       );
 
       formData.append(
@@ -314,15 +346,20 @@ function ProductDetails() {
         );
       }
 
+      console.log("Submitting review:", {
+        productId: product._id,
+        rating,
+        comment: reviewText.trim(),
+        hasImage: !!reviewImage,
+      });
+
       const response = await fetch(
         `${API_URL}/api/reviews`,
         {
           method: "POST",
-
           headers: {
             Authorization: `Bearer ${token}`,
           },
-
           body: formData,
         }
       );
@@ -348,13 +385,18 @@ function ProductDetails() {
       setRating(0);
       setHoverRating(0);
       setReviewText("");
-
       setReviewImage(null);
+
+      if (reviewImagePreview) {
+        URL.revokeObjectURL(
+          reviewImagePreview
+        );
+      }
+
       setReviewImagePreview("");
 
       await fetchReviews();
 
-      // Close popup after successful submission
       setTimeout(() => {
         setShowReviewModal(false);
         setReviewSuccess("");
@@ -374,17 +416,21 @@ function ProductDetails() {
     }
   };
 
-  // ==========================================
+  // =====================================================
   // DELETE REVIEW
-  // ==========================================
+  // =====================================================
 
   const handleDeleteReview = async (
     reviewId
   ) => {
-    const token =
-      localStorage.getItem("token");
+    const token = getToken();
 
-    if (!token) return;
+    if (!token) {
+      setReviewError(
+        "Please login first."
+      );
+      return;
+    }
 
     const confirmed = window.confirm(
       "Are you sure you want to delete this review?"
@@ -397,7 +443,6 @@ function ProductDetails() {
         `${API_URL}/api/reviews/${reviewId}`,
         {
           method: "DELETE",
-
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -427,9 +472,9 @@ function ProductDetails() {
     }
   };
 
-  // ==========================================
+  // =====================================================
   // RATING CALCULATIONS
-  // ==========================================
+  // =====================================================
 
   const totalReviews = reviews.length;
 
@@ -460,9 +505,9 @@ function ProductDetails() {
     );
   };
 
-  // ==========================================
-  // FORMAT REVIEW DATE
-  // ==========================================
+  // =====================================================
+  // FORMAT DATE
+  // =====================================================
 
   const formatReviewDate = (date) => {
     if (!date) return "";
@@ -477,9 +522,9 @@ function ProductDetails() {
     );
   };
 
-  // ==========================================
-  // GET REVIEW USER NAME
-  // ==========================================
+  // =====================================================
+  // REVIEW USER NAME
+  // =====================================================
 
   const getReviewUserName = (review) => {
     if (review.user?.name) {
@@ -497,25 +542,69 @@ function ProductDetails() {
     return "Customer";
   };
 
-  // ==========================================
+  // =====================================================
+  // CHECK CURRENT USER
+  // =====================================================
+
+  const getCurrentUser = () => {
+    try {
+      const storedUser =
+        localStorage.getItem("user");
+
+      if (!storedUser) return null;
+
+      return JSON.parse(storedUser);
+    } catch {
+      return null;
+    }
+  };
+
+  const currentUser = getCurrentUser();
+
+  // =====================================================
+  // CHECK REVIEW OWNER
+  // =====================================================
+
+  const isOwnReview = (review) => {
+    if (!currentUser) return false;
+
+    const currentUserId =
+      currentUser._id ||
+      currentUser.id;
+
+    const reviewUserId =
+      review.user?._id ||
+      review.user?.id ||
+      review.user;
+
+    if (!currentUserId || !reviewUserId) {
+      return false;
+    }
+
+    return (
+      String(currentUserId) ===
+      String(reviewUserId)
+    );
+  };
+
+  // =====================================================
   // LOADING
-  // ==========================================
+  // =====================================================
 
   if (loading) {
     return (
       <main className="product-details-page">
         <div className="product-details-loading">
           <div className="product-details-spinner"></div>
-
           <p>Loading product...</p>
         </div>
       </main>
     );
   }
 
-  // ==========================================
+  // =====================================================
   // ERROR
-  // ==========================================
+  // =====================================================
 
   if (error || !product) {
     return (
@@ -533,7 +622,6 @@ function ProductDetails() {
             className="product-details-back-button"
           >
             <ArrowLeft size={17} />
-
             Back to Shop
           </Link>
         </div>
@@ -541,9 +629,9 @@ function ProductDetails() {
     );
   }
 
-  // ==========================================
+  // =====================================================
   // PRODUCT DATA
-  // ==========================================
+  // =====================================================
 
   const {
     name,
@@ -555,50 +643,50 @@ function ProductDetails() {
     stock,
   } = product;
 
-  // ==========================================
+  // =====================================================
   // PRODUCT IMAGES
-  // ==========================================
+  // =====================================================
 
-  const productImages =
-    Array.isArray(images)
-      ? images.filter(
-          (image) =>
-            typeof image === "string" &&
-            image.trim() !== ""
-        )
-      : [];
+  const productImages = Array.isArray(images)
+    ? images.filter(
+        (image) =>
+          typeof image === "string" &&
+          image.trim() !== ""
+      )
+    : [];
 
   const productImage =
     productImages[selectedImage] ||
     productImages[0] ||
     null;
 
-  // ==========================================
+  // =====================================================
   // DISCOUNT
-  // ==========================================
+  // =====================================================
 
   const discount =
-    compareAtPrice > price
+    Number(compareAtPrice) >
+    Number(price)
       ? Math.round(
-          ((compareAtPrice - price) /
-            compareAtPrice) *
+          ((Number(compareAtPrice) -
+            Number(price)) /
+            Number(compareAtPrice)) *
             100
         )
       : 0;
 
-  // ==========================================
+  // =====================================================
   // RETURN
-  // ==========================================
+  // =====================================================
 
   return (
     <main className="product-details-page">
 
-      {/* ==========================================
+      {/* =================================================
           PRODUCT SECTION
-      ========================================== */}
+      ================================================= */}
 
       <section className="product-details-main">
-
         <div className="product-details-container">
 
           <Link
@@ -606,19 +694,14 @@ function ProductDetails() {
             className="product-details-back"
           >
             <ArrowLeft size={17} />
-
             Back to Shop
           </Link>
 
           <div className="product-details-layout">
 
-            {/* ==========================================
-                IMAGE GALLERY
-            ========================================== */}
+            {/* IMAGE GALLERY */}
 
             <div className="product-details-image-section">
-
-              {/* MAIN IMAGE */}
 
               <div className="product-details-image-wrapper">
 
@@ -636,21 +719,14 @@ function ProductDetails() {
                   />
                 ) : (
                   <div className="product-details-image-placeholder">
-
                     <Package size={45} />
 
                     <span>
                       Product Image
                     </span>
-
                   </div>
                 )}
-
               </div>
-
-              {/* ==========================================
-                  THUMBNAIL IMAGES
-              ========================================== */}
 
               {productImages.length > 1 && (
                 <div className="product-details-thumbnails">
@@ -666,11 +742,10 @@ function ProductDetails() {
                             : ""
                         }`}
                         onClick={() =>
-                          setSelectedImage(index)
+                          setSelectedImage(
+                            index
+                          )
                         }
-                        aria-label={`View product image ${
-                          index + 1
-                        }`}
                       >
                         <img
                           src={image}
@@ -684,12 +759,9 @@ function ProductDetails() {
 
                 </div>
               )}
-
             </div>
 
-            {/* ==========================================
-                INFORMATION
-            ========================================== */}
+            {/* PRODUCT INFORMATION */}
 
             <div className="product-details-info">
 
@@ -705,9 +777,7 @@ function ProductDetails() {
                 </p>
               )}
 
-              {/* ==========================================
-                  PRODUCT RATING
-              ========================================== */}
+              {/* PRODUCT RATING */}
 
               <div className="product-details-rating-summary">
 
@@ -734,7 +804,9 @@ function ProductDetails() {
 
                 <strong>
                   {averageRating > 0
-                    ? averageRating.toFixed(1)
+                    ? averageRating.toFixed(
+                        1
+                      )
                     : "0.0"}
                 </strong>
 
@@ -744,12 +816,9 @@ function ProductDetails() {
                     ? "review"
                     : "reviews"})
                 </span>
-
               </div>
 
-              {/* ==========================================
-                  PRICE
-              ========================================== */}
+              {/* PRICE */}
 
               <div className="product-details-price-row">
 
@@ -762,7 +831,9 @@ function ProductDetails() {
                   )}
                 </span>
 
-                {compareAtPrice > price && (
+                {Number(
+                  compareAtPrice
+                ) > Number(price) && (
                   <span className="product-details-old-price">
                     ₹
                     {Number(
@@ -783,13 +854,10 @@ function ProductDetails() {
 
               <div className="product-details-divider"></div>
 
-              {/* ==========================================
-                  STOCK
-              ========================================== */}
+              {/* STOCK */}
 
               {stock > 0 ? (
                 <div className="product-details-stock available">
-
                   <Check size={17} />
 
                   In Stock
@@ -797,7 +865,6 @@ function ProductDetails() {
                   <span>
                     ({stock} available)
                   </span>
-
                 </div>
               ) : (
                 <div className="product-details-stock unavailable">
@@ -805,9 +872,7 @@ function ProductDetails() {
                 </div>
               )}
 
-              {/* ==========================================
-                  QUANTITY
-              ========================================== */}
+              {/* QUANTITY */}
 
               {stock > 0 && (
                 <div className="product-details-quantity-section">
@@ -847,13 +912,10 @@ function ProductDetails() {
                     </button>
 
                   </div>
-
                 </div>
               )}
 
-              {/* ==========================================
-                  ADD TO CART
-              ========================================== */}
+              {/* ADD TO CART */}
 
               <button
                 type="button"
@@ -870,9 +932,7 @@ function ProductDetails() {
                   : "Out of Stock"}
               </button>
 
-              {/* ==========================================
-                  FEATURES
-              ========================================== */}
+              {/* FEATURES */}
 
               <div className="product-details-features">
 
@@ -883,7 +943,6 @@ function ProductDetails() {
                   </div>
 
                   <div>
-
                     <strong>
                       Quality Product
                     </strong>
@@ -891,7 +950,6 @@ function ProductDetails() {
                     <span>
                       Made for everyday use
                     </span>
-
                   </div>
 
                 </div>
@@ -903,7 +961,6 @@ function ProductDetails() {
                   </div>
 
                   <div>
-
                     <strong>
                       Genuine HoneyTerra
                     </strong>
@@ -911,7 +968,6 @@ function ProductDetails() {
                     <span>
                       Authentic product
                     </span>
-
                   </div>
 
                 </div>
@@ -919,16 +975,13 @@ function ProductDetails() {
               </div>
 
             </div>
-
           </div>
-
         </div>
-
       </section>
 
-      {/* ==========================================
+      {/* =================================================
           REVIEWS SECTION
-      ========================================== */}
+      ================================================= */}
 
       <section className="product-reviews-section">
 
@@ -939,7 +992,6 @@ function ProductDetails() {
           <div className="product-reviews-heading">
 
             <div>
-
               <span className="product-reviews-eyebrow">
                 CUSTOMER FEEDBACK
               </span>
@@ -952,7 +1004,6 @@ function ProductDetails() {
                 See what other customers think
                 about this product.
               </p>
-
             </div>
 
             <div className="reviews-count-box">
@@ -964,7 +1015,9 @@ function ProductDetails() {
 
               <strong>
                 {averageRating > 0
-                  ? averageRating.toFixed(1)
+                  ? averageRating.toFixed(
+                      1
+                    )
                   : "0.0"}
               </strong>
 
@@ -976,95 +1029,94 @@ function ProductDetails() {
               </span>
 
             </div>
-
           </div>
 
           {/* RATING SUMMARY */}
 
-          {totalReviews > 0 && (
-            <div className="reviews-summary-card">
+          <div className="reviews-summary-card">
 
-              <div className="reviews-average">
+            <div className="reviews-average">
 
-                <strong>
-                  {averageRating.toFixed(1)}
-                </strong>
-
-                <div className="reviews-average-stars">
-
-                  {[1, 2, 3, 4, 5].map(
-                    (star) => (
-                      <Star
-                        key={star}
-                        size={20}
-                        fill={
-                          star <=
-                          Math.round(
-                            averageRating
-                          )
-                            ? "currentColor"
-                            : "none"
-                        }
-                      />
+              <strong>
+                {averageRating > 0
+                  ? averageRating.toFixed(
+                      1
                     )
-                  )}
+                  : "0.0"}
+              </strong>
 
-                </div>
+              <div className="reviews-average-stars">
 
-                <span>
-                  Based on {totalReviews}{" "}
-                  {totalReviews === 1
-                    ? "review"
-                    : "reviews"}
-                </span>
-
-              </div>
-
-              <div className="reviews-distribution">
-
-                {[5, 4, 3, 2, 1].map(
+                {[1, 2, 3, 4, 5].map(
                   (star) => (
-                    <div
-                      className="rating-bar-row"
+                    <Star
                       key={star}
-                    >
-
-                      <span>
-                        {star}
-                      </span>
-
-                      <Star
-                        size={13}
-                        fill="currentColor"
-                      />
-
-                      <div className="rating-bar">
-
-                        <div
-                          className="rating-bar-fill"
-                          style={{
-                            width: `${getRatingPercentage(
-                              star
-                            )}%`,
-                          }}
-                        />
-
-                      </div>
-
-                      <small>
-                        {getRatingCount(
-                          star
-                        )}
-                      </small>
-
-                    </div>
+                      size={20}
+                      fill={
+                        star <=
+                        Math.round(
+                          averageRating
+                        )
+                          ? "currentColor"
+                          : "none"
+                      }
+                    />
                   )
                 )}
 
               </div>
 
+              <span>
+                Based on {totalReviews}{" "}
+                {totalReviews === 1
+                  ? "review"
+                  : "reviews"}
+              </span>
+
             </div>
-          )}
+
+            <div className="reviews-distribution">
+
+              {[5, 4, 3, 2, 1].map(
+                (star) => (
+                  <div
+                    className="rating-bar-row"
+                    key={star}
+                  >
+
+                    <span>{star}</span>
+
+                    <Star
+                      size={13}
+                      fill="currentColor"
+                    />
+
+                    <div className="rating-bar">
+
+                      <div
+                        className="rating-bar-fill"
+                        style={{
+                          width: `${getRatingPercentage(
+                            star
+                          )}%`,
+                        }}
+                      />
+
+                    </div>
+
+                    <small>
+                      {getRatingCount(
+                        star
+                      )}
+                    </small>
+
+                  </div>
+                )
+              )}
+
+            </div>
+
+          </div>
 
           {/* WRITE REVIEW */}
 
@@ -1073,16 +1125,13 @@ function ProductDetails() {
             <div className="review-action-content">
 
               <div className="review-action-icon">
-
                 <Star
                   size={22}
                   fill="currentColor"
                 />
-
               </div>
 
               <div>
-
                 <h3>
                   Have you used this product?
                 </h3>
@@ -1091,7 +1140,6 @@ function ProductDetails() {
                   Share your experience and
                   help other customers.
                 </p>
-
               </div>
 
             </div>
@@ -1104,13 +1152,12 @@ function ProductDetails() {
               }
             >
               <Star size={17} />
-
               Write a Review
             </button>
 
           </div>
 
-          {/* LOGIN / GENERAL ERROR */}
+          {/* ERROR */}
 
           {reviewError &&
             !showReviewModal && (
@@ -1126,7 +1173,6 @@ function ProductDetails() {
             <div className="reviews-list-header">
 
               <div>
-
                 <h3>
                   Customer Reviews
                 </h3>
@@ -1135,7 +1181,6 @@ function ProductDetails() {
                   Real experiences from
                   HoneyTerra customers
                 </p>
-
               </div>
 
               <span>
@@ -1189,15 +1234,12 @@ function ProductDetails() {
                         <div className="review-user">
 
                           <div className="review-user-avatar">
-
-                            {review.user?.name
+                            {getReviewUserName(
+                              review
+                            )
                               ?.charAt(0)
                               ?.toUpperCase() ||
-                              review.user?.email
-                                ?.charAt(0)
-                                ?.toUpperCase() ||
                               "C"}
-
                           </div>
 
                           <div className="review-user-info">
@@ -1241,37 +1283,38 @@ function ProductDetails() {
 
                       </div>
 
-                      <p className="review-card-text">
+                      {review.title && (
+                        <h4 className="review-card-title">
+                          {review.title}
+                        </h4>
+                      )}
 
+                      <p className="review-card-text">
                         {review.comment ||
                           review.description ||
                           review.review ||
                           ""}
-
                       </p>
 
                       {review.image && (
                         <div className="review-card-image">
-
                           <img
                             src={review.image}
                             alt="Customer review"
                           />
-
                         </div>
                       )}
 
                       {review.isVerified && (
                         <span className="review-verified">
-
                           <Check size={11} />
-
                           Verified Purchase
-
                         </span>
                       )}
 
-                      {review.isOwner && (
+                      {isOwnReview(
+                        review
+                      ) && (
                         <button
                           type="button"
                           className="delete-review-button"
@@ -1281,11 +1324,8 @@ function ProductDetails() {
                             )
                           }
                         >
-
                           <Trash2 size={14} />
-
                           Delete Review
-
                         </button>
                       )}
 
@@ -1299,12 +1339,11 @@ function ProductDetails() {
           </div>
 
         </div>
-
       </section>
 
-      {/* ==========================================
+      {/* =================================================
           REVIEW MODAL
-      ========================================== */}
+      ================================================= */}
 
       {showReviewModal && (
         <div
@@ -1319,7 +1358,12 @@ function ProductDetails() {
           }}
         >
 
-          <div className="review-modal">
+          <div
+            className="review-modal"
+            onMouseDown={(event) =>
+              event.stopPropagation()
+            }
+          >
 
             {/* MODAL HEADER */}
 
@@ -1368,7 +1412,7 @@ function ProductDetails() {
               }
             >
 
-              {/* STAR RATING */}
+              {/* RATING */}
 
               <div className="review-rating-field">
 
@@ -1406,7 +1450,6 @@ function ProductDetails() {
                           )
                         }
                       >
-
                         <Star
                           size={30}
                           fill={
@@ -1417,7 +1460,6 @@ function ProductDetails() {
                               : "none"
                           }
                         />
-
                       </button>
                     )
                   )}
@@ -1447,7 +1489,7 @@ function ProductDetails() {
 
               </div>
 
-              {/* REVIEW TEXT */}
+              {/* REVIEW */}
 
               <div className="review-text-field">
 
@@ -1495,7 +1537,8 @@ function ProductDetails() {
                     </strong>
 
                     <span>
-                      JPG, PNG or WEBP · Max 5MB
+                      JPG, PNG or WEBP · Max
+                      5MB
                     </span>
 
                     <input
@@ -1552,7 +1595,7 @@ function ProductDetails() {
                 </div>
               )}
 
-              {/* BUTTONS */}
+              {/* ACTIONS */}
 
               <div className="review-modal-actions">
 
@@ -1580,13 +1623,11 @@ function ProductDetails() {
                   {submittingReview ? (
                     <>
                       <span className="review-submit-spinner"></span>
-
                       Submitting...
                     </>
                   ) : (
                     <>
                       <Check size={17} />
-
                       Submit Review
                     </>
                   )}
