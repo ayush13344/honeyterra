@@ -1794,3 +1794,172 @@
 .intro-image {
   display: none;
 }
+/* =========================================================
+   FINAL MOBILE HERO LAYOUT FIX
+
+   The previous stylesheet contains multiple mobile hero
+   media queries that override each other. This final block
+   intentionally comes last so it becomes the single source
+   of truth for the mobile hero layout.
+========================================================= */
+
+@media (max-width: 768px) {
+  .home-page {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  /*
+     Do not force the hero to exactly one viewport height on
+     mobile. The headline, buttons and product reveal need
+     more vertical space than a phone viewport provides.
+
+     The page can now scroll naturally through the hero instead
+     of elements being pushed on top of each other.
+  */
+  .hero {
+    position: relative;
+    min-height: 920px;
+    height: auto;
+    padding: 48px 20px 70px;
+    display: block;
+    overflow: hidden;
+  }
+
+  /* Keep all text safely inside the hero. */
+  .hero-content {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .hero-eyebrow {
+    margin: 0 0 18px;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+  }
+
+  .hero-content h1 {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    font-size: clamp(42px, 12vw, 64px);
+    line-height: 0.92;
+    letter-spacing: -0.06em;
+    overflow-wrap: normal;
+  }
+
+  .hero-text {
+    width: min(92%, 500px);
+    margin: 22px auto 0;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .hero-actions {
+    width: 100%;
+    margin-top: 26px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .hero-btn {
+    width: min(100%, 340px);
+    min-height: 52px;
+    padding: 0 22px;
+    font-size: 14px;
+  }
+
+  /*
+     Move the interactive product reveal below the hero copy.
+     On desktop it can remain positioned by its own component;
+     on mobile it must not sit behind the heading/buttons.
+  */
+  .hero > .product-reveal {
+    position: absolute !important;
+    top: 500px !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: min(100%, 420px) !important;
+    max-width: 420px !important;
+    margin: 0 !important;
+    transform: translateX(-50%) !important;
+    z-index: 4 !important;
+  }
+
+  /* Hide the fixed bottom indicator on mobile. The user
+     naturally scrolls through the taller hero instead. */
+  .hero-scroll {
+    display: none !important;
+  }
+}
+
+/* =========================================================
+   EXTRA SMALL PHONES
+========================================================= */
+
+@media (max-width: 430px) {
+  .hero {
+    min-height: 900px;
+    padding: 40px 18px 60px;
+  }
+
+  .hero-eyebrow {
+    margin-bottom: 16px;
+    font-size: 9px;
+  }
+
+  .hero-content h1 {
+    font-size: clamp(40px, 12.5vw, 52px);
+    line-height: 0.92;
+  }
+
+  .hero-text {
+    width: 94%;
+    margin-top: 20px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .hero-actions {
+    margin-top: 23px;
+    gap: 9px;
+  }
+
+  .hero-btn {
+    width: min(100%, 340px);
+    min-height: 50px;
+    font-size: 13px;
+  }
+
+  .hero > .product-reveal {
+    top: 475px !important;
+    width: min(100%, 390px) !important;
+    max-width: 390px !important;
+  }
+}
+
+/* Very small phones: give the product a little more room below
+   the copy rather than shrinking the headline until it becomes
+   difficult to read. */
+@media (max-width: 360px) {
+  .hero {
+    min-height: 880px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .hero-content h1 {
+    font-size: 39px;
+  }
+
+  .hero > .product-reveal {
+    top: 465px !important;
+  }
+}

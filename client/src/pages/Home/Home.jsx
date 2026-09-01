@@ -459,7 +459,7 @@ function Home() {
         <div className="story-image">
 
           <img
-            src="../../assets/gelashtray.jpeg"
+            src="/images/gelashtray.jpeg"
             alt="HoneyTerra Gel Ash Tray"
           />
 

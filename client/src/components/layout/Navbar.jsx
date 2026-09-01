@@ -1,10 +1,12 @@
 import {
-  Search,
   UserRound,
   ShoppingBag,
   ChevronDown,
   Package,
   LogOut,
+  Menu,
+  X,
+  ArrowLeft,
 } from "lucide-react";
 
 import {
@@ -20,7 +22,7 @@ import { useCart } from "../../context/CartContext";
 
 import "./Navbar.css";
 
-function Navbar() {
+function Navbar({ isAuthPage = false }) {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -30,13 +32,19 @@ function Navbar() {
   } = useCart();
 
   // ==========================================
-  // USER DROPDOWN
+  // USER
   // ==========================================
 
   const [user, setUser] = useState(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   const userMenuRef = useRef(null);
+
+  // ==========================================
+  // MOBILE MENU
+  // ==========================================
+
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   // ==========================================
   // GET LOGGED-IN USER
@@ -60,7 +68,6 @@ function Navbar() {
 
     loadUser();
 
-    // Listen for login/logout changes
     window.addEventListener("storage", loadUser);
 
     return () => {
@@ -69,7 +76,7 @@ function Navbar() {
   }, [location.pathname]);
 
   // ==========================================
-  // CLOSE DROPDOWN WHEN CLICKING OUTSIDE
+  // CLOSE USER DROPDOWN OUTSIDE
   // ==========================================
 
   useEffect(() => {
@@ -94,6 +101,15 @@ function Navbar() {
       );
     };
   }, []);
+
+  // ==========================================
+  // CLOSE MOBILE MENU ON ROUTE CHANGE
+  // ==========================================
+
+  useEffect(() => {
+    setShowMobileMenu(false);
+    setShowUserMenu(false);
+  }, [location.pathname]);
 
   // ==========================================
   // CHECKOUT PAGE
@@ -148,17 +164,13 @@ function Navbar() {
   // ==========================================
 
   const handleLogout = () => {
-    // Remove authentication data
     localStorage.removeItem("token");
     localStorage.removeItem("user");
 
-    // Close dropdown
     setShowUserMenu(false);
-
-    // Update navbar immediately
+    setShowMobileMenu(false);
     setUser(null);
 
-    // Go to home page
     navigate("/");
   };
 
@@ -173,6 +185,66 @@ function Navbar() {
 
     return user.name.split(" ")[0];
   };
+
+  // ==========================================
+  // MOBILE NAVIGATION
+  // ==========================================
+
+  const handleMobileNavigation = (path) => {
+    setShowMobileMenu(false);
+    navigate(path);
+  };
+
+  // ==========================================
+  // AUTH NAVBAR
+  // ==========================================
+
+  if (isAuthPage) {
+    return (
+      <header className="site-navbar site-navbar-auth">
+        <div className="navbar-container">
+
+          {/* LOGO */}
+
+          <Link
+            to="/"
+            className="navbar-logo"
+            aria-label="HoneyTerra Home"
+          >
+            <span className="navbar-logo-mark">
+              <span className="logo-leaf logo-leaf-one" />
+              <span className="logo-leaf logo-leaf-two" />
+            </span>
+
+            <span className="navbar-logo-text">
+              Honey<span>Terra</span>
+            </span>
+          </Link>
+
+          {/* BACK TO HOME */}
+
+          <Link
+            to="/"
+            className="navbar-auth-back"
+          >
+            <ArrowLeft
+              size={18}
+              strokeWidth={1.8}
+            />
+
+            <span>
+              Back to Home
+            </span>
+          </Link>
+
+        </div>
+      </header>
+    );
+  }
+
+  // ==========================================
+  // NORMAL NAVBAR
+  // ==========================================
 
   return (
     <header
@@ -232,13 +304,10 @@ function Navbar() {
         <div className="navbar-actions">
 
           {/* ==========================================
-              ACCOUNT / USER
+              ACCOUNT
           ========================================== */}
 
           {!user ? (
-            // ----------------------------------------
-            // NOT LOGGED IN
-            // ----------------------------------------
             <Link
               to="/login"
               className="navbar-icon-btn"
@@ -250,9 +319,6 @@ function Navbar() {
               />
             </Link>
           ) : (
-            // ----------------------------------------
-            // LOGGED IN
-            // ----------------------------------------
             <div
               className="navbar-user-wrapper"
               ref={userMenuRef}
@@ -266,16 +332,13 @@ function Navbar() {
                   )
                 }
                 aria-label="User account menu"
+                aria-expanded={showUserMenu}
               >
-                {/* Profile Circle */}
-
                 <span className="navbar-user-avatar">
                   {user.name
                     ?.charAt(0)
                     ?.toUpperCase() || "U"}
                 </span>
-
-                {/* Name */}
 
                 <span className="navbar-user-name">
                   {getFirstName()}
@@ -292,16 +355,13 @@ function Navbar() {
                 />
               </button>
 
-              {/* ==========================================
-                  DROPDOWN
-              ========================================== */}
+              {/* USER DROPDOWN */}
 
               {showUserMenu && (
                 <div className="navbar-user-dropdown">
 
-                  {/* User Information */}
-
                   <div className="navbar-dropdown-user">
+
                     <div className="navbar-dropdown-avatar">
                       {user.name
                         ?.charAt(0)
@@ -309,6 +369,7 @@ function Navbar() {
                     </div>
 
                     <div className="navbar-dropdown-user-info">
+
                       <strong>
                         {user.name}
                       </strong>
@@ -316,12 +377,14 @@ function Navbar() {
                       <span>
                         {user.email}
                       </span>
+
                     </div>
+
                   </div>
 
                   <div className="navbar-dropdown-divider" />
 
-                  {/* My Orders */}
+                  {/* MY ORDERS */}
 
                   <button
                     type="button"
@@ -338,7 +401,7 @@ function Navbar() {
                     </span>
                   </button>
 
-                  {/* Logout */}
+                  {/* LOGOUT */}
 
                   <button
                     type="button"
@@ -351,6 +414,7 @@ function Navbar() {
                       Logout
                     </span>
                   </button>
+
                 </div>
               )}
             </div>
@@ -380,8 +444,150 @@ function Navbar() {
             )}
           </button>
 
+          {/* ==========================================
+              MOBILE MENU BUTTON
+          ========================================== */}
+
+          <button
+            type="button"
+            className="navbar-mobile-menu-btn"
+            onClick={() =>
+              setShowMobileMenu(
+                (previous) => !previous
+              )
+            }
+            aria-label={
+              showMobileMenu
+                ? "Close navigation menu"
+                : "Open navigation menu"
+            }
+            aria-expanded={showMobileMenu}
+          >
+            {showMobileMenu ? (
+              <X
+                size={23}
+                strokeWidth={1.8}
+              />
+            ) : (
+              <Menu
+                size={23}
+                strokeWidth={1.8}
+              />
+            )}
+          </button>
+
         </div>
       </div>
+
+      {/* ==================================================
+          MOBILE NAVIGATION
+      ================================================== */}
+
+      <div
+        className={`mobile-navigation ${
+          showMobileMenu
+            ? "mobile-navigation-open"
+            : ""
+        }`}
+      >
+
+        <div className="mobile-navigation-inner">
+
+          {/* MOBILE LINKS */}
+
+          <nav className="mobile-nav-links">
+
+            {navLinks.map((link) => (
+              <button
+                key={link.path}
+                type="button"
+                className={`mobile-nav-link ${
+                  location.pathname === link.path
+                    ? "mobile-nav-link-active"
+                    : ""
+                }`}
+                onClick={() =>
+                  handleMobileNavigation(
+                    link.path
+                  )
+                }
+              >
+                <span>
+                  {link.label}
+                </span>
+
+                <span className="mobile-nav-arrow">
+                  →
+                </span>
+              </button>
+            ))}
+
+          </nav>
+
+          {/* MOBILE ACCOUNT SECTION */}
+
+          <div className="mobile-navigation-divider" />
+
+          {!user ? (
+            <button
+              type="button"
+              className="mobile-account-link"
+              onClick={() =>
+                handleMobileNavigation("/login")
+              }
+            >
+              <UserRound
+                size={19}
+                strokeWidth={1.8}
+              />
+
+              <span>
+                Login / Account
+              </span>
+            </button>
+          ) : (
+            <>
+
+              <button
+                type="button"
+                className="mobile-account-link"
+                onClick={() =>
+                  handleMobileNavigation(
+                    "/my-orders"
+                  )
+                }
+              >
+                <Package
+                  size={19}
+                  strokeWidth={1.8}
+                />
+
+                <span>
+                  My Orders
+                </span>
+              </button>
+
+              <button
+                type="button"
+                className="mobile-account-link mobile-account-logout"
+                onClick={handleLogout}
+              >
+                <LogOut
+                  size={19}
+                  strokeWidth={1.8}
+                />
+
+                <span>
+                  Logout
+                </span>
+              </button>
+
+            </>
+          )}
+
+        </div>
+      </div>
+
     </header>
   );
 }
