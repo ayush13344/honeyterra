@@ -668,8 +668,8 @@ function Home() {
         <div className="story-image">
 
           <img
-            src="../assets/honeycomb-wrap.jpg"
-            alt="Honeycomb Wrap"
+            src="/images/honeycomb.png"
+            alt="HoneyTerra Gel Ash Tray"
           />
 
         </div>

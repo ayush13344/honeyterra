@@ -676,6 +676,53 @@
     0 10px 25px rgba(0, 0, 0, 0.15);
 }
 
+/* ==========================================
+   CLICKABLE PRODUCT CARD
+========================================== */
+
+.shop-product-card-link {
+  display: block;
+
+  width: 100%;
+
+  color: inherit;
+
+  text-decoration: none;
+
+  cursor: pointer;
+}
+
+
+/* Prevent the Link from changing the
+   appearance of the ProductCard */
+
+.shop-product-card-link,
+.shop-product-card-link:hover,
+.shop-product-card-link:focus,
+.shop-product-card-link:active {
+  color: inherit;
+  text-decoration: none;
+}
+
+
+/* Slight interaction feedback */
+
+.shop-product-card-link {
+  transition:
+    transform 0.25s ease,
+    opacity 0.25s ease;
+}
+
+.shop-product-card-link:hover {
+  transform: translateY(-4px);
+}
+
+.shop-product-card-link:focus-visible {
+  outline: 2px solid #a9d45e;
+  outline-offset: 5px;
+  border-radius: 12px;
+}
+
 
 /* =========================================================
    RESPONSIVE

@@ -5,7 +5,9 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+
 import ProductCard from "../../components/ProductCard/ProductCard";
+
 import "./Shop.css";
 
 function Shop() {
@@ -130,6 +132,7 @@ function Shop() {
         </div>
       </section>
 
+
       {/* ==========================================
           PRODUCTS
       ========================================== */}
@@ -159,6 +162,7 @@ function Shop() {
             </p>
 
           </div>
+
 
           {/* ========================================
               FILTERS
@@ -210,6 +214,7 @@ function Shop() {
 
           </div>
 
+
           {/* ========================================
               PRODUCT COUNT
           ======================================== */}
@@ -223,6 +228,7 @@ function Shop() {
                     : "products"
                 }`}
           </div>
+
 
           {/* ========================================
               LOADING
@@ -305,10 +311,18 @@ function Shop() {
             <div className="shop-product-grid">
 
               {filteredProducts.map((product) => (
-                <ProductCard
+
+                <Link
                   key={product._id}
-                  product={product}
-                />
+                  to={`/products/${product._id}`}
+                  className="shop-product-card-link"
+                  aria-label={`View ${product.name}`}
+                >
+                  <ProductCard
+                    product={product}
+                  />
+                </Link>
+
               ))}
 
             </div>
@@ -317,6 +331,7 @@ function Shop() {
 
         </div>
       </section>
+
 
       {/* ==========================================
           BENEFITS
@@ -339,6 +354,7 @@ function Shop() {
 
           </div>
 
+
           <div className="shop-benefits-grid">
 
             <div className="shop-benefit">
@@ -358,6 +374,7 @@ function Shop() {
 
             </div>
 
+
             <div className="shop-benefit">
 
               <div className="shop-benefit-icon">
@@ -374,6 +391,7 @@ function Shop() {
               </p>
 
             </div>
+
 
             <div className="shop-benefit">
 
@@ -393,8 +411,10 @@ function Shop() {
             </div>
 
           </div>
+
         </div>
       </section>
+
 
       {/* ==========================================
           CTA

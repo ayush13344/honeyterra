@@ -1,5 +1,5 @@
-import { ArrowRight } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 import "./ProductReveal.css";
 
@@ -12,7 +12,6 @@ const products = [
     image: "/products/gel-ashtray.png",
     description:
       "A practical everyday ash tray designed for cleaner spaces.",
-    link: "/products?category=Gel%20Ash%20Trays",
   },
   {
     id: "wrap",
@@ -22,7 +21,6 @@ const products = [
     image: "/products/honeycomb-wrap.png",
     description:
       "Flexible honeycomb protection for products that need extra care.",
-    link: "/products?category=Honeycomb%20Wraps",
   },
 ];
 
@@ -46,25 +44,44 @@ function ProductReveal() {
 
       <div className="product-reveal-visual">
 
+        {/* Soft glow behind product */}
         <div className="product-reveal-glow" />
 
         <div className="product-reveal-image-wrap">
-          <img
-            key={product.id}
-            src={product.image}
-            alt={product.name}
-            className="product-reveal-image"
-          />
+
+          {/* ==========================================
+              CLICKABLE PRODUCT IMAGE
+              Clicking/tapping image → /shop
+          ========================================== */}
+
+          <Link
+            to="/shop"
+            className="product-reveal-image-link"
+            aria-label={`Shop ${product.name}`}
+          >
+            <img
+              key={product.id}
+              src={product.image}
+              alt={product.name}
+              className="product-reveal-image"
+              draggable="false"
+            />
+          </Link>
+
         </div>
 
       </div>
 
 
       {/* ==========================================
-          PRODUCT INFO / SELECTOR
+          PRODUCT INFORMATION
       ========================================== */}
 
       <div className="product-reveal-panel">
+
+        {/* ==========================================
+            HEADER
+        ========================================== */}
 
         <div className="product-reveal-heading">
 
@@ -79,30 +96,31 @@ function ProductReveal() {
         </div>
 
 
+        {/* ==========================================
+            PRODUCT NAME
+        ========================================== */}
+
         <div className="product-reveal-name">
           {product.name}
         </div>
 
 
+        {/* ==========================================
+            PRODUCT SELECTOR
+        ========================================== */}
+
         <div className="product-reveal-selector">
 
           {products.map((item, index) => (
-
             <button
               type="button"
               key={item.id}
               className={`product-reveal-option ${
-                activeProduct === index
-                  ? "active"
-                  : ""
+                activeProduct === index ? "active" : ""
               }`}
-              onClick={() =>
-                handleProductChange(index)
-              }
+              onClick={() => handleProductChange(index)}
               aria-label={`Show ${item.name}`}
-              aria-pressed={
-                activeProduct === index
-              }
+              aria-pressed={activeProduct === index}
             >
 
               <span className="product-reveal-option-dot" />
@@ -112,19 +130,21 @@ function ProductReveal() {
               </span>
 
             </button>
-
           ))}
 
         </div>
 
 
-        <a
-          href={product.link}
+        {/* ==========================================
+            VIEW PRODUCTS
+        ========================================== */}
+
+        <Link
+          to="/shop"
           className="product-reveal-link"
         >
-          View product
-          <ArrowRight size={15} />
-        </a>
+          View all products
+        </Link>
 
       </div>
 

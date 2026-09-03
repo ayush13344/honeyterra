@@ -142,14 +142,6 @@ function Navbar({ isAuthPage = false }) {
       path: "/shop",
     },
     {
-      label: "Honey Comb Wrap",
-      path: "/shop/wrap",
-    },
-    {
-      label: "Gel Ash Tray",
-      path: "/shop/ash-tray",
-    },
-    {
       label: "About Us",
       path: "/about",
     },
@@ -369,7 +361,6 @@ function Navbar({ isAuthPage = false }) {
                     </div>
 
                     <div className="navbar-dropdown-user-info">
-
                       <strong>
                         {user.name}
                       </strong>
@@ -377,7 +368,6 @@ function Navbar({ isAuthPage = false }) {
                       <span>
                         {user.email}
                       </span>
-
                     </div>
 
                   </div>
@@ -490,13 +480,11 @@ function Navbar({ isAuthPage = false }) {
             : ""
         }`}
       >
-
         <div className="mobile-navigation-inner">
 
           {/* MOBILE LINKS */}
 
           <nav className="mobile-nav-links">
-
             {navLinks.map((link) => (
               <button
                 key={link.path}
@@ -521,7 +509,6 @@ function Navbar({ isAuthPage = false }) {
                 </span>
               </button>
             ))}
-
           </nav>
 
           {/* MOBILE ACCOUNT SECTION */}
@@ -547,7 +534,6 @@ function Navbar({ isAuthPage = false }) {
             </button>
           ) : (
             <>
-
               <button
                 type="button"
                 className="mobile-account-link"
@@ -581,13 +567,11 @@ function Navbar({ isAuthPage = false }) {
                   Logout
                 </span>
               </button>
-
             </>
           )}
 
         </div>
       </div>
-
     </header>
   );
 }

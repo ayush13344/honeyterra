@@ -285,8 +285,10 @@ function About() {
             <div className="about-product-image honeycomb-product">
 
               <div className="product-image-placeholder">
-                <span>Honeycomb</span>
-                <small>Product Image</small>
+               <img
+            src="/images/gelashtray.jpeg"
+            alt="HoneyTerra Gel Ash Tray"
+          />
               </div>
 
               <span className="product-number">
@@ -327,8 +329,11 @@ function About() {
             <div className="about-product-image ashtray-product">
 
               <div className="product-image-placeholder">
-                <span>Gel Ash Tray</span>
-                <small>Product Image</small>
+                
+                <img
+            src="/images/gelashtray.jpeg"
+            alt="HoneyTerra Gel Ash Tray"
+          />
               </div>
 
               <span className="product-number">
