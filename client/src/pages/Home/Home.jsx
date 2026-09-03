@@ -13,7 +13,7 @@ import {
   HelpCircle,
 } from "lucide-react";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import axios from "axios";
 
@@ -69,6 +69,8 @@ const useCases = [
 function Home() {
   const [products, setProducts] = useState([]);
 
+  const videoRef = useRef(null); 
+
   const [loadingProducts, setLoadingProducts] =
     useState(true);
 
@@ -121,6 +123,42 @@ function Home() {
     fetchProducts();
   }, []);
 
+
+
+  /* ==========================================
+     HONEYTERRA VIDEO PLAY / PAUSE
+  ========================================== */
+
+  useEffect(() => {
+    const video = videoRef.current;
+
+    if (!video) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          video.play().catch(() => {
+            // Browser may block autoplay with sound.
+            // The video remains available for normal playback.
+          });
+        } else {
+          video.pause();
+        }
+      },
+      {
+        threshold: 0.35,
+      }
+    );
+
+    observer.observe(video);
+
+    return () => {
+      observer.disconnect();
+      video.pause();
+    };
+  }, []);
 
   /* ==========================================
      PRODUCT CATEGORIES
@@ -253,200 +291,26 @@ function Home() {
           IMAGE IS ONLY HERE - BELOW HERO
       ====================================== */}
 
+      {/* ======================================
+          HONEYTERRA VIDEO
+      ====================================== */}
+
       <section
         className="intro-section honeyterra-intro-section"
         id="discover"
-        style={{
-          position: "relative",
-          overflow: "hidden",
-          backgroundColor: "#fffdf5",
-          backgroundImage:
-            "url('/images/honeyterra-intro.png')",
-          backgroundSize: "cover",
-          backgroundPosition: "center center",
-          backgroundRepeat: "no-repeat",
-          minHeight: "680px",
-          display: "flex",
-          alignItems: "center",
-        }}
       >
-
-        {/* ==================================
-            SOFT COLOR OVERLAY
-
-            Keeps your original cream/
-            beige background feeling while
-            allowing the product image to
-            remain clearly visible.
-        ================================== */}
-
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "linear-gradient(90deg, rgba(255,253,245,0.97) 0%, rgba(255,253,245,0.91) 32%, rgba(255,253,245,0.55) 55%, rgba(255,253,245,0.08) 78%, rgba(255,253,245,0.02) 100%)",
-            pointerEvents: "none",
-            zIndex: 1,
-          }}
-        />
-
-
-        {/* ==================================
-            CONTENT
-        ================================== */}
-
-        <div
-          className="intro-content"
-          style={{
-            position: "relative",
-            zIndex: 2,
-            width: "100%",
-            maxWidth: "1180px",
-            margin: "0 auto",
-            padding:
-              "90px 48px",
-          }}
-        >
-
-          <p className="eyebrow">
-            WHAT IS HONEYTERRA?
-          </p>
-
-
-          <h2>
-            Everyday products,
-            <br />
-            thoughtfully made.
-          </h2>
-
-
-          <p>
-            HoneyTerra brings together practical
-            products designed to fit naturally
-            into the way people live and work.
-          </p>
-
-
-          <p>
-            From everyday ash trays to protective
-            Honeycomb Wrap, every product is
-            designed around simplicity, usability
-            and real-world needs.
-          </p>
-
-
-          {/* ==================================
-              SMALL BENEFITS
-          ================================== */}
-
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "28px",
-              marginTop: "30px",
-              marginBottom: "30px",
-            }}
-          >
-
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-              }}
-            >
-              <span
-                style={{
-                  width: "34px",
-                  height: "34px",
-                  borderRadius: "50%",
-                  background: "#e8eedc",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#29452f",
-                }}
-              >
-                <Check size={17} />
-              </span>
-
-              <span>
-                Eco-Friendly
-              </span>
-            </div>
-
-
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-              }}
-            >
-              <span
-                style={{
-                  width: "34px",
-                  height: "34px",
-                  borderRadius: "50%",
-                  background: "#e8eedc",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#29452f",
-                }}
-              >
-                <Check size={17} />
-              </span>
-
-              <span>
-                Practical Design
-              </span>
-            </div>
-
-
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-              }}
-            >
-              <span
-                style={{
-                  width: "34px",
-                  height: "34px",
-                  borderRadius: "50%",
-                  background: "#e8eedc",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#29452f",
-                }}
-              >
-                <Check size={17} />
-              </span>
-
-              <span>
-                Made for Everyday
-              </span>
-            </div>
-
-          </div>
-
-
-          <Link
-            to="/about"
-            className="text-link"
-          >
-            Discover HoneyTerra
-
-            <ArrowRight size={17} />
-          </Link>
-
-        </div>
-
+        <video
+  ref={videoRef}
+  className="honeyterra-intro-video"
+  src="/videos/video.mp4"
+  preload="auto"
+  autoPlay
+  loop
+  playsInline
+  muted={false}
+  controls={false}
+  aria-label="HoneyTerra video"
+/>
       </section>
 
 
@@ -459,7 +323,7 @@ function Home() {
         <div className="story-image">
 
           <img
-            src="/images/gelashtray.jpeg"
+            src="./images/gelashtray.jpeg"
             alt="HoneyTerra Gel Ash Tray"
           />
 
@@ -563,7 +427,7 @@ function Home() {
 
               <Link
                 key={category}
-                to={getUseCaseLink(category)}
+                to="/shop"
                 className="use-card"
               >
 
@@ -668,8 +532,8 @@ function Home() {
         <div className="story-image">
 
           <img
-            src="/images/honeycomb.png"
-            alt="HoneyTerra Gel Ash Tray"
+            src="./images/honeycomb.png"
+            alt="Honeycomb Wrap"
           />
 
         </div>

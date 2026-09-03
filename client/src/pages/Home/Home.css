@@ -326,79 +326,83 @@
 
 
 /* =========================================================
-   INTRO SECTION
+   INTRO / HONEYTERRA VIDEO
 ========================================================= */
 
 .intro-section {
-  padding: 140px 7vw;
-
-  background: #f4f2ec;
+  position: relative;
+  width: 100%;
+  min-height: 680px;
+  padding: 0;
+  overflow: hidden;
+  background: #111713;
 }
 
-.intro-content {
-  max-width: 900px;
+.intro-section.honeyterra-intro-section {
+  width: 100vw;
+  max-width: none;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
 
-  margin: 0 auto;
+  height: 100svh;
+  min-height: 100svh;
 
-  text-align: center;
+  padding: 0;
+  overflow: hidden;
+
+  display: block;
+  background: #000;
 }
 
-.intro-content h2 {
+.honeyterra-intro-video {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  min-width: 100%;
+  min-height: 100%;
+
   margin: 0;
-
-  font-size: clamp(
-    44px,
-    5vw,
-    76px
-  );
-
-  line-height: 0.95;
-
-  letter-spacing: -0.055em;
-
-  font-weight: 500;
-
-  color: #26312d;
-}
-
-.intro-content > p:not(.eyebrow) {
-  max-width: 680px;
-
-  margin: 25px auto 0;
-
-  color: #6f7771;
-
-  font-size: 16px;
-
-  line-height: 1.7;
-}
-
-.intro-content .text-link {
-  margin-top: 30px;
+  padding: 0;
+  border: 0;
+  object-fit: cover;
+  object-position: center;
+  background: #111713;
 }
 
 
 /* =========================================================
-   INTRO IMAGE
+   RESPONSIVE VIDEO
 ========================================================= */
 
-.intro-image {
-  max-width: 1200px;
+@media (max-width: 1024px) {
+  .intro-section {
+    min-height: 560px;
+  }
 
-  margin: 80px auto 0;
-
-  overflow: hidden;
-
-  border-radius: 24px;
+  .honeyterra-intro-video {
+    height: 560px;
+  }
 }
 
-.intro-image img {
-  display: block;
+@media (max-width: 768px) {
+  .intro-section {
+    min-height: 480px;
+  }
 
-  width: 100%;
-  height: auto;
+  .honeyterra-intro-video {
+    height: 480px;
+    object-position: center;
+  }
+}
 
-  object-fit: cover;
+@media (max-width: 480px) {
+  .intro-section {
+    min-height: 380px;
+  }
+
+  .honeyterra-intro-video {
+    height: 380px;
+  }
 }
 
 
@@ -1699,8 +1703,8 @@
 
   background-color: #f4f0e5 !important;
 
-  background-image:
-    url("/images/honeyterra-intro.png") !important;
+  /* background-image:
+    url("/images/honeyterra-intro.png") !important; */
 
   background-size: cover !important;
   background-position: center center !important;

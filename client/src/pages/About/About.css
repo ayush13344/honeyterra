@@ -928,3 +928,64 @@
   }
 
 }
+
+
+/* =========================================================
+   PRODUCT IMAGE FIT FIX
+   ========================================================= */
+
+/*
+  Make the actual product images fill the complete image
+  container instead of keeping their natural/intrinsic size.
+*/
+
+.about-product-image .product-image-placeholder {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  display: block;
+  padding: 0;
+}
+
+.about-product-image .product-image-placeholder img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  object-position: center center;
+}
+
+/* Explicit Gel Ash Tray image rule */
+.ashtray-product .product-image-placeholder img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+
+
+/* =========================================================
+   PRODUCT IMAGE RESPONSIVE FIT
+   ========================================================= */
+
+@media (max-width: 900px) {
+  .about-product-image .product-image-placeholder img {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .about-product-image .product-image-placeholder img {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  .about-product-image .product-image-placeholder img {
+    width: 100%;
+    height: 100%;
+  }
+}

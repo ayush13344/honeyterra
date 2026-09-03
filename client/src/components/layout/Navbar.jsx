@@ -258,8 +258,7 @@ function Navbar({ isAuthPage = false }) {
           aria-label="HoneyTerra Home"
         >
           <span className="navbar-logo-mark">
-            <span className="logo-leaf logo-leaf-one" />
-            <span className="logo-leaf logo-leaf-two" />
+            <img src="/logo.jpg" alt="HoneyTerra" />
           </span>
 
           <span className="navbar-logo-text">

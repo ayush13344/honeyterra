@@ -93,13 +93,8 @@ function About() {
             <div className="about-image-placeholder">
 
               <div className="about-image-inner">
-                <span className="about-image-brand">
-                  Honey<span>Terra</span>
-                </span>
-
-                <span className="about-image-caption">
-                  Better ideas for everyday life.
-                </span>
+                <img src="./images/logo.jpg" alt="About HoneyTerra" />
+               
               </div>
 
             </div>
@@ -286,7 +281,7 @@ function About() {
 
               <div className="product-image-placeholder">
                <img
-            src="/images/gelashtray.jpeg"
+            src="/images/honeycomb.png"
             alt="HoneyTerra Gel Ash Tray"
           />
               </div>
