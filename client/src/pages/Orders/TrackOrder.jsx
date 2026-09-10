@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
+
 import { useNavigate, useParams } from "react-router-dom";
+
 import {
   ArrowLeft,
   Package,
@@ -14,7 +16,9 @@ import {
   RefreshCw,
   ShoppingBag,
   RotateCcw,
+  ExternalLink,
 } from "lucide-react";
+
 import "./TrackOrder.css";
 
 const API_URL = "http://localhost:3000";
@@ -24,9 +28,24 @@ function TrackOrder() {
   const { id } = useParams();
 
   const [order, setOrder] = useState(null);
+
   const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState("");
+
   const [cancelling, setCancelling] = useState(false);
+
+  // ==========================================
+  // SHIPROCKET TRACKING STATES
+  // ==========================================
+
+  const [tracking, setTracking] = useState(null);
+
+  const [trackingLoading, setTrackingLoading] =
+    useState(false);
+
+  const [trackingError, setTrackingError] =
+    useState("");
 
   // ==========================================
   // FETCH ORDER
@@ -53,6 +72,7 @@ function TrackOrder() {
         `${API_URL}/api/orders/${id}`,
         {
           method: "GET",
+
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -62,7 +82,10 @@ function TrackOrder() {
 
       const data = await response.json();
 
-      console.log("Track Order API Response:", data);
+      console.log(
+        "Track Order API Response:",
+        data
+      );
 
       if (!response.ok) {
         throw new Error(
@@ -72,7 +95,10 @@ function TrackOrder() {
 
       setOrder(data.order);
     } catch (err) {
-      console.error("Fetch Track Order Error:", err);
+      console.error(
+        "Fetch Track Order Error:",
+        err
+      );
 
       setError(
         err.message || "Unable to load order"
@@ -82,9 +108,152 @@ function TrackOrder() {
     }
   };
 
+  // ==========================================
+  // FETCH SHIPROCKET TRACKING
+  // ==========================================
+
+  const fetchTracking = async (
+    showLoader = true
+  ) => {
+    try {
+      if (!id) return;
+
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      if (showLoader) {
+        setTrackingLoading(true);
+      }
+
+      setTrackingError("");
+
+      const response = await fetch(
+        `${API_URL}/api/orders/${id}/tracking`,
+        {
+          method: "GET",
+
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      console.log(
+        "Shiprocket Tracking API Response:",
+        data
+      );
+
+      // ==========================================
+      // AWB NOT GENERATED YET
+      // ==========================================
+
+      if (!response.ok) {
+        if (
+          response.status === 400 &&
+          data.message?.toLowerCase().includes("awb")
+        ) {
+          setTracking(null);
+
+          setTrackingError(
+            "Shipment tracking will be available after your order is shipped."
+          );
+
+          return;
+        }
+
+        throw new Error(
+          data.message ||
+            "Failed to fetch shipment tracking"
+        );
+      }
+
+      // ==========================================
+      // SAVE TRACKING RESPONSE
+      // ==========================================
+
+      setTracking(data);
+
+      // ==========================================
+      // UPDATE ORDER SHIPROCKET INFORMATION
+      // ==========================================
+
+      setOrder((previousOrder) => {
+        if (!previousOrder) {
+          return previousOrder;
+        }
+
+        return {
+          ...previousOrder,
+
+          shiprocketAwbCode:
+            data.awbCode ||
+            previousOrder.shiprocketAwbCode,
+
+          shiprocketCourierName:
+            data.courierName ||
+            previousOrder.shiprocketCourierName,
+
+          shiprocketTrackingUrl:
+            data.trackingUrl ||
+            previousOrder.shiprocketTrackingUrl,
+
+          shiprocketStatus:
+            data.shiprocketStatus ||
+            previousOrder.shiprocketStatus,
+        };
+      });
+    } catch (err) {
+      console.error(
+        "Fetch Shiprocket Tracking Error:",
+        err
+      );
+
+      setTrackingError(
+        err.message ||
+          "Unable to fetch shipment tracking"
+      );
+    } finally {
+      if (showLoader) {
+        setTrackingLoading(false);
+      }
+    }
+  };
+
+  // ==========================================
+  // INITIAL FETCH
+  // ==========================================
+
   useEffect(() => {
     fetchOrder();
   }, [id]);
+
+  // ==========================================
+  // FETCH TRACKING AFTER ORDER LOADS
+  // ==========================================
+
+  useEffect(() => {
+    if (!order?._id) return;
+
+    // Only try Shiprocket tracking when
+    // shipment/AWB information exists.
+    if (
+      order.shiprocketAwbCode ||
+      order.shiprocketShipmentId
+    ) {
+      fetchTracking();
+    }
+  }, [
+    order?._id,
+    order?.shiprocketAwbCode,
+    order?.shiprocketShipmentId,
+  ]);
 
   // ==========================================
   // CANCEL ORDER
@@ -102,12 +271,14 @@ function TrackOrder() {
     try {
       setCancelling(true);
 
-      const token = localStorage.getItem("token");
+      const token =
+        localStorage.getItem("token");
 
       const response = await fetch(
         `${API_URL}/api/orders/${order._id}/cancel`,
         {
-          method: "PATCH",
+          method: "PUT",
+
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -119,21 +290,37 @@ function TrackOrder() {
 
       if (!response.ok) {
         throw new Error(
-          data.message || "Failed to cancel order"
+          data.message ||
+            "Failed to cancel order"
         );
       }
 
       setOrder(data.order);
 
-      alert("Order cancelled successfully");
-    } catch (err) {
-      console.error("Cancel Order Error:", err);
       alert(
-        err.message || "Unable to cancel order"
+        "Order cancelled successfully"
+      );
+    } catch (err) {
+      console.error(
+        "Cancel Order Error:",
+        err
+      );
+
+      alert(
+        err.message ||
+          "Unable to cancel order"
       );
     } finally {
       setCancelling(false);
     }
+  };
+
+  // ==========================================
+  // MANUAL REFRESH
+  // ==========================================
+
+  const handleRefreshTracking = async () => {
+    await fetchTracking(true);
   };
 
   // ==========================================
@@ -200,14 +387,19 @@ function TrackOrder() {
     const descriptions = {
       pending:
         "Your order has been received and is waiting for confirmation.",
+
       confirmed:
         "Your order has been confirmed and will be prepared soon.",
+
       processing:
         "Your order is being prepared and packed.",
+
       shipped:
         "Your order has been shipped and is on its way to you.",
+
       delivered:
         "Your order has been successfully delivered.",
+
       cancelled:
         "This order has been cancelled.",
     };
@@ -246,43 +438,114 @@ function TrackOrder() {
   };
 
   // ==========================================
+  // GET SHIPROCKET STATUS
+  // ==========================================
+
+  const getShiprocketStatus = () => {
+    if (tracking?.shiprocketStatus) {
+      return tracking.shiprocketStatus;
+    }
+
+    if (order?.shiprocketStatus) {
+      return order.shiprocketStatus;
+    }
+
+    return null;
+  };
+
+  // ==========================================
+  // GET AWB
+  // ==========================================
+
+  const getAwbCode = () => {
+    return (
+      tracking?.awbCode ||
+      order?.shiprocketAwbCode ||
+      null
+    );
+  };
+
+  // ==========================================
+  // GET COURIER NAME
+  // ==========================================
+
+  const getCourierName = () => {
+    return (
+      tracking?.courierName ||
+      order?.shiprocketCourierName ||
+      null
+    );
+  };
+
+  // ==========================================
+  // GET TRACKING URL
+  // ==========================================
+
+  const getTrackingUrl = () => {
+    return (
+      tracking?.trackingUrl ||
+      order?.shiprocketTrackingUrl ||
+      null
+    );
+  };
+
+  // ==========================================
   // TRACKING STEPS
   // ==========================================
 
   const trackingSteps = [
     {
       key: "pending",
+
       title: "Order Placed",
+
       description:
         "Your order has been successfully placed.",
+
       icon: <ShoppingBag size={18} />,
     },
+
     {
       key: "confirmed",
+
       title: "Order Confirmed",
+
       description:
         "Your order has been confirmed by HoneyTerra.",
+
       icon: <CheckCircle2 size={18} />,
     },
+
     {
       key: "processing",
+
       title: "Processing",
+
       description:
         "Your products are being prepared and packed.",
+
       icon: <Package size={18} />,
     },
+
     {
       key: "shipped",
+
       title: "Shipped",
+
       description:
         "Your package is on its way to you.",
+
       icon: <Truck size={18} />,
     },
+
     {
       key: "delivered",
+
       title: "Delivered",
+
       description:
         "Your order has reached its destination.",
+
       icon: <CheckCircle2 size={18} />,
     },
   ];
@@ -302,9 +565,11 @@ function TrackOrder() {
   const getCurrentStatusIndex = () => {
     if (!order?.orderStatus) return 0;
 
-    return statusOrder.indexOf(
+    const index = statusOrder.indexOf(
       order.orderStatus.toLowerCase()
     );
+
+    return index >= 0 ? index : 0;
   };
 
   // ==========================================
@@ -317,11 +582,13 @@ function TrackOrder() {
         <div className="track-order-loading">
           <div className="track-loader" />
 
-          <h3>Loading your order...</h3>
+          <h3>
+            Loading your order...
+          </h3>
 
           <p>
-            Please wait while we fetch your order
-            details.
+            Please wait while we fetch your
+            order details.
           </p>
         </div>
       </div>
@@ -356,6 +623,7 @@ function TrackOrder() {
                 }
               >
                 <ArrowLeft size={16} />
+
                 My Orders
               </button>
 
@@ -364,6 +632,7 @@ function TrackOrder() {
                 onClick={fetchOrder}
               >
                 <RefreshCw size={16} />
+
                 Try Again
               </button>
             </div>
@@ -393,6 +662,21 @@ function TrackOrder() {
     currentStatus !== "delivered";
 
   // ==========================================
+  // SHIPROCKET DATA
+  // ==========================================
+
+  const shiprocketStatus =
+    getShiprocketStatus();
+
+  const awbCode = getAwbCode();
+
+  const courierName =
+    getCourierName();
+
+  const trackingUrl =
+    getTrackingUrl();
+
+  // ==========================================
   // RENDER
   // ==========================================
 
@@ -411,6 +695,7 @@ function TrackOrder() {
           }
         >
           <ArrowLeft size={17} />
+
           Back to My Orders
         </button>
 
@@ -451,7 +736,9 @@ function TrackOrder() {
         {!isCancelled && (
           <div className="current-order-status">
             <div className="current-status-icon">
-              {getStatusIcon(currentStatus)}
+              {getStatusIcon(
+                currentStatus
+              )}
             </div>
 
             <div className="current-status-content">
@@ -473,7 +760,9 @@ function TrackOrder() {
             <div className="current-status-date">
               <CalendarDays size={15} />
 
-              {formatDate(order.updatedAt)}
+              {formatDate(
+                order.updatedAt
+              )}
             </div>
           </div>
         )}
@@ -502,24 +791,372 @@ function TrackOrder() {
         )}
 
         {/* ======================================
-            TRACKING CARD
+            SHIPROCKET LIVE TRACKING
+        ====================================== */}
+
+        {!isCancelled && (
+          <div className="order-tracking-card">
+
+            <div className="tracking-card-header">
+              <div>
+                <span>
+                  SHIPMENT TRACKING
+                </span>
+
+                <h2>
+                  Shiprocket Tracking
+                </h2>
+              </div>
+
+              <Truck size={25} />
+            </div>
+
+            {/* ==================================
+                TRACKING INFORMATION
+            ================================== */}
+
+            {awbCode ? (
+              <div
+                style={{
+                  padding: "20px",
+                }}
+              >
+
+                {/* AWB + COURIER */}
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns:
+                      "repeat(auto-fit, minmax(220px, 1fr))",
+                    gap: "15px",
+                    marginBottom: "18px",
+                  }}
+                >
+
+                  {/* AWB */}
+
+                  <div
+                    style={{
+                      padding: "16px",
+                      borderRadius: "12px",
+                      background:
+                        "#fffaf0",
+                      border:
+                        "1px solid #f0e3c5",
+                    }}
+                  >
+                    <span
+                      style={{
+                        display:
+                          "block",
+                        fontSize:
+                          "12px",
+                        fontWeight:
+                          "600",
+                        letterSpacing:
+                          "0.5px",
+                        marginBottom:
+                          "7px",
+                        opacity: 0.65,
+                      }}
+                    >
+                      AWB NUMBER
+                    </span>
+
+                    <strong
+                      style={{
+                        fontSize:
+                          "16px",
+                        wordBreak:
+                          "break-word",
+                      }}
+                    >
+                      {awbCode}
+                    </strong>
+                  </div>
+
+                  {/* COURIER */}
+
+                  <div
+                    style={{
+                      padding: "16px",
+                      borderRadius: "12px",
+                      background:
+                        "#fffaf0",
+                      border:
+                        "1px solid #f0e3c5",
+                    }}
+                  >
+                    <span
+                      style={{
+                        display:
+                          "block",
+                        fontSize:
+                          "12px",
+                        fontWeight:
+                          "600",
+                        letterSpacing:
+                          "0.5px",
+                        marginBottom:
+                          "7px",
+                        opacity: 0.65,
+                      }}
+                    >
+                      COURIER
+                    </span>
+
+                    <strong
+                      style={{
+                        fontSize:
+                          "16px",
+                      }}
+                    >
+                      {courierName ||
+                        "Shiprocket"}
+                    </strong>
+                  </div>
+
+                  {/* STATUS */}
+
+                  <div
+                    style={{
+                      padding: "16px",
+                      borderRadius: "12px",
+                      background:
+                        "#fffaf0",
+                      border:
+                        "1px solid #f0e3c5",
+                    }}
+                  >
+                    <span
+                      style={{
+                        display:
+                          "block",
+                        fontSize:
+                          "12px",
+                        fontWeight:
+                          "600",
+                        letterSpacing:
+                          "0.5px",
+                        marginBottom:
+                          "7px",
+                        opacity: 0.65,
+                      }}
+                    >
+                      SHIPMENT STATUS
+                    </span>
+
+                    <strong
+                      style={{
+                        fontSize:
+                          "16px",
+                      }}
+                    >
+                      {shiprocketStatus ||
+                        "Processing"}
+                    </strong>
+                  </div>
+                </div>
+
+                {/* ==================================
+                    TRACKING ERROR
+                ================================== */}
+
+                {trackingError && (
+                  <div
+                    style={{
+                      padding:
+                        "12px 15px",
+                      borderRadius:
+                        "10px",
+                      background:
+                        "#fff7e6",
+                      marginBottom:
+                        "15px",
+                      fontSize:
+                        "14px",
+                    }}
+                  >
+                    {trackingError}
+                  </div>
+                )}
+
+                {/* ==================================
+                    TRACKING ACTIONS
+                ================================== */}
+
+                <div
+                  style={{
+                    display:
+                      "flex",
+                    flexWrap:
+                      "wrap",
+                    gap: "10px",
+                  }}
+                >
+
+                  {/* REFRESH */}
+
+                  <button
+                    type="button"
+                    className="track-primary-btn"
+                    onClick={
+                      handleRefreshTracking
+                    }
+                    disabled={
+                      trackingLoading
+                    }
+                    style={{
+                      display:
+                        "inline-flex",
+                      alignItems:
+                        "center",
+                      gap: "7px",
+                    }}
+                  >
+                    <RefreshCw
+                      size={16}
+                      className={
+                        trackingLoading
+                          ? "cancel-spinner"
+                          : ""
+                      }
+                    />
+
+                    {trackingLoading
+                      ? "Refreshing..."
+                      : "Refresh Tracking"}
+                  </button>
+
+                  {/* EXTERNAL TRACKING */}
+
+                  {trackingUrl && (
+                    <button
+                      type="button"
+                      className="track-secondary-btn"
+                      onClick={() =>
+                        window.open(
+                          trackingUrl,
+                          "_blank",
+                          "noopener,noreferrer"
+                        )
+                      }
+                      style={{
+                        display:
+                          "inline-flex",
+                        alignItems:
+                          "center",
+                        gap: "7px",
+                      }}
+                    >
+                      <ExternalLink
+                        size={16}
+                      />
+
+                      Track Shipment
+                    </button>
+                  )}
+                </div>
+
+                {/* ==================================
+                    LAST UPDATED
+                ================================== */}
+
+                {tracking && (
+                  <div
+                    style={{
+                      marginTop:
+                        "14px",
+                      fontSize:
+                        "12px",
+                      opacity: 0.6,
+                    }}
+                  >
+                    Tracking information
+                    refreshed just now.
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div
+                style={{
+                  padding: "25px 20px",
+                  textAlign: "center",
+                }}
+              >
+                <Truck
+                  size={34}
+                  style={{
+                    marginBottom:
+                      "10px",
+                    opacity: 0.5,
+                  }}
+                />
+
+                <h3
+                  style={{
+                    margin:
+                      "0 0 7px",
+                  }}
+                >
+                  Shipment Not Yet Dispatched
+                </h3>
+
+                <p
+                  style={{
+                    margin: 0,
+                    opacity: 0.65,
+                    fontSize:
+                      "14px",
+                  }}
+                >
+                  Your Shiprocket tracking
+                  information will appear
+                  here once the shipment has
+                  been assigned an AWB number.
+                </p>
+
+                {trackingError && (
+                  <p
+                    style={{
+                      margin:
+                        "12px 0 0",
+                      fontSize:
+                        "13px",
+                    }}
+                  >
+                    {trackingError}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ======================================
+            ORDER TIMELINE
         ====================================== */}
 
         <div className="order-tracking-card">
           <div className="tracking-card-header">
             <div>
-              <span>DELIVERY PROGRESS</span>
+              <span>
+                DELIVERY PROGRESS
+              </span>
 
-              <h2>Order Timeline</h2>
+              <h2>
+                Order Timeline
+              </h2>
             </div>
 
             <Truck size={25} />
           </div>
 
           <div className="tracking-timeline">
-
             {isCancelled ? (
               <div className="tracking-step tracking-step-completed">
+
                 <div className="tracking-step-line">
                   <div className="tracking-step-icon">
                     <XCircle size={18} />
@@ -556,7 +1193,8 @@ function TrackOrder() {
 
                   const isLast =
                     index ===
-                    trackingSteps.length - 1;
+                    trackingSteps.length -
+                      1;
 
                   return (
                     <div
@@ -571,7 +1209,6 @@ function TrackOrder() {
                       }`}
                       key={step.key}
                     >
-
                       <div className="tracking-step-line">
 
                         <div className="tracking-step-icon">
@@ -588,12 +1225,11 @@ function TrackOrder() {
                             }`}
                           />
                         )}
-
                       </div>
 
                       <div className="tracking-step-content">
-
                         <div className="tracking-step-title-row">
+
                           <h3>
                             {step.title}
                           </h3>
@@ -608,15 +1244,12 @@ function TrackOrder() {
                         <p>
                           {step.description}
                         </p>
-
                       </div>
-
                     </div>
                   );
                 }
               )
             )}
-
           </div>
         </div>
 
@@ -631,6 +1264,7 @@ function TrackOrder() {
           ==================================== */}
 
           <div className="order-info-card">
+
             <div className="order-card-heading">
 
               <div className="order-card-heading-icon">
@@ -654,7 +1288,8 @@ function TrackOrder() {
 
                 <strong>
                   {
-                    order.shippingAddress
+                    order
+                      .shippingAddress
                       ?.fullName
                   }
                 </strong>
@@ -662,24 +1297,28 @@ function TrackOrder() {
 
               <p>
                 {
-                  order.shippingAddress
+                  order
+                    .shippingAddress
                     ?.address
                 }
               </p>
 
               <p>
                 {
-                  order.shippingAddress
+                  order
+                    .shippingAddress
                     ?.city
                 }
                 ,{" "}
                 {
-                  order.shippingAddress
+                  order
+                    .shippingAddress
                     ?.state
                 }{" "}
                 -{" "}
                 {
-                  order.shippingAddress
+                  order
+                    .shippingAddress
                     ?.pincode
                 }
               </p>
@@ -688,7 +1327,8 @@ function TrackOrder() {
                 <span>📞</span>
 
                 {
-                  order.shippingAddress
+                  order
+                    .shippingAddress
                     ?.phone
                 }
               </div>
@@ -701,6 +1341,7 @@ function TrackOrder() {
           ==================================== */}
 
           <div className="order-info-card">
+
             <div className="order-card-heading">
 
               <div className="order-card-heading-icon">
@@ -749,7 +1390,8 @@ function TrackOrder() {
                 <strong>
                   ₹
                   {Number(
-                    order.totalAmount || 0
+                    order.totalAmount ||
+                      0
                   ).toLocaleString(
                     "en-IN"
                   )}
@@ -784,7 +1426,9 @@ function TrackOrder() {
               </div>
 
               <div>
-                <span>YOUR ORDER</span>
+                <span>
+                  YOUR ORDER
+                </span>
 
                 <h2>
                   Ordered Products
@@ -832,6 +1476,7 @@ function TrackOrder() {
                     >
 
                       <div className="order-product-image">
+
                         {image ? (
                           <img
                             src={image}
@@ -842,6 +1487,7 @@ function TrackOrder() {
                             size={28}
                           />
                         )}
+
                       </div>
 
                       <div className="order-product-details">
@@ -892,14 +1538,14 @@ function TrackOrder() {
               <strong>
                 ₹
                 {Number(
-                  order.totalAmount || 0
+                  order.totalAmount ||
+                    0
                 ).toLocaleString(
                   "en-IN"
                 )}
               </strong>
 
             </div>
-
           </div>
 
           {/* ====================================
@@ -915,7 +1561,9 @@ function TrackOrder() {
               </div>
 
               <div>
-                <span>ORDER INFORMATION</span>
+                <span>
+                  ORDER INFORMATION
+                </span>
 
                 <h2>
                   Order Details
@@ -972,10 +1620,36 @@ function TrackOrder() {
                 </strong>
               </div>
 
+              {/* SHIPROCKET AWB */}
+
+              {awbCode && (
+                <div>
+                  <span>
+                    Shiprocket AWB
+                  </span>
+
+                  <strong>
+                    {awbCode}
+                  </strong>
+                </div>
+              )}
+
+              {/* COURIER */}
+
+              {courierName && (
+                <div>
+                  <span>
+                    Courier
+                  </span>
+
+                  <strong>
+                    {courierName}
+                  </strong>
+                </div>
+              )}
+
             </div>
-
           </div>
-
         </div>
 
         {/* ======================================
@@ -991,13 +1665,16 @@ function TrackOrder() {
             }
           >
             <ArrowLeft size={16} />
+
             Back to My Orders
           </button>
 
           {canCancel && (
             <button
               className="cancel-order-btn"
-              onClick={handleCancelOrder}
+              onClick={
+                handleCancelOrder
+              }
               disabled={cancelling}
             >
               {cancelling ? (
@@ -1006,11 +1683,13 @@ function TrackOrder() {
                     size={16}
                     className="cancel-spinner"
                   />
+
                   Cancelling...
                 </>
               ) : (
                 <>
                   <RotateCcw size={16} />
+
                   Cancel Order
                 </>
               )}

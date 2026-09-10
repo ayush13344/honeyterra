@@ -5,6 +5,13 @@ import {
   getAdminOrderById,
   updateOrderStatus,
   updatePaymentStatus,
+
+  createAdminShiprocketOrder,
+  generateOrderAWB,
+  scheduleOrderPickup,
+  generateOrderManifest,
+  generateOrderLabel,
+  getOrderTracking,
 } from "../controllers/adminOrderController.js";
 
 import protect from "../middleware/authMiddleware.js";
@@ -13,40 +20,106 @@ import adminOnly from "../middleware/adminMiddleware.js";
 const router = express.Router();
 
 // ==========================================
+// ADMIN AUTHENTICATION
+// ==========================================
+
+router.use(protect);
+router.use(adminOnly);
+
+// ==========================================
 // GET ALL ORDERS
 // GET /api/admin/orders
 // ==========================================
 
-router.get("/", protect, adminOnly, getAllOrders);
+router.get("/", getAllOrders);
+
+// ==========================================
+// CREATE SHIPROCKET ORDER
+// POST /api/admin/orders/:id/shiprocket
+// ==========================================
+
+router.post(
+  "/:id/shiprocket",
+  createAdminShiprocketOrder
+);
+
+// ==========================================
+// GENERATE AWB
+// POST /api/admin/orders/:id/awb
+// ==========================================
+
+router.post(
+  "/:id/awb",
+  generateOrderAWB
+);
+
+// ==========================================
+// SCHEDULE PICKUP
+// POST /api/admin/orders/:id/pickup
+// ==========================================
+
+router.post(
+  "/:id/pickup",
+  scheduleOrderPickup
+);
+
+// ==========================================
+// GENERATE MANIFEST
+// POST /api/admin/orders/:id/manifest
+// ==========================================
+
+router.post(
+  "/:id/manifest",
+  generateOrderManifest
+);
+
+// ==========================================
+// GENERATE SHIPPING LABEL
+// POST /api/admin/orders/:id/label
+// ==========================================
+
+router.post(
+  "/:id/label",
+  generateOrderLabel
+);
+
+// ==========================================
+// GET SHIPMENT TRACKING
+// GET /api/admin/orders/:id/tracking
+// ==========================================
+
+router.get(
+  "/:id/tracking",
+  getOrderTracking
+);
 
 // ==========================================
 // GET SINGLE ORDER
 // GET /api/admin/orders/:id
 // ==========================================
 
-router.get("/:id", protect, adminOnly, getAdminOrderById);
+router.get(
+  "/:id",
+  getAdminOrderById
+);
 
 // ==========================================
 // UPDATE ORDER STATUS
-// PATCH /api/admin/orders/:id/status
+// PUT /api/admin/orders/:id/status
 // ==========================================
 
-router.patch(
+router.put(
   "/:id/status",
-  protect,
-  adminOnly,
   updateOrderStatus
 );
 
 // ==========================================
 // UPDATE PAYMENT STATUS
-// PATCH /api/admin/orders/:id/payment-status
+// PUT /api/admin/orders/:id/payment-status
 // ==========================================
 
-router.patch(
+router.put(
   "/:id/payment-status",
-  protect,
-  adminOnly,
   updatePaymentStatus
 );
 

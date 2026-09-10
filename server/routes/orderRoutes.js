@@ -4,39 +4,159 @@ import {
   createOrder,
   getMyOrders,
   getOrderById,
-  cancelOrder,
   getAdminOrderById,
   updateOrderStatus,
+  cancelOrder,
+  generateOrderAWB,
+  scheduleOrderPickup,
+  generateOrderManifest,
+  generateOrderLabel,
+  getOrderTracking,
 } from "../controllers/orderController.js";
 
 import protect from "../middleware/authMiddleware.js";
+import adminOnly from "../middleware/adminMiddleware.js";
 
 const router = express.Router();
 
-// ==================================================
-// CUSTOMER ROUTES
-// ==================================================
+// ==========================================
+// CREATE ORDER
+// ==========================================
 
-// Create new order
-router.post("/", protect, createOrder);
+router.post(
+  "/",
+  protect,
+  createOrder
+);
 
-// Get logged-in user's orders
-router.get("/my-orders", protect, getMyOrders);
+// ==========================================
+// GET MY ORDERS
+// IMPORTANT: THIS MUST COME BEFORE /:id
+// ==========================================
 
-// Get logged-in user's single order
-router.get("/:id", protect, getOrderById);
+router.get(
+  "/my-orders",
+  protect,
+  getMyOrders
+);
 
-// Cancel logged-in user's order
-router.patch("/:id/cancel", protect, cancelOrder);
+// ==========================================
+// GET MY ORDERS - /my
+// Keep this too if your frontend uses /my
+// ==========================================
 
-// ==================================================
-// ADMIN ROUTES
-// ==================================================
+router.get(
+  "/my",
+  protect,
+  getMyOrders
+);
 
-// Admin gets any order
-router.get("/admin/:id", protect, getAdminOrderById);
+// ==========================================
+// ADMIN - GET ORDER BY ID
+// ==========================================
 
-// Admin updates order status
-router.patch("/admin/:id/status", protect, updateOrderStatus);
+router.get(
+  "/admin/:id",
+  protect,
+  adminOnly,
+  getAdminOrderById
+);
 
-export default router;  
+// ==========================================
+// ADMIN - GENERATE AWB
+// ==========================================
+
+router.post(
+  "/admin/:id/generate-awb",
+  protect,
+  adminOnly,
+  generateOrderAWB
+);
+
+// ==========================================
+// ADMIN - SCHEDULE PICKUP
+// ==========================================
+
+router.post(
+  "/admin/:id/schedule-pickup",
+  protect,
+  adminOnly,
+  scheduleOrderPickup
+);
+
+// ==========================================
+// ADMIN - GENERATE MANIFEST
+// ==========================================
+
+router.post(
+  "/admin/:id/generate-manifest",
+  protect,
+  adminOnly,
+  generateOrderManifest
+);
+
+// ==========================================
+// ADMIN - GENERATE SHIPPING LABEL
+// ==========================================
+
+router.post(
+  "/admin/:id/generate-label",
+  protect,
+  adminOnly,
+  generateOrderLabel
+);
+
+// ==========================================
+// ADMIN - UPDATE ORDER STATUS
+// ==========================================
+
+router.put(
+  "/admin/:id/status",
+  protect,
+  adminOnly,
+  updateOrderStatus
+);
+
+// ==========================================
+// ADMIN - TRACK SHIPMENT
+// ==========================================
+
+router.get(
+  "/admin/:id/tracking",
+  protect,
+  adminOnly,
+  getOrderTracking
+);
+
+// ==========================================
+// USER - TRACK SHIPMENT
+// ==========================================
+
+router.get(
+  "/:id/tracking",
+  protect,
+  getOrderTracking
+);
+
+// ==========================================
+// USER - GET ORDER BY ID
+// IMPORTANT: KEEP THIS NEAR THE END
+// ==========================================
+
+router.get(
+  "/:id",
+  protect,
+  getOrderById
+);
+
+// ==========================================
+// USER - CANCEL ORDER
+// ==========================================
+
+router.put(
+  "/:id/cancel",
+  protect,
+  cancelOrder
+);
+
+export default router;

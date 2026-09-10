@@ -1,5 +1,9 @@
 import mongoose from "mongoose";
 
+// ==========================================
+// ORDER ITEM SCHEMA
+// ==========================================
+
 const orderItemSchema = new mongoose.Schema(
   {
     product: {
@@ -31,8 +35,14 @@ const orderItemSchema = new mongoose.Schema(
       min: 1,
     },
   },
-  { _id: false }
+  {
+    _id: false,
+  }
 );
+
+// ==========================================
+// SHIPPING ADDRESS SCHEMA
+// ==========================================
 
 const shippingAddressSchema = new mongoose.Schema(
   {
@@ -72,14 +82,21 @@ const shippingAddressSchema = new mongoose.Schema(
       trim: true,
     },
   },
-  { _id: false }
+  {
+    _id: false,
+  }
 );
+
+// ==========================================
+// ORDER SCHEMA
+// ==========================================
 
 const orderSchema = new mongoose.Schema(
   {
     // ==========================================
     // USER
     // ==========================================
+
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -89,13 +106,16 @@ const orderSchema = new mongoose.Schema(
     // ==========================================
     // ORDER ITEMS
     // ==========================================
+
     items: {
       type: [orderItemSchema],
       required: true,
+
       validate: {
         validator: function (items) {
           return items.length > 0;
         },
+
         message: "Order must contain at least one product",
       },
     },
@@ -103,6 +123,7 @@ const orderSchema = new mongoose.Schema(
     // ==========================================
     // SHIPPING ADDRESS
     // ==========================================
+
     shippingAddress: {
       type: shippingAddressSchema,
       required: true,
@@ -111,6 +132,7 @@ const orderSchema = new mongoose.Schema(
     // ==========================================
     // TOTAL AMOUNT
     // ==========================================
+
     totalAmount: {
       type: Number,
       required: true,
@@ -120,17 +142,27 @@ const orderSchema = new mongoose.Schema(
     // ==========================================
     // PAYMENT STATUS
     // ==========================================
+
     paymentStatus: {
       type: String,
-      enum: ["pending", "paid", "failed", "refunded"],
+
+      enum: [
+        "pending",
+        "paid",
+        "failed",
+        "refunded",
+      ],
+
       default: "pending",
     },
 
     // ==========================================
     // ORDER STATUS
     // ==========================================
+
     orderStatus: {
       type: String,
+
       enum: [
         "pending",
         "confirmed",
@@ -139,12 +171,14 @@ const orderSchema = new mongoose.Schema(
         "delivered",
         "cancelled",
       ],
+
       default: "pending",
     },
 
     // ==========================================
     // RAZORPAY DETAILS
     // ==========================================
+
     razorpayOrderId: {
       type: String,
       default: null,
@@ -159,12 +193,82 @@ const orderSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+
+    // ==========================================
+    // SHIPROCKET DETAILS
+    // ==========================================
+
+    // Shiprocket Order ID
+    shiprocketOrderId: {
+      type: String,
+      default: null,
+    },
+
+    // Shiprocket Shipment ID
+    shiprocketShipmentId: {
+      type: String,
+      default: null,
+    },
+
+    // Shiprocket AWB Number
+    shiprocketAwbCode: {
+      type: String,
+      default: null,
+    },
+
+    // Shiprocket Courier Name
+    shiprocketCourierName: {
+      type: String,
+      default: null,
+    },
+
+    // Shiprocket Tracking URL
+    shiprocketTrackingUrl: {
+      type: String,
+      default: null,
+    },
+
+    // Current Shiprocket Status
+    shiprocketStatus: {
+      type: String,
+      default: null,
+    },
+
+    // Whether pickup has been scheduled
+    shiprocketPickupScheduled: {
+      type: Boolean,
+      default: false,
+    },
+
+    // ==========================================
+    // SHIPROCKET MANIFEST DETAILS
+    // ==========================================
+
+    // Shiprocket Manifest ID
+    shiprocketManifestId: {
+      type: String,
+      default: null,
+    },
+
+    // Shiprocket Manifest URL
+    shiprocketManifestUrl: {
+      type: String,
+      default: null,
+    },
   },
+
+  // ==========================================
+  // TIMESTAMPS
+  // ==========================================
 
   {
     timestamps: true,
   }
 );
+
+// ==========================================
+// CREATE MODEL
+// ==========================================
 
 const Order = mongoose.model("Order", orderSchema);
 

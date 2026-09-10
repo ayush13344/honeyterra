@@ -12,6 +12,58 @@ import {
 import { useCart } from "../../context/CartContext";
 import "./Checkout.css";
 
+// ==========================================
+// API URL
+// ==========================================
+
+const API_URL = "http://localhost:3000";
+
+// ==========================================
+// RAZORPAY SCRIPT
+// ==========================================
+
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    // Already loaded
+    if (window.Razorpay) {
+      console.log("Razorpay already loaded");
+      resolve(true);
+      return;
+    }
+
+    console.log("Loading Razorpay script...");
+
+    const script = document.createElement("script");
+
+    script.src =
+      "https://checkout.razorpay.com/v1/checkout.js";
+
+    script.async = true;
+
+    script.onload = () => {
+      console.log(
+        "Razorpay script loaded successfully"
+      );
+
+      resolve(true);
+    };
+
+    script.onerror = () => {
+      console.error(
+        "Razorpay script failed to load"
+      );
+
+      resolve(false);
+    };
+
+    document.body.appendChild(script);
+  });
+};
+
+// ==========================================
+// CHECKOUT COMPONENT
+// ==========================================
+
 const Checkout = () => {
   const navigate = useNavigate();
 
@@ -22,7 +74,7 @@ const Checkout = () => {
   } = useCart();
 
   // ==========================================
-  // USE CART DATA
+  // CART
   // ==========================================
 
   const items =
@@ -35,7 +87,7 @@ const Checkout = () => {
   );
 
   // ==========================================
-  // FORM STATE
+  // FORM
   // ==========================================
 
   const [formData, setFormData] = useState({
@@ -57,13 +109,13 @@ const Checkout = () => {
     useState("cod");
 
   // ==========================================
-  // FORM ERRORS
+  // ERRORS
   // ==========================================
 
   const [errors, setErrors] = useState({});
 
   // ==========================================
-  // SUBMIT STATE
+  // SUBMITTING
   // ==========================================
 
   const [isSubmitting, setIsSubmitting] =
@@ -81,7 +133,8 @@ const Checkout = () => {
       : 49;
 
   const total =
-    Number(subtotal) + Number(shipping);
+    Number(subtotal) +
+    Number(shipping);
 
   // ==========================================
   // HANDLE INPUT
@@ -98,7 +151,6 @@ const Checkout = () => {
       [name]: value,
     }));
 
-    // Remove error when user starts typing
     if (errors[name]) {
       setErrors((previous) => ({
         ...previous,
@@ -108,7 +160,7 @@ const Checkout = () => {
   };
 
   // ==========================================
-  // VALIDATION
+  // VALIDATE FORM
   // ==========================================
 
   const validateForm = () => {
@@ -124,7 +176,7 @@ const Checkout = () => {
         "Please enter your email.";
     } else if (
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-        formData.email
+        formData.email.trim()
       )
     ) {
       newErrors.email =
@@ -136,7 +188,7 @@ const Checkout = () => {
         "Please enter your mobile number.";
     } else if (
       !/^[6-9]\d{9}$/.test(
-        formData.mobile
+        formData.mobile.trim()
       )
     ) {
       newErrors.mobile =
@@ -163,7 +215,7 @@ const Checkout = () => {
         "Please enter your pincode.";
     } else if (
       !/^\d{6}$/.test(
-        formData.pincode
+        formData.pincode.trim()
       )
     ) {
       newErrors.pincode =
@@ -178,69 +230,263 @@ const Checkout = () => {
   };
 
   // ==========================================
-  // PLACE ORDER
+  // RAZORPAY PAYMENT
   // ==========================================
 
-  const handlePlaceOrder = async (event) => {
-    event.preventDefault();
+  const startRazorpayPayment = async () => {
+    console.log(
+      "================================="
+    );
+
+    console.log(
+      "RAZORPAY PAYMENT STARTED"
+    );
+
+    console.log(
+      "================================="
+    );
 
     // ==========================================
-    // VALIDATE FORM
+    // VALIDATE
     // ==========================================
 
-    const isValid = validateForm();
+    if (!validateForm()) {
+      console.log(
+        "Checkout validation failed"
+      );
 
-    if (!isValid) {
       return;
     }
 
     // ==========================================
-    // GET USER TOKEN
+    // TOKEN
     // ==========================================
 
     const token =
       localStorage.getItem("token");
 
-    console.log(
-      "Checkout Token:",
-      token
-        ? "Token found"
-        : "Token missing"
-    );
-
-    // ==========================================
-    // CHECK LOGIN
-    // ==========================================
-
     if (!token) {
       alert(
-        "Please login before placing an order."
+        "Please login before making payment."
       );
 
       navigate("/login");
+
       return;
     }
 
     // ==========================================
-    // START SUBMITTING
+    // CART CHECK
     // ==========================================
 
-    setIsSubmitting(true);
+    if (
+      !items ||
+      items.length === 0
+    ) {
+      alert(
+        "Your cart is empty."
+      );
+
+      navigate("/shop");
+
+      return;
+    }
 
     try {
+      setIsSubmitting(true);
+
       // ==========================================
-      // CREATE ORDER
+      // STEP 1
+      // LOAD RAZORPAY
       // ==========================================
 
-      const response = await axios.post(
-        "http://localhost:3000/api/orders",
-        {
-          fullName:
+      console.log(
+        "Step 1: Loading Razorpay..."
+      );
+
+      const razorpayLoaded =
+        await loadRazorpayScript();
+
+      if (!razorpayLoaded) {
+        alert(
+          "Unable to load Razorpay. Please check your internet connection."
+        );
+
+        setIsSubmitting(false);
+
+        return;
+      }
+
+      // ==========================================
+      // CHECK WINDOW.RAZORPAY
+      // ==========================================
+
+      if (!window.Razorpay) {
+        console.error(
+          "window.Razorpay is undefined"
+        );
+
+        alert(
+          "Razorpay could not be initialized. Please refresh the page and try again."
+        );
+
+        setIsSubmitting(false);
+
+        return;
+      }
+
+      console.log(
+        "Step 2: Razorpay SDK ready"
+      );
+
+      // ==========================================
+      // STEP 2
+      // CREATE ORDER ON BACKEND
+      // ==========================================
+
+      console.log(
+        "Step 3: Creating Razorpay order..."
+      );
+
+      console.log(
+        "API:",
+        `${API_URL}/api/payment/create-order`
+      );
+
+      const orderResponse =
+        await axios.post(
+          `${API_URL}/api/payment/create-order`,
+          {
+            fullName:
+              formData.fullName.trim(),
+
+            phone:
+              formData.mobile.trim(),
+
+            address:
+              formData.address.trim(),
+
+            city:
+              formData.city.trim(),
+
+            state:
+              formData.state.trim(),
+
+            pincode:
+              formData.pincode.trim(),
+          },
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+
+              "Content-Type":
+                "application/json",
+            },
+          }
+        );
+
+      console.log(
+        "Backend Razorpay response:",
+        orderResponse.data
+      );
+
+      // ==========================================
+      // CHECK RESPONSE
+      // ==========================================
+
+      if (
+        !orderResponse.data ||
+        !orderResponse.data.success
+      ) {
+        throw new Error(
+          orderResponse.data?.message ||
+            "Unable to create Razorpay order."
+        );
+      }
+
+      const {
+        key,
+        amount,
+        currency,
+        razorpayOrderId,
+      } = orderResponse.data;
+
+      // ==========================================
+      // IMPORTANT CHECKS
+      // ==========================================
+
+      console.log(
+        "Razorpay Key:",
+        key
+      );
+
+      console.log(
+        "Razorpay Amount:",
+        amount
+      );
+
+      console.log(
+        "Razorpay Currency:",
+        currency
+      );
+
+      console.log(
+        "Razorpay Order ID:",
+        razorpayOrderId
+      );
+
+      if (!key) {
+        throw new Error(
+          "Razorpay Key ID was not returned by the server."
+        );
+      }
+
+      if (!amount) {
+        throw new Error(
+          "Razorpay amount was not returned by the server."
+        );
+      }
+
+      if (!razorpayOrderId) {
+        throw new Error(
+          "Razorpay Order ID was not returned by the server."
+        );
+      }
+
+      // ==========================================
+      // STEP 3
+      // RAZORPAY OPTIONS
+      // ==========================================
+
+      const options = {
+        key: key,
+
+        amount: Number(amount),
+
+        currency:
+          currency || "INR",
+
+        name: "HoneyTerra",
+
+        description:
+          "HoneyTerra Order",
+
+        order_id:
+          razorpayOrderId,
+
+        prefill: {
+          name:
             formData.fullName.trim(),
 
-          phone:
-            formData.mobile.trim(),
+          email:
+            formData.email.trim(),
 
+          contact:
+            `+91${formData.mobile.trim()}`,
+        },
+
+        notes: {
           address:
             formData.address.trim(),
 
@@ -253,30 +499,342 @@ const Checkout = () => {
           pincode:
             formData.pincode.trim(),
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
+
+        theme: {
+          color: "#d99a2b",
+        },
+
+        modal: {
+          escape: true,
+
+          backdropclose: false,
+
+          ondismiss: () => {
+            console.log(
+              "Razorpay checkout closed."
+            );
+
+            setIsSubmitting(false);
           },
+        },
+
+        // ==========================================
+        // SUCCESS
+        // ==========================================
+
+        handler: async (
+          paymentResponse
+        ) => {
+          console.log(
+            "================================="
+          );
+
+          console.log(
+            "RAZORPAY PAYMENT SUCCESS"
+          );
+
+          console.log(
+            paymentResponse
+          );
+
+          console.log(
+            "================================="
+          );
+
+          try {
+            // ==========================================
+            // CHECK PAYMENT RESPONSE
+            // ==========================================
+
+            if (
+              !paymentResponse
+                .razorpay_payment_id ||
+              !paymentResponse
+                .razorpay_order_id ||
+              !paymentResponse
+                .razorpay_signature
+            ) {
+              throw new Error(
+                "Incomplete Razorpay payment response."
+              );
+            }
+
+            // ==========================================
+            // VERIFY PAYMENT
+            // ==========================================
+
+            console.log(
+              "Verifying payment with backend..."
+            );
+
+            const verifyResponse =
+              await axios.post(
+                `${API_URL}/api/payment/verify`,
+                {
+                  razorpayOrderId:
+                    paymentResponse.razorpay_order_id,
+
+                  razorpayPaymentId:
+                    paymentResponse.razorpay_payment_id,
+
+                  razorpaySignature:
+                    paymentResponse.razorpay_signature,
+                },
+                {
+                  headers: {
+                    Authorization:
+                      `Bearer ${token}`,
+
+                    "Content-Type":
+                      "application/json",
+                  },
+                }
+              );
+
+            console.log(
+              "Verification response:",
+              verifyResponse.data
+            );
+
+            if (
+              verifyResponse.data.success
+            ) {
+              alert(
+                "Payment successful! Your order has been placed."
+              );
+
+              navigate("/");
+            } else {
+              alert(
+                verifyResponse.data.message ||
+                  "Payment verification failed."
+              );
+            }
+          } catch (error) {
+            console.error(
+              "Payment verification error:",
+              error
+            );
+
+            console.error(
+              "Server response:",
+              error.response?.data
+            );
+
+            if (
+              error.response?.status ===
+              401
+            ) {
+              alert(
+                "Your session has expired. Please login again."
+              );
+
+              localStorage.removeItem(
+                "token"
+              );
+
+              localStorage.removeItem(
+                "user"
+              );
+
+              navigate("/login");
+
+              return;
+            }
+
+            alert(
+              error.response?.data?.message ||
+                error.message ||
+                "Payment verification failed. Please contact support."
+            );
+          } finally {
+            setIsSubmitting(false);
+          }
+        },
+      };
+
+      // ==========================================
+      // STEP 4
+      // CREATE RAZORPAY INSTANCE
+      // ==========================================
+
+      console.log(
+        "Step 4: Creating Razorpay instance..."
+      );
+
+      const razorpay =
+        new window.Razorpay(
+          options
+        );
+
+      // ==========================================
+      // PAYMENT FAILED
+      // ==========================================
+
+      razorpay.on(
+        "payment.failed",
+        (response) => {
+          console.error(
+            "================================="
+          );
+
+          console.error(
+            "RAZORPAY PAYMENT FAILED"
+          );
+
+          console.error(
+            response
+          );
+
+          console.error(
+            response.error
+          );
+
+          console.error(
+            "================================="
+          );
+
+          alert(
+            response.error?.description ||
+              "Payment failed. Please try again."
+          );
+
+          setIsSubmitting(false);
         }
       );
 
+      // ==========================================
+      // STEP 5
+      // OPEN RAZORPAY
+      // ==========================================
+
       console.log(
-        "Create Order Response:",
-        response.data
+        "Step 5: Opening Razorpay Checkout..."
       );
 
-      // ==========================================
-      // ORDER SUCCESS
-      // ==========================================
+      razorpay.open();
+
+      console.log(
+        "Razorpay open() called."
+      );
+    } catch (error) {
+      console.error(
+        "================================="
+      );
+
+      console.error(
+        "RAZORPAY START ERROR"
+      );
+
+      console.error(
+        error
+      );
+
+      console.error(
+        "Server response:",
+        error.response?.data
+      );
+
+      console.error(
+        "================================="
+      );
+
+      if (
+        error.response?.status ===
+        401
+      ) {
+        alert(
+          "Your session has expired. Please login again."
+        );
+
+        localStorage.removeItem(
+          "token"
+        );
+
+        localStorage.removeItem(
+          "user"
+        );
+
+        navigate("/login");
+
+        return;
+      }
+
+      alert(
+        error.response?.data?.message ||
+          error.message ||
+          "Unable to start Razorpay payment."
+      );
+    } finally {
+      // Do NOT leave button disabled
+      // if an error happens before popup.
+      setIsSubmitting(false);
+    }
+  };
+
+  // ==========================================
+  // COD ORDER
+  // ==========================================
+
+  const handleCODOrder = async () => {
+    const token =
+      localStorage.getItem("token");
+
+    if (!token) {
+      alert(
+        "Please login before placing an order."
+      );
+
+      navigate("/login");
+
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      const response =
+        await axios.post(
+          `${API_URL}/api/orders`,
+          {
+            fullName:
+              formData.fullName.trim(),
+
+            phone:
+              formData.mobile.trim(),
+
+            address:
+              formData.address.trim(),
+
+            city:
+              formData.city.trim(),
+
+            state:
+              formData.state.trim(),
+
+            pincode:
+              formData.pincode.trim(),
+          },
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`,
+
+              "Content-Type":
+                "application/json",
+            },
+          }
+        );
+
+      console.log(
+        "COD order response:",
+        response.data
+      );
 
       if (response.data.success) {
         alert(
           "Order placed successfully!"
         );
-
-        // Cart is already emptied by
-        // backend after successful order.
 
         navigate("/");
       } else {
@@ -287,41 +845,34 @@ const Checkout = () => {
       }
     } catch (error) {
       console.error(
-        "Place Order Error:",
+        "COD Order Error:",
         error
       );
 
-      console.error(
-        "Server Response:",
-        error.response?.data
-      );
-
-      // ==========================================
-      // UNAUTHORIZED
-      // ==========================================
-
       if (
-        error.response?.status === 401
+        error.response?.status ===
+        401
       ) {
         alert(
           "Your session has expired. Please login again."
         );
 
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+        localStorage.removeItem(
+          "token"
+        );
+
+        localStorage.removeItem(
+          "user"
+        );
 
         navigate("/login");
 
         return;
       }
 
-      // ==========================================
-      // OTHER SERVER ERROR
-      // ==========================================
-
       alert(
         error.response?.data?.message ||
-          "Failed to place order. Please try again."
+          "Failed to place order."
       );
     } finally {
       setIsSubmitting(false);
@@ -329,13 +880,95 @@ const Checkout = () => {
   };
 
   // ==========================================
+  // MAIN SUBMIT
+  // ==========================================
+
+  const handlePlaceOrder = async (
+    event
+  ) => {
+    event.preventDefault();
+
+    console.log(
+      "================================="
+    );
+
+    console.log(
+      "CHECKOUT SUBMIT"
+    );
+
+    console.log(
+      "Selected payment:",
+      paymentMethod
+    );
+
+    console.log(
+      "================================="
+    );
+
+    // ==========================================
+    // VALIDATION
+    // ==========================================
+
+    if (!validateForm()) {
+      console.log(
+        "Validation failed."
+      );
+
+      return;
+    }
+
+    // ==========================================
+    // LOGIN
+    // ==========================================
+
+    const token =
+      localStorage.getItem("token");
+
+    if (!token) {
+      alert(
+        "Please login before placing an order."
+      );
+
+      navigate("/login");
+
+      return;
+    }
+
+    // ==========================================
+    // RAZORPAY
+    // ==========================================
+
+    if (
+      paymentMethod === "razorpay"
+    ) {
+      console.log(
+        "Calling Razorpay..."
+      );
+
+      await startRazorpayPayment();
+
+      return;
+    }
+
+    // ==========================================
+    // COD
+    // ==========================================
+
+    await handleCODOrder();
+  };
+
+  // ==========================================
   // EMPTY CART
   // ==========================================
 
-  if (!items || items.length === 0) {
+  if (
+    !items ||
+    items.length === 0
+  ) {
     return (
       <main className="checkout-page">
         <div className="checkout-empty">
+
           <div className="checkout-empty-icon">
             <ShoppingBag size={40} />
           </div>
@@ -357,26 +990,29 @@ const Checkout = () => {
           >
             Continue Shopping
           </button>
+
         </div>
       </main>
     );
   }
 
+  // ==========================================
+  // UI
+  // ==========================================
+
   return (
     <main className="checkout-page">
+
       <div className="checkout-container">
 
-        {/* ==================================================
+        {/* ==========================================
             LEFT SIDE
-        ================================================== */}
+        ========================================== */}
 
         <section className="checkout-form-section">
 
-          {/* ==========================================
-              PAGE HEADING
-          ========================================== */}
-
           <div className="checkout-page-heading">
+
             <span className="checkout-eyebrow">
               HONEYTERRA
             </span>
@@ -390,20 +1026,29 @@ const Checkout = () => {
               choose your preferred payment
               method.
             </p>
+
           </div>
 
           {/* ==========================================
-              CONTACT & DELIVERY
+              FORM
           ========================================== */}
 
           <form
             id="checkout-form"
-            onSubmit={handlePlaceOrder}
+            onSubmit={
+              handlePlaceOrder
+            }
             className="checkout-form"
           >
+
+            {/* ==========================================
+                DELIVERY
+            ========================================== */}
+
             <section className="checkout-form-block">
 
               <div className="checkout-section-heading">
+
                 <div className="checkout-section-number">
                   01
                 </div>
@@ -418,13 +1063,13 @@ const Checkout = () => {
                     your order?
                   </p>
                 </div>
+
               </div>
 
-              {/* ==========================================
-                  FULL NAME
-              ========================================== */}
+              {/* FULL NAME */}
 
               <div className="checkout-field">
+
                 <label htmlFor="fullName">
                   Full name
                 </label>
@@ -433,8 +1078,12 @@ const Checkout = () => {
                   id="fullName"
                   name="fullName"
                   type="text"
-                  value={formData.fullName}
-                  onChange={handleChange}
+                  value={
+                    formData.fullName
+                  }
+                  onChange={
+                    handleChange
+                  }
                   placeholder="Your full name"
                   className={
                     errors.fullName
@@ -448,15 +1097,15 @@ const Checkout = () => {
                     {errors.fullName}
                   </span>
                 )}
+
               </div>
 
-              {/* ==========================================
-                  EMAIL + MOBILE
-              ========================================== */}
+              {/* EMAIL + MOBILE */}
 
               <div className="checkout-two-column">
 
                 <div className="checkout-field">
+
                   <label htmlFor="email">
                     Email
                   </label>
@@ -465,8 +1114,12 @@ const Checkout = () => {
                     id="email"
                     name="email"
                     type="email"
-                    value={formData.email}
-                    onChange={handleChange}
+                    value={
+                      formData.email
+                    }
+                    onChange={
+                      handleChange
+                    }
                     placeholder="you@example.com"
                     className={
                       errors.email
@@ -480,9 +1133,11 @@ const Checkout = () => {
                       {errors.email}
                     </span>
                   )}
+
                 </div>
 
                 <div className="checkout-field">
+
                   <label htmlFor="mobile">
                     Mobile number
                   </label>
@@ -492,8 +1147,12 @@ const Checkout = () => {
                     name="mobile"
                     type="tel"
                     maxLength="10"
-                    value={formData.mobile}
-                    onChange={handleChange}
+                    value={
+                      formData.mobile
+                    }
+                    onChange={
+                      handleChange
+                    }
                     placeholder="9876543210"
                     className={
                       errors.mobile
@@ -507,15 +1166,15 @@ const Checkout = () => {
                       {errors.mobile}
                     </span>
                   )}
+
                 </div>
 
               </div>
 
-              {/* ==========================================
-                  ADDRESS
-              ========================================== */}
+              {/* ADDRESS */}
 
               <div className="checkout-field">
+
                 <label htmlFor="address">
                   Address
                 </label>
@@ -524,8 +1183,12 @@ const Checkout = () => {
                   id="address"
                   name="address"
                   type="text"
-                  value={formData.address}
-                  onChange={handleChange}
+                  value={
+                    formData.address
+                  }
+                  onChange={
+                    handleChange
+                  }
                   placeholder="House no., street, area"
                   className={
                     errors.address
@@ -539,13 +1202,13 @@ const Checkout = () => {
                     {errors.address}
                   </span>
                 )}
+
               </div>
 
-              {/* ==========================================
-                  LANDMARK
-              ========================================== */}
+              {/* LANDMARK */}
 
               <div className="checkout-field">
+
                 <label htmlFor="landmark">
                   Apartment, landmark
                   <span>
@@ -558,20 +1221,24 @@ const Checkout = () => {
                   id="landmark"
                   name="landmark"
                   type="text"
-                  value={formData.landmark}
-                  onChange={handleChange}
+                  value={
+                    formData.landmark
+                  }
+                  onChange={
+                    handleChange
+                  }
                   placeholder="Landmark"
                   className="checkout-input"
                 />
+
               </div>
 
-              {/* ==========================================
-                  CITY + STATE
-              ========================================== */}
+              {/* CITY + STATE */}
 
               <div className="checkout-two-column">
 
                 <div className="checkout-field">
+
                   <label htmlFor="city">
                     City
                   </label>
@@ -580,8 +1247,12 @@ const Checkout = () => {
                     id="city"
                     name="city"
                     type="text"
-                    value={formData.city}
-                    onChange={handleChange}
+                    value={
+                      formData.city
+                    }
+                    onChange={
+                      handleChange
+                    }
                     placeholder="Mumbai"
                     className={
                       errors.city
@@ -595,9 +1266,11 @@ const Checkout = () => {
                       {errors.city}
                     </span>
                   )}
+
                 </div>
 
                 <div className="checkout-field">
+
                   <label htmlFor="state">
                     State
                   </label>
@@ -606,8 +1279,12 @@ const Checkout = () => {
                     id="state"
                     name="state"
                     type="text"
-                    value={formData.state}
-                    onChange={handleChange}
+                    value={
+                      formData.state
+                    }
+                    onChange={
+                      handleChange
+                    }
                     placeholder="Maharashtra"
                     className={
                       errors.state
@@ -621,15 +1298,15 @@ const Checkout = () => {
                       {errors.state}
                     </span>
                   )}
+
                 </div>
 
               </div>
 
-              {/* ==========================================
-                  PINCODE
-              ========================================== */}
+              {/* PINCODE */}
 
               <div className="checkout-field checkout-pincode-field">
+
                 <label htmlFor="pincode">
                   Pincode
                 </label>
@@ -640,8 +1317,12 @@ const Checkout = () => {
                   type="text"
                   inputMode="numeric"
                   maxLength="6"
-                  value={formData.pincode}
-                  onChange={handleChange}
+                  value={
+                    formData.pincode
+                  }
+                  onChange={
+                    handleChange
+                  }
                   placeholder="400001"
                   className={
                     errors.pincode
@@ -655,13 +1336,14 @@ const Checkout = () => {
                     {errors.pincode}
                   </span>
                 )}
+
               </div>
 
             </section>
 
-            {/* ==================================================
+            {/* ==========================================
                 PAYMENT
-            ================================================== */}
+            ========================================== */}
 
             <section className="checkout-form-block">
 
@@ -694,10 +1376,14 @@ const Checkout = () => {
                     : "payment-option"
                 }
                 onClick={() =>
-                  setPaymentMethod("cod")
+                  setPaymentMethod(
+                    "cod"
+                  )
                 }
               >
+
                 <div className="payment-radio">
+
                   <div
                     className={
                       paymentMethod === "cod"
@@ -705,6 +1391,7 @@ const Checkout = () => {
                         : ""
                     }
                   />
+
                 </div>
 
                 <div className="payment-icon">
@@ -712,6 +1399,7 @@ const Checkout = () => {
                 </div>
 
                 <div className="payment-content">
+
                   <strong>
                     Cash on Delivery
                   </strong>
@@ -720,45 +1408,82 @@ const Checkout = () => {
                     Pay in cash when your
                     order arrives.
                   </span>
+
                 </div>
 
-                {paymentMethod === "cod" && (
+                {paymentMethod ===
+                  "cod" && (
                   <CheckCircle2
                     className="payment-check"
                     size={21}
                   />
                 )}
+
               </button>
 
-              {/* ONLINE PAYMENT */}
+              {/* RAZORPAY */}
 
               <button
                 type="button"
-                className="payment-option payment-option-disabled"
-                disabled
+                className={
+                  paymentMethod ===
+                  "razorpay"
+                    ? "payment-option payment-option-active"
+                    : "payment-option"
+                }
+                onClick={() => {
+                  console.log(
+                    "Razorpay selected"
+                  );
+
+                  setPaymentMethod(
+                    "razorpay"
+                  );
+                }}
               >
-                <div className="payment-radio" />
+
+                <div className="payment-radio">
+
+                  <div
+                    className={
+                      paymentMethod ===
+                      "razorpay"
+                        ? "payment-radio-dot"
+                        : ""
+                    }
+                  />
+
+                </div>
 
                 <div className="payment-icon">
                   <CreditCard size={21} />
                 </div>
 
                 <div className="payment-content">
+
                   <strong>
                     Online Payment
                   </strong>
 
                   <span>
-                    Coming soon
+                    Pay securely using Razorpay
                   </span>
+
                 </div>
+
+                {paymentMethod ===
+                  "razorpay" && (
+                  <CheckCircle2
+                    className="payment-check"
+                    size={21}
+                  />
+                )}
+
               </button>
 
             </section>
 
-            {/* ==========================================
-                MOBILE PLACE ORDER
-            ========================================== */}
+            {/* MOBILE BUTTON */}
 
             <button
               type="submit"
@@ -766,26 +1491,32 @@ const Checkout = () => {
               disabled={isSubmitting}
             >
               {isSubmitting
-                ? "Placing order..."
+                ? paymentMethod ===
+                  "razorpay"
+                  ? "Opening payment..."
+                  : "Placing order..."
+                : paymentMethod ===
+                  "razorpay"
+                ? "Pay securely"
                 : "Place order"}
             </button>
 
           </form>
+
         </section>
 
-        {/* ==================================================
-            RIGHT SIDE — ORDER SUMMARY
-        ================================================== */}
+        {/* ==========================================
+            RIGHT SIDE
+        ========================================== */}
 
         <aside className="order-summary">
 
-          {/* ==========================================
-              SUMMARY HEADER
-          ========================================== */}
+          {/* HEADER */}
 
           <div className="order-summary-header">
 
             <div>
+
               <span className="checkout-eyebrow">
                 YOUR ORDER
               </span>
@@ -793,120 +1524,128 @@ const Checkout = () => {
               <h2>
                 Order summary
               </h2>
+
             </div>
 
             <span className="summary-item-count">
+
               {items.reduce(
-                (total, item) =>
-                  total +
+                (count, item) =>
+                  count +
                   Number(
                     item.quantity || 0
                   ),
                 0
               )}{" "}
               items
+
             </span>
 
           </div>
 
-          {/* ==========================================
-              PRODUCTS
-          ========================================== */}
+          {/* PRODUCTS */}
 
           <div className="summary-products">
 
-            {items.map((item, index) => {
+            {items.map(
+              (item, index) => {
 
-              const product =
-                item.product;
+                const product =
+                  item.product;
 
-              if (!product) {
-                return null;
-              }
+                if (!product) {
+                  return null;
+                }
 
-              const image =
-                product.images?.[0];
+                const image =
+                  product.images?.[0];
 
-              return (
-                <div
-                  className="summary-product"
-                  key={
-                    product._id ||
-                    item._id ||
-                    index
-                  }
-                >
+                return (
+                  <div
+                    className="summary-product"
+                    key={
+                      product._id ||
+                      item._id ||
+                      index
+                    }
+                  >
 
-                  {/* IMAGE */}
+                    <div className="summary-product-image">
 
-                  <div className="summary-product-image">
+                      {image ? (
+                        <img
+                          src={image}
+                          alt={
+                            product.name
+                          }
+                        />
+                      ) : (
+                        <ShoppingBag
+                          size={25}
+                        />
+                      )}
 
-                    {image ? (
-                      <img
-                        src={image}
-                        alt={product.name}
-                      />
-                    ) : (
-                      <ShoppingBag
-                        size={25}
-                      />
-                    )}
+                      <span className="summary-product-quantity">
+                        {
+                          item.quantity
+                        }
+                      </span>
 
-                    <span className="summary-product-quantity">
-                      {item.quantity}
-                    </span>
+                    </div>
 
-                  </div>
+                    <div className="summary-product-info">
 
-                  {/* DETAILS */}
+                      <h3>
+                        {
+                          product.name
+                        }
+                      </h3>
 
-                  <div className="summary-product-info">
+                      {product.category && (
+                        <p>
+                          {
+                            product.category
+                          }
+                        </p>
+                      )}
 
-                    <h3>
-                      {product.name}
-                    </h3>
+                      <span>
+                        ₹
+                        {Number(
+                          item.price
+                        ).toLocaleString(
+                          "en-IN"
+                        )}{" "}
+                        ×{" "}
+                        {
+                          item.quantity
+                        }
+                      </span>
 
-                    {product.category && (
-                      <p>
-                        {product.category}
-                      </p>
-                    )}
+                    </div>
 
-                    <span>
+                    <strong>
                       ₹
-                      {Number(
-                        item.price
+                      {(
+                        Number(
+                          item.price
+                        ) *
+                        Number(
+                          item.quantity
+                        )
                       ).toLocaleString(
                         "en-IN"
-                      )}{" "}
-                      × {item.quantity}
-                    </span>
+                      )}
+                    </strong>
 
                   </div>
-
-                  {/* TOTAL */}
-
-                  <strong>
-                    ₹
-                    {(
-                      Number(item.price) *
-                      Number(
-                        item.quantity
-                      )
-                    ).toLocaleString(
-                      "en-IN"
-                    )}
-                  </strong>
-
-                </div>
-              );
-            })}
+                );
+              }
+            )}
 
           </div>
 
-          {/* ==========================================
-              PRICE DETAILS
-          ========================================== */}
+          {/* PRICING */}
 
           <div className="summary-pricing">
 
@@ -941,9 +1680,7 @@ const Checkout = () => {
 
           </div>
 
-          {/* ==========================================
-              TOTAL
-          ========================================== */}
+          {/* TOTAL */}
 
           <div className="summary-total">
 
@@ -961,7 +1698,7 @@ const Checkout = () => {
           </div>
 
           {/* ==========================================
-              PLACE ORDER
+              DESKTOP PAYMENT BUTTON
           ========================================== */}
 
           <button
@@ -971,13 +1708,17 @@ const Checkout = () => {
             disabled={isSubmitting}
           >
             {isSubmitting
-              ? "Placing order..."
+              ? paymentMethod ===
+                "razorpay"
+                ? "Opening payment..."
+                : "Placing order..."
+              : paymentMethod ===
+                "razorpay"
+              ? "Pay securely"
               : "Place order"}
           </button>
 
-          {/* ==========================================
-              TRUST MESSAGE
-          ========================================== */}
+          {/* TRUST */}
 
           <div className="summary-trust">
 
@@ -994,6 +1735,7 @@ const Checkout = () => {
         </aside>
 
       </div>
+
     </main>
   );
 };
