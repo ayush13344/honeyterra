@@ -1,3 +1,4 @@
+
 import Order from "../models/Order.js";
 
 import {
@@ -7,6 +8,7 @@ import {
   generateManifest,
   generateLabel,
   getShipmentTracking,
+  getBestCourierForShipment,
 } from "../config/shiprocket.js";
 
 // ==========================================
@@ -248,6 +250,10 @@ export const createAdminShiprocketOrder = async (req, res) => {
       shiprocketResponse?.data?.status ||
       "Shipment Created";
 
+    // ------------------------------------------
+    // VALIDATE SHIPMENT ID
+    // ------------------------------------------
+
     if (!shiprocketShipmentId) {
       console.error(
         "❌ Shiprocket response did not contain shipment_id:",
@@ -266,7 +272,10 @@ export const createAdminShiprocketOrder = async (req, res) => {
     // SAVE SHIPROCKET DETAILS
     // ------------------------------------------
 
-    order.shiprocketOrderId = String(shiprocketOrderId);
+    order.shiprocketOrderId =
+      shiprocketOrderId
+        ? String(shiprocketOrderId)
+        : null;
 
     order.shiprocketShipmentId =
       String(shiprocketShipmentId);
@@ -313,7 +322,6 @@ export const createAdminShiprocketOrder = async (req, res) => {
       success: false,
       message:
         "Failed to create Shiprocket order",
-
       error:
         error.response?.data ||
         error.message,
@@ -328,7 +336,23 @@ export const createAdminShiprocketOrder = async (req, res) => {
 export const generateOrderAWB = async (req, res) => {
   try {
     const { id } = req.params;
-    const { courierCompanyId } = req.body;
+
+    /*
+      Courier ID is OPTIONAL.
+
+      Normally the frontend should send {}.
+
+      The backend will automatically find a
+      serviceable courier for this order.
+    */
+
+    const {
+      courierCompanyId: requestedCourierCompanyId,
+    } = req.body || {};
+
+    // ------------------------------------------
+    // VALIDATE ORDER ID
+    // ------------------------------------------
 
     if (!id) {
       return res.status(400).json({
@@ -337,14 +361,12 @@ export const generateOrderAWB = async (req, res) => {
       });
     }
 
-    if (!courierCompanyId) {
-      return res.status(400).json({
-        success: false,
-        message: "Courier company ID is required",
-      });
-    }
+    // ------------------------------------------
+    // FIND ORDER
+    // ------------------------------------------
 
-    const order = await Order.findById(id);
+    const order = await Order.findById(id)
+      .populate("user", "name email");
 
     if (!order) {
       return res.status(404).json({
@@ -352,6 +374,10 @@ export const generateOrderAWB = async (req, res) => {
         message: "Order not found",
       });
     }
+
+    // ------------------------------------------
+    // CHECK SHIPROCKET SHIPMENT
+    // ------------------------------------------
 
     if (!order.shiprocketShipmentId) {
       return res.status(400).json({
@@ -361,24 +387,311 @@ export const generateOrderAWB = async (req, res) => {
       });
     }
 
+    // ------------------------------------------
+    // PREVENT DUPLICATE AWB
+    // ------------------------------------------
+
     if (order.shiprocketAwbCode) {
       return res.status(400).json({
         success: false,
         message:
           "AWB has already been generated for this order.",
-        awbCode: order.shiprocketAwbCode,
+
+        awbCode:
+          order.shiprocketAwbCode,
+
+        courierName:
+          order.shiprocketCourierName,
       });
     }
 
-    const awbResponse = await generateAWB(
-      order.shiprocketShipmentId,
-      courierCompanyId
+    // ==========================================
+    // DETERMINE COD / PREPAID
+    // ==========================================
+
+    const cod =
+      order.paymentStatus === "paid"
+        ? 0
+        : 1;
+
+    // ==========================================
+    // DETERMINE WEIGHT
+    // ==========================================
+
+    const weight = Number(
+      process.env.SHIPROCKET_WEIGHT || 0.5
+    );
+
+    if (!weight || weight <= 0) {
+      return res.status(500).json({
+        success: false,
+        message:
+          "Invalid SHIPROCKET_WEIGHT in .env",
+      });
+    }
+
+    // ==========================================
+    // PICKUP PINCODE
+    // ==========================================
+
+    const pickupPostcode =
+      process.env.SHIPROCKET_PICKUP_PINCODE;
+
+    if (!pickupPostcode) {
+      return res.status(500).json({
+        success: false,
+        message:
+          "SHIPROCKET_PICKUP_PINCODE is missing in .env",
+      });
+    }
+
+    // ==========================================
+    // DELIVERY PINCODE
+    // ==========================================
+
+    const deliveryPostcode =
+      order.shippingAddress?.pincode;
+
+    if (!deliveryPostcode) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Customer delivery pincode is missing.",
+      });
+    }
+
+    // ==========================================
+    // START LOGGING
+    // ==========================================
+
+    console.log(
+      "=========================================="
     );
 
     console.log(
-      "🚚 Shiprocket AWB Response:",
-      awbResponse
+      "🚚 STARTING AWB GENERATION"
     );
+
+    console.log(
+      "Order ID:",
+      order._id.toString()
+    );
+
+    console.log(
+      "Shipment ID:",
+      order.shiprocketShipmentId
+    );
+
+    console.log(
+      "Pickup Pincode:",
+      pickupPostcode
+    );
+
+    console.log(
+      "Delivery Pincode:",
+      deliveryPostcode
+    );
+
+    console.log(
+      "Weight:",
+      weight
+    );
+
+    console.log(
+      "COD:",
+      cod
+    );
+
+    console.log(
+      "=========================================="
+    );
+
+    // ==========================================
+    // FIND COURIER
+    // ==========================================
+
+    let courierCompanyId = null;
+    let selectedCourier = null;
+
+    // ------------------------------------------
+    // IF FRONTEND PROVIDED COURIER
+    // ------------------------------------------
+
+    if (requestedCourierCompanyId) {
+      const parsedCourierId =
+        Number(
+          requestedCourierCompanyId
+        );
+
+      if (
+        Number.isInteger(parsedCourierId) &&
+        parsedCourierId > 0
+      ) {
+        courierCompanyId =
+          parsedCourierId;
+
+        console.log(
+          "🚚 Frontend requested courier:",
+          courierCompanyId
+        );
+      }
+    }
+
+    // ------------------------------------------
+    // AUTOMATIC COURIER SELECTION
+    // ------------------------------------------
+
+    if (!courierCompanyId) {
+      console.log(
+        "🔍 Finding available courier automatically..."
+      );
+
+      selectedCourier =
+        await getBestCourierForShipment({
+          pickupPostcode,
+          deliveryPostcode,
+          weight,
+          cod,
+        });
+
+      if (
+        !selectedCourier ||
+        !selectedCourier.courier_company_id
+      ) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "No valid courier is available for this shipment.",
+        });
+      }
+
+      courierCompanyId =
+        Number(
+          selectedCourier.courier_company_id
+        );
+
+      console.log(
+        "=========================================="
+      );
+
+      console.log(
+        "✅ AUTOMATIC COURIER SELECTED"
+      );
+
+      console.log(
+        "Courier ID:",
+        courierCompanyId
+      );
+
+      console.log(
+        "Courier Name:",
+        selectedCourier.courier_name ||
+          selectedCourier.name ||
+          "Unknown"
+      );
+
+      console.log(
+        "=========================================="
+      );
+    }
+
+    // ==========================================
+    // FINAL COURIER VALIDATION
+    // ==========================================
+
+    if (
+      !courierCompanyId ||
+      !Number.isInteger(courierCompanyId) ||
+      courierCompanyId <= 0
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "No valid courier company was selected.",
+      });
+    }
+
+    // ==========================================
+    // GENERATE AWB
+    // ==========================================
+
+    let awbResponse;
+
+    try {
+      awbResponse =
+        await generateAWB(
+          order.shiprocketShipmentId,
+          courierCompanyId
+        );
+    } catch (awbError) {
+      const shiprocketError =
+        awbError.response?.data ||
+        awbError.message;
+
+      console.error(
+        "=========================================="
+      );
+
+      console.error(
+        "❌ SHIPROCKET REJECTED AWB ASSIGNMENT"
+      );
+
+      console.error(
+        "Shipment ID:",
+        order.shiprocketShipmentId
+      );
+
+      console.error(
+        "Courier ID:",
+        courierCompanyId
+      );
+
+      console.error(
+        "Shiprocket Error:",
+        shiprocketError
+      );
+
+      console.error(
+        "=========================================="
+      );
+
+      return res.status(500).json({
+        success: false,
+
+        message:
+          "Failed to generate AWB",
+
+        error:
+          shiprocketError,
+
+        courierCompanyId,
+
+        shipmentId:
+          order.shiprocketShipmentId,
+
+        deliveryPostcode,
+      });
+    }
+
+    // ==========================================
+    // LOG RESPONSE
+    // ==========================================
+
+    console.log(
+      "🚚 Shiprocket AWB Response:"
+    );
+
+    console.log(
+      JSON.stringify(
+        awbResponse,
+        null,
+        2
+      )
+    );
+
+    // ==========================================
+    // EXTRACT AWB CODE
+    // ==========================================
 
     const awbCode =
       awbResponse?.response?.data?.awb_code ||
@@ -389,11 +702,21 @@ export const generateOrderAWB = async (req, res) => {
       awbResponse?.awb ||
       null;
 
+    // ==========================================
+    // EXTRACT COURIER NAME
+    // ==========================================
+
     const courierName =
       awbResponse?.response?.data?.courier_name ||
       awbResponse?.data?.courier_name ||
       awbResponse?.courier_name ||
+      selectedCourier?.courier_name ||
+      selectedCourier?.name ||
       null;
+
+    // ==========================================
+    // EXTRACT STATUS
+    // ==========================================
 
     const status =
       awbResponse?.response?.data?.status ||
@@ -401,20 +724,51 @@ export const generateOrderAWB = async (req, res) => {
       awbResponse?.status ||
       "AWB Generated";
 
+    // ==========================================
+    // EXTRACT TRACKING URL
+    // ==========================================
+
     const trackingUrl =
       awbResponse?.response?.data?.tracking_url ||
       awbResponse?.data?.tracking_url ||
       awbResponse?.tracking_url ||
       null;
 
+    // ==========================================
+    // CHECK AWB
+    // ==========================================
+
     if (!awbCode) {
+      console.error(
+        "❌ Shiprocket did not return an AWB code:"
+      );
+
+      console.error(
+        JSON.stringify(
+          awbResponse,
+          null,
+          2
+        )
+      );
+
       return res.status(500).json({
         success: false,
+
         message:
           "Shiprocket did not return an AWB code",
-        shiprocket: awbResponse,
+
+        courierCompanyId,
+
+        courierName,
+
+        shiprocket:
+          awbResponse,
       });
     }
+
+    // ==========================================
+    // SAVE AWB DETAILS
+    // ==========================================
 
     order.shiprocketAwbCode =
       String(awbCode);
@@ -434,15 +788,54 @@ export const generateOrderAWB = async (req, res) => {
 
     await order.save();
 
+    // ==========================================
+    // SUCCESS LOG
+    // ==========================================
+
+    console.log(
+      "=========================================="
+    );
+
+    console.log(
+      "✅ AWB GENERATED SUCCESSFULLY"
+    );
+
+    console.log(
+      "AWB:",
+      order.shiprocketAwbCode
+    );
+
+    console.log(
+      "Courier:",
+      order.shiprocketCourierName
+    );
+
+    console.log(
+      "Courier ID:",
+      courierCompanyId
+    );
+
+    console.log(
+      "=========================================="
+    );
+
+    // ==========================================
+    // RESPONSE
+    // ==========================================
+
     return res.status(200).json({
       success: true,
+
       message:
         "AWB generated successfully",
 
-      orderId: order._id,
+      orderId:
+        order._id,
 
       shipmentId:
         order.shiprocketShipmentId,
+
+      courierCompanyId,
 
       awbCode:
         order.shiprocketAwbCode,
@@ -471,8 +864,10 @@ export const generateOrderAWB = async (req, res) => {
 
     return res.status(500).json({
       success: false,
+
       message:
         "Failed to generate AWB",
+
       error:
         error.response?.data ||
         error.message,
@@ -557,7 +952,8 @@ export const scheduleOrderPickup = async (req, res) => {
       message:
         "Shiprocket pickup scheduled successfully",
 
-      orderId: order._id,
+      orderId:
+        order._id,
 
       shipmentId:
         order.shiprocketShipmentId,
@@ -708,7 +1104,8 @@ export const generateOrderManifest = async (req, res) => {
       message:
         "Shiprocket manifest generated successfully",
 
-      orderId: order._id,
+      orderId:
+        order._id,
 
       shipmentId:
         order.shiprocketShipmentId,
@@ -819,7 +1216,8 @@ export const generateOrderLabel = async (req, res) => {
       message:
         "Shipping label generated successfully",
 
-      orderId: order._id,
+      orderId:
+        order._id,
 
       shipmentId:
         order.shiprocketShipmentId,
@@ -925,7 +1323,8 @@ export const getOrderTracking = async (req, res) => {
       message:
         "Shipment tracking information fetched successfully",
 
-      orderId: order._id,
+      orderId:
+        order._id,
 
       shipmentId:
         order.shiprocketShipmentId,

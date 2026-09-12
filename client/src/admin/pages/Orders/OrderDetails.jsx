@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-
 import {
   ArrowLeft,
   Package,
@@ -18,7 +17,6 @@ import {
   XCircle,
   Plus,
 } from "lucide-react";
-
 import "./OrderDetails.css";
 
 const API_URL = "http://localhost:3000";
@@ -68,10 +66,7 @@ const getStatusClass = (status = "") => {
 const formatStatus = (status = "") => {
   if (!status) return "Pending";
 
-  return (
-    status.charAt(0).toUpperCase() +
-    status.slice(1)
-  );
+  return status.charAt(0).toUpperCase() + status.slice(1);
 };
 
 // ==========================================
@@ -101,24 +96,19 @@ const OrderDetails = () => {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [updatingPayment, setUpdatingPayment] =
-    useState(false);
+  const [updatingPayment, setUpdatingPayment] = useState(false);
 
   // ==========================================
   // SHIPROCKET STATE
   // ==========================================
 
-  const [shiprocketLoading, setShiprocketLoading] =
-    useState(false);
+  const [shiprocketLoading, setShiprocketLoading] = useState(false);
 
-  const [trackingLoading, setTrackingLoading] =
-    useState(false);
+  const [trackingLoading, setTrackingLoading] = useState(false);
 
-  const [trackingError, setTrackingError] =
-    useState("");
+  const [trackingError, setTrackingError] = useState("");
 
-  const [trackingData, setTrackingData] =
-    useState(null);
+  const [trackingData, setTrackingData] = useState(null);
 
   // ==========================================
   // GET ADMIN TOKEN
@@ -145,10 +135,7 @@ const OrderDetails = () => {
 
       const token = getAdminToken();
 
-      console.log(
-        "📦 Fetching admin order:",
-        orderId
-      );
+      console.log("📦 Fetching admin order:", orderId);
 
       const response = await fetch(
         `${API_URL}/api/admin/orders/${orderId}`,
@@ -163,15 +150,11 @@ const OrderDetails = () => {
 
       const data = await response.json();
 
-      console.log(
-        "📦 Admin order response:",
-        data
-      );
+      console.log("📦 Admin order response:", data);
 
       if (!response.ok) {
         throw new Error(
-          data.message ||
-            "Failed to fetch order"
+          data.message || "Failed to fetch order"
         );
       }
 
@@ -220,6 +203,7 @@ const OrderDetails = () => {
         alert(
           "Shiprocket order has already been created."
         );
+
         return;
       }
 
@@ -307,12 +291,10 @@ const OrderDetails = () => {
         `${API_URL}/api/admin/orders/${order._id}/payment-status`,
         {
           method: "PUT",
-
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-
           body: JSON.stringify({
             paymentStatus:
               selectedPaymentStatus,
@@ -376,6 +358,7 @@ const OrderDetails = () => {
         alert(
           "Create the Shiprocket order first."
         );
+
         return;
       }
 
@@ -383,6 +366,7 @@ const OrderDetails = () => {
         alert(
           `AWB already generated: ${order.shiprocketAwbCode}`
         );
+
         return;
       }
 
@@ -395,19 +379,29 @@ const OrderDetails = () => {
         order._id
       );
 
+      /*
+       * IMPORTANT:
+       *
+       * Do NOT send courierCompanyId: 58 anymore.
+       *
+       * The backend will now:
+       * 1. Check Shiprocket serviceability.
+       * 2. Find an eligible courier.
+       * 3. Assign the AWB using that courier.
+       *
+       * This prevents the frontend from forcing a
+       * potentially unauthorized/ineligible courier.
+       */
+
       const response = await fetch(
         `${API_URL}/api/admin/orders/${order._id}/awb`,
         {
           method: "POST",
-
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-
-          body: JSON.stringify({
-            courierCompanyId: 58,
-          }),
+          body: JSON.stringify({}),
         }
       );
 
@@ -419,10 +413,18 @@ const OrderDetails = () => {
       );
 
       if (!response.ok) {
-        throw new Error(
+        /*
+         * Shiprocket may return a nested error object.
+         * Try to display the useful message.
+         */
+
+        const shiprocketMessage =
+          data.shiprocketError?.message ||
+          data.data?.message ||
           data.message ||
-            "Failed to generate AWB"
-        );
+          "Failed to generate AWB";
+
+        throw new Error(shiprocketMessage);
       }
 
       const awb =
@@ -430,10 +432,20 @@ const OrderDetails = () => {
         data.awb_code ||
         data.order?.shiprocketAwbCode ||
         data.data?.awb_code ||
+        data.data?.data?.awb_code ||
         "Generated";
 
+      const courier =
+        data.courierName ||
+        data.courier_name ||
+        data.order?.shiprocketCourierName ||
+        data.data?.courier_name ||
+        "";
+
       alert(
-        `AWB generated successfully!\nAWB: ${awb}`
+        `AWB generated successfully!\nAWB: ${awb}${
+          courier ? `\nCourier: ${courier}` : ""
+        }`
       );
 
       await fetchOrder();
@@ -466,6 +478,7 @@ const OrderDetails = () => {
         alert(
           "Create the Shiprocket order first."
         );
+
         return;
       }
 
@@ -473,6 +486,7 @@ const OrderDetails = () => {
         alert(
           "Generate AWB before scheduling pickup."
         );
+
         return;
       }
 
@@ -480,6 +494,7 @@ const OrderDetails = () => {
         alert(
           "Pickup has already been scheduled."
         );
+
         return;
       }
 
@@ -496,7 +511,6 @@ const OrderDetails = () => {
         `${API_URL}/api/admin/orders/${order._id}/pickup`,
         {
           method: "POST",
-
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -552,6 +566,7 @@ const OrderDetails = () => {
         alert(
           "Create the Shiprocket order first."
         );
+
         return;
       }
 
@@ -559,6 +574,7 @@ const OrderDetails = () => {
         alert(
           "Generate AWB before generating manifest."
         );
+
         return;
       }
 
@@ -566,6 +582,7 @@ const OrderDetails = () => {
         alert(
           "Schedule pickup before generating manifest."
         );
+
         return;
       }
 
@@ -573,6 +590,7 @@ const OrderDetails = () => {
         alert(
           "Manifest has already been generated."
         );
+
         return;
       }
 
@@ -589,7 +607,6 @@ const OrderDetails = () => {
         `${API_URL}/api/admin/orders/${order._id}/manifest`,
         {
           method: "POST",
-
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -645,6 +662,7 @@ const OrderDetails = () => {
         alert(
           "Create the Shiprocket order first."
         );
+
         return;
       }
 
@@ -652,6 +670,7 @@ const OrderDetails = () => {
         alert(
           "Generate AWB before generating shipping label."
         );
+
         return;
       }
 
@@ -668,7 +687,6 @@ const OrderDetails = () => {
         `${API_URL}/api/admin/orders/${order._id}/label`,
         {
           method: "POST",
-
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -695,6 +713,7 @@ const OrderDetails = () => {
         data.label_url ||
         data.url ||
         data.data?.label_url ||
+        data.data?.data?.label_url ||
         data.order?.shiprocketLabelUrl;
 
       if (labelUrl) {
@@ -739,6 +758,7 @@ const OrderDetails = () => {
         alert(
           "AWB has not been generated yet."
         );
+
         return;
       }
 
@@ -756,7 +776,6 @@ const OrderDetails = () => {
         `${API_URL}/api/admin/orders/${order._id}/tracking`,
         {
           method: "GET",
-
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -791,10 +810,14 @@ const OrderDetails = () => {
 
         shiprocketTrackingUrl:
           data.trackingUrl ||
+          data.tracking?.tracking_data
+            ?.track_url ||
           previousOrder?.shiprocketTrackingUrl,
 
         shiprocketCourierName:
           data.courierName ||
+          data.tracking?.tracking_data
+            ?.courier_name ||
           previousOrder?.shiprocketCourierName,
       }));
     } catch (error) {
@@ -821,9 +844,7 @@ const OrderDetails = () => {
       <div className="order-not-found">
         <Package size={40} />
 
-        <h2>
-          Loading Order...
-        </h2>
+        <h2>Loading Order...</h2>
 
         <p>
           Please wait while we load the
@@ -842,9 +863,7 @@ const OrderDetails = () => {
       <div className="order-not-found">
         <XCircle size={40} />
 
-        <h2>
-          Order not found
-        </h2>
+        <h2>Order not found</h2>
 
         <p>
           {error ||
@@ -989,6 +1008,7 @@ const OrderDetails = () => {
           </span>
 
         </div>
+
       </div>
 
       {/* ==========================================
@@ -1173,9 +1193,7 @@ const OrderDetails = () => {
             }}
           >
 
-            {/* ==================================
-                CREATE SHIPROCKET ORDER
-            ================================== */}
+            {/* CREATE SHIPROCKET ORDER */}
 
             <button
               type="button"
@@ -1215,9 +1233,7 @@ const OrderDetails = () => {
                 : "Create Shiprocket Order"}
             </button>
 
-            {/* ==================================
-                GENERATE AWB
-            ================================== */}
+            {/* GENERATE AWB */}
 
             <button
               type="button"
@@ -1258,9 +1274,7 @@ const OrderDetails = () => {
                 : "Generate AWB"}
             </button>
 
-            {/* ==================================
-                SCHEDULE PICKUP
-            ================================== */}
+            {/* SCHEDULE PICKUP */}
 
             <button
               type="button"
@@ -1301,9 +1315,7 @@ const OrderDetails = () => {
                 : "Schedule Pickup"}
             </button>
 
-            {/* ==================================
-                GENERATE MANIFEST
-            ================================== */}
+            {/* GENERATE MANIFEST */}
 
             <button
               type="button"
@@ -1344,9 +1356,7 @@ const OrderDetails = () => {
                 : "Generate Manifest"}
             </button>
 
-            {/* ==================================
-                GENERATE LABEL
-            ================================== */}
+            {/* GENERATE LABEL */}
 
             <button
               type="button"
@@ -1382,9 +1392,7 @@ const OrderDetails = () => {
               Generate Label
             </button>
 
-            {/* ==================================
-                TRACK SHIPMENT
-            ================================== */}
+            {/* TRACK SHIPMENT */}
 
             <button
               type="button"
@@ -1430,6 +1438,7 @@ const OrderDetails = () => {
             </button>
 
           </div>
+
         </div>
 
         {/* ========================================
@@ -1623,7 +1632,6 @@ const OrderDetails = () => {
         <div className="card-heading">
 
           <div>
-
             <h2>
               Update Payment Status
             </h2>
@@ -1632,7 +1640,6 @@ const OrderDetails = () => {
               Change the payment status
               of this order.
             </p>
-
           </div>
 
         </div>
@@ -1709,7 +1716,6 @@ const OrderDetails = () => {
           <div className="card-heading">
 
             <div>
-
               <h2>
                 Customer Information
               </h2>
@@ -1718,7 +1724,6 @@ const OrderDetails = () => {
                 Details about the
                 customer.
               </p>
-
             </div>
 
             <User size={22} />
@@ -1740,19 +1745,23 @@ const OrderDetails = () => {
               </h3>
 
               <div className="contact-line">
+
                 <Mail size={15} />
 
                 <span>
                   {customerEmail}
                 </span>
+
               </div>
 
               <div className="contact-line">
+
                 <Phone size={15} />
 
                 <span>
                   {customerPhone}
                 </span>
+
               </div>
 
             </div>
@@ -1768,7 +1777,6 @@ const OrderDetails = () => {
           <div className="card-heading">
 
             <div>
-
               <h2>
                 Shipping Address
               </h2>
@@ -1776,7 +1784,6 @@ const OrderDetails = () => {
               <p>
                 Delivery information.
               </p>
-
             </div>
 
             <MapPin size={22} />
@@ -1811,7 +1818,6 @@ const OrderDetails = () => {
           <div className="card-heading">
 
             <div>
-
               <h2>
                 Order Items
               </h2>
@@ -1820,7 +1826,6 @@ const OrderDetails = () => {
                 Products included in
                 this order.
               </p>
-
             </div>
 
             <Package size={22} />
@@ -1919,7 +1924,6 @@ const OrderDetails = () => {
           <div className="card-heading">
 
             <div>
-
               <h2>
                 Payment Information
               </h2>
@@ -1928,7 +1932,6 @@ const OrderDetails = () => {
                 Payment details for
                 this order.
               </p>
-
             </div>
 
             <CreditCard
