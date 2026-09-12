@@ -74,27 +74,6 @@ function AdminHeader({
             SIDEBAR POSITION
         ================================= */}
 
-        <button
-          type="button"
-          className="admin-header-icon admin-sidebar-position-button"
-          onClick={onSidebarPositionToggle}
-          aria-label={
-            sidebarRight
-              ? "Move sidebar to left"
-              : "Move sidebar to right"
-          }
-          title={
-            sidebarRight
-              ? "Move sidebar to left"
-              : "Move sidebar to right"
-          }
-        >
-          {sidebarRight ? (
-            <PanelLeft size={18} />
-          ) : (
-            <PanelRight size={18} />
-          )}
-        </button>
 
 
         {/* =================================
