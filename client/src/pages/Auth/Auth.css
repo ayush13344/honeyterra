@@ -1114,3 +1114,103 @@
   }
 
 }
+
+/* =========================================
+   GOOGLE LOGIN SECTION
+========================================= */
+
+.auth-divider {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 24px 0 18px;
+  color: #8a8a8a;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #dedede;
+}
+
+.auth-divider span {
+  flex-shrink: 0;
+}
+
+
+/* =========================================
+   GOOGLE BUTTON WRAPPER
+========================================= */
+
+.google-login-wrapper {
+  width: 100%;
+  min-height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+}
+
+
+/* Google iframe/container */
+
+.google-login-wrapper > div {
+  width: 100% !important;
+  max-width: 100% !important;
+
+  display: flex;
+  justify-content: center;
+}
+
+
+/* =========================================
+   GOOGLE LOADING STATE
+========================================= */
+
+.google-loading {
+  width: 100%;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-sizing: border-box;
+
+  border: 1px solid #d8d8d8;
+  border-radius: 6px;
+
+  background: #ffffff;
+
+  color: #555;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 480px) {
+  .auth-divider {
+    margin: 20px 0 16px;
+  }
+
+  .google-login-wrapper {
+    min-height: 40px;
+  }
+
+  .google-loading {
+    height: 40px;
+    font-size: 13px;
+  }
+}

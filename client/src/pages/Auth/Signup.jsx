@@ -1,8 +1,14 @@
+
 import { Link, useNavigate } from "react-router-dom";
+
 import { Eye, EyeOff } from "lucide-react";
+
+import { GoogleLogin } from "@react-oauth/google";
+
 import { useState } from "react";
 
 import "./Auth.css";
+
 import { useAuth } from "../../context/AuthContext";
 
 const API_URL =
@@ -13,17 +19,20 @@ function Signup() {
   const { login } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
+
   const [showConfirmPassword, setShowConfirmPassword] =
     useState(false);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-
   const [password, setPassword] = useState("");
+
   const [confirmPassword, setConfirmPassword] =
     useState("");
 
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
   const [error, setError] = useState("");
 
   // ==========================================
@@ -86,11 +95,9 @@ function Signup() {
         `${API_URL}/api/auth/register`,
         {
           method: "POST",
-
           headers: {
             "Content-Type": "application/json",
           },
-
           body: JSON.stringify({
             name: trimmedName,
             email: trimmedEmail,
@@ -111,8 +118,15 @@ function Signup() {
         data = {};
       }
 
-      console.log("Signup status:", response.status);
-      console.log("Signup response:", data);
+      console.log(
+        "Signup status:",
+        response.status
+      );
+
+      console.log(
+        "Signup response:",
+        data
+      );
 
       // ==========================================
       // BACKEND ERROR
@@ -142,8 +156,60 @@ function Signup() {
           "Signup successful. Logging user in..."
         );
 
+        const isAdmin =
+          user.role === "admin";
+
+        // Save correct token
+        if (isAdmin) {
+          localStorage.setItem(
+            "adminToken",
+            token
+          );
+
+          localStorage.removeItem("token");
+        } else {
+          localStorage.setItem(
+            "token",
+            token
+          );
+
+          localStorage.removeItem(
+            "adminToken"
+          );
+        }
+
+        // Save correct user
+        if (isAdmin) {
+          localStorage.setItem(
+            "adminUser",
+            JSON.stringify(user)
+          );
+
+          localStorage.removeItem("user");
+        } else {
+          localStorage.setItem(
+            "user",
+            JSON.stringify(user)
+          );
+
+          localStorage.removeItem(
+            "adminUser"
+          );
+        }
+
+        // Update AuthContext
         login(user, token);
 
+        // Admin redirect
+        if (isAdmin) {
+          navigate("/admin", {
+            replace: true,
+          });
+
+          return;
+        }
+
+        // Normal user redirect
         navigate("/", {
           replace: true,
         });
@@ -162,13 +228,14 @@ function Signup() {
         );
       }
 
-      // Backend successfully created account
-      // but did not return a token.
       navigate("/login", {
         replace: true,
       });
     } catch (err) {
-      console.error("Signup Error:", err);
+      console.error(
+        "Signup Error:",
+        err
+      );
 
       // ==========================================
       // NETWORK ERROR
@@ -176,7 +243,9 @@ function Signup() {
 
       if (
         err instanceof TypeError &&
-        err.message.toLowerCase().includes("fetch")
+        err.message
+          .toLowerCase()
+          .includes("fetch")
       ) {
         setError(
           "Unable to connect to the server. Make sure your backend is running on port 3000."
@@ -196,6 +265,221 @@ function Signup() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // ==========================================
+  // GOOGLE SIGNUP
+  // ==========================================
+
+  const handleGoogleSuccess = async (
+    credentialResponse
+  ) => {
+    setError("");
+    setGoogleLoading(true);
+
+    try {
+      console.log(
+        "Google credential received"
+      );
+
+      // ==========================================
+      // CHECK GOOGLE CREDENTIAL
+      // ==========================================
+
+      if (!credentialResponse?.credential) {
+        throw new Error(
+          "Google authentication failed. Please try again."
+        );
+      }
+
+      // ==========================================
+      // SEND GOOGLE CREDENTIAL TO BACKEND
+      // ==========================================
+
+      const response = await fetch(
+        `${API_URL}/api/auth/google`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            credential:
+              credentialResponse.credential,
+          }),
+        }
+      );
+
+      // ==========================================
+      // READ RESPONSE
+      // ==========================================
+
+      let data = {};
+
+      try {
+        data = await response.json();
+      } catch {
+        data = {};
+      }
+
+      console.log(
+        "Google signup status:",
+        response.status
+      );
+
+      console.log(
+        "Google signup response:",
+        data
+      );
+
+      // ==========================================
+      // BACKEND ERROR
+      // ==========================================
+
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+            data.error ||
+            "Google signup failed."
+        );
+      }
+
+      // ==========================================
+      // CHECK TOKEN
+      // ==========================================
+
+      if (!data.token) {
+        throw new Error(
+          "Google signup failed. Token was not received."
+        );
+      }
+
+      // ==========================================
+      // CHECK USER
+      // ==========================================
+
+      if (!data.user) {
+        throw new Error(
+          "Google signup failed. User information was not received."
+        );
+      }
+
+      const user = data.user;
+      const token = data.token;
+
+      // ==========================================
+      // CHECK USER ROLE
+      // ==========================================
+
+      const isAdmin =
+        user.role === "admin";
+
+      // ==========================================
+      // SAVE TOKEN
+      // ==========================================
+
+      if (isAdmin) {
+        localStorage.setItem(
+          "adminToken",
+          token
+        );
+
+        localStorage.removeItem("token");
+      } else {
+        localStorage.setItem(
+          "token",
+          token
+        );
+
+        localStorage.removeItem(
+          "adminToken"
+        );
+      }
+
+      // ==========================================
+      // SAVE USER
+      // ==========================================
+
+      if (isAdmin) {
+        localStorage.setItem(
+          "adminUser",
+          JSON.stringify(user)
+        );
+
+        localStorage.removeItem("user");
+      } else {
+        localStorage.setItem(
+          "user",
+          JSON.stringify(user)
+        );
+
+        localStorage.removeItem(
+          "adminUser"
+        );
+      }
+
+      // ==========================================
+      // UPDATE AUTH CONTEXT
+      // ==========================================
+
+      login(user, token);
+
+      // ==========================================
+      // ADMIN REDIRECT
+      // ==========================================
+
+      if (isAdmin) {
+        console.log(
+          "Google admin signup/login detected"
+        );
+
+        navigate("/admin", {
+          replace: true,
+        });
+
+        return;
+      }
+
+      // ==========================================
+      // NORMAL USER REDIRECT
+      // ==========================================
+
+      console.log(
+        "Google user signup/login detected"
+      );
+
+      navigate("/", {
+        replace: true,
+      });
+    } catch (err) {
+      console.error(
+        "Google Signup Error:",
+        err
+      );
+
+      setError(
+        err?.message ||
+          "Google signup failed. Please try again."
+      );
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  // ==========================================
+  // GOOGLE ERROR
+  // ==========================================
+
+  const handleGoogleError = () => {
+    console.error(
+      "Google Signup failed"
+    );
+
+    setGoogleLoading(false);
+
+    setError(
+      "Google signup was unsuccessful. Please try again."
+    );
   };
 
   // ==========================================
@@ -229,7 +513,9 @@ function Signup() {
           ======================================= */}
 
           <div className="auth-heading">
-            <h1>Create your account</h1>
+            <h1>
+              Create your account
+            </h1>
 
             <p>
               Save your details and track every
@@ -245,7 +531,6 @@ function Signup() {
             className="auth-form"
             onSubmit={handleSubmit}
           >
-
             {/* ======================================
                 FULL NAME
             ======================================= */}
@@ -262,9 +547,14 @@ function Signup() {
                 autoComplete="name"
                 value={name}
                 onChange={(event) =>
-                  setName(event.target.value)
+                  setName(
+                    event.target.value
+                  )
                 }
-                disabled={loading}
+                disabled={
+                  loading ||
+                  googleLoading
+                }
                 required
               />
             </div>
@@ -285,9 +575,14 @@ function Signup() {
                 autoComplete="email"
                 value={email}
                 onChange={(event) =>
-                  setEmail(event.target.value)
+                  setEmail(
+                    event.target.value
+                  )
                 }
-                disabled={loading}
+                disabled={
+                  loading ||
+                  googleLoading
+                }
                 required
               />
             </div>
@@ -313,9 +608,14 @@ function Signup() {
                   autoComplete="new-password"
                   value={password}
                   onChange={(event) =>
-                    setPassword(event.target.value)
+                    setPassword(
+                      event.target.value
+                    )
                   }
-                  disabled={loading}
+                  disabled={
+                    loading ||
+                    googleLoading
+                  }
                   minLength={6}
                   required
                 />
@@ -325,7 +625,8 @@ function Signup() {
                   className="password-toggle"
                   onClick={() =>
                     setShowPassword(
-                      (previous) => !previous
+                      (previous) =>
+                        !previous
                     )
                   }
                   aria-label={
@@ -333,7 +634,10 @@ function Signup() {
                       ? "Hide password"
                       : "Show password"
                   }
-                  disabled={loading}
+                  disabled={
+                    loading ||
+                    googleLoading
+                  }
                 >
                   {showPassword ? (
                     <EyeOff size={20} />
@@ -369,7 +673,10 @@ function Signup() {
                       event.target.value
                     )
                   }
-                  disabled={loading}
+                  disabled={
+                    loading ||
+                    googleLoading
+                  }
                   minLength={6}
                   required
                 />
@@ -379,7 +686,8 @@ function Signup() {
                   className="password-toggle"
                   onClick={() =>
                     setShowConfirmPassword(
-                      (previous) => !previous
+                      (previous) =>
+                        !previous
                     )
                   }
                   aria-label={
@@ -387,7 +695,10 @@ function Signup() {
                       ? "Hide password"
                       : "Show password"
                   }
-                  disabled={loading}
+                  disabled={
+                    loading ||
+                    googleLoading
+                  }
                 >
                   {showConfirmPassword ? (
                     <EyeOff size={20} />
@@ -415,13 +726,50 @@ function Signup() {
             <button
               type="submit"
               className="auth-submit"
-              disabled={loading}
+              disabled={
+                loading ||
+                googleLoading
+              }
             >
               {loading
                 ? "Creating account..."
                 : "Create account"}
             </button>
           </form>
+
+          {/* ======================================
+              GOOGLE DIVIDER
+          ======================================= */}
+
+          <div className="auth-divider">
+            <span>OR</span>
+          </div>
+
+          {/* ======================================
+              GOOGLE SIGNUP
+          ======================================= */}
+
+          <div className="google-login-wrapper">
+            {googleLoading ? (
+              <div className="google-loading">
+                Signing up with Google...
+              </div>
+            ) : (
+              <GoogleLogin
+                onSuccess={
+                  handleGoogleSuccess
+                }
+                onError={
+                  handleGoogleError
+                }
+                theme="outline"
+                size="large"
+                text="continue_with"
+                shape="rectangular"
+                width="100%"
+              />
+            )}
+          </div>
 
           {/* ======================================
               LOGIN
@@ -442,3 +790,4 @@ function Signup() {
 }
 
 export default Signup;
+

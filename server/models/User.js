@@ -85,11 +85,42 @@ const userSchema = new mongoose.Schema(
     // ==========================================
     // PASSWORD
     // ==========================================
+    // Required for normal accounts.
+    // Not required for Google accounts.
 
     password: {
       type: String,
-      required: [true, "Password is required"],
       minlength: 6,
+      select: true,
+    },
+
+    // ==========================================
+    // GOOGLE ID
+    // ==========================================
+
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+
+    // ==========================================
+    // AUTH PROVIDER
+    // ==========================================
+
+    authProvider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
+    },
+
+    // ==========================================
+    // PROFILE IMAGE
+    // ==========================================
+
+    avatar: {
+      type: String,
+      default: "",
     },
 
     // ==========================================
@@ -99,6 +130,7 @@ const userSchema = new mongoose.Schema(
     phone: {
       type: String,
       trim: true,
+      default: "",
     },
 
     // ==========================================
@@ -139,8 +171,12 @@ const userSchema = new mongoose.Schema(
 // ==========================================
 
 userSchema.pre("save", async function () {
-  // Password has not changed
-  // so don't hash it again.
+  // Google users don't have a password.
+  if (!this.password) {
+    return;
+  }
+
+  // Password has not changed.
   if (!this.isModified("password")) {
     return;
   }
@@ -164,6 +200,11 @@ userSchema.pre("save", async function () {
 userSchema.methods.comparePassword = async function (
   enteredPassword
 ) {
+  // Google accounts don't have a local password.
+  if (!this.password) {
+    return false;
+  }
+
   return bcrypt.compare(
     enteredPassword,
     this.password

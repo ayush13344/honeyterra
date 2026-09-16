@@ -1,22 +1,33 @@
+
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
+import { GoogleLogin } from "@react-oauth/google";
 import { useState } from "react";
+
 import "./Auth.css";
+
 import { loginUser } from "../../services/authService";
 import { useAuth } from "../../context/AuthContext";
+
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
   const [error, setError] = useState("");
 
   // ==========================================
-  // LOGIN
+  // NORMAL LOGIN
   // ==========================================
 
   const handleSubmit = async (event) => {
@@ -77,16 +88,12 @@ function Login() {
       // SAVE TOKEN
       // ==========================================
 
-      // Normal users use "token"
-      // Admin users use "adminToken"
-
       if (isAdmin) {
         localStorage.setItem(
           "adminToken",
           result.token
         );
 
-        // Remove old admin token if needed
         localStorage.removeItem("token");
       } else {
         localStorage.setItem(
@@ -94,7 +101,6 @@ function Login() {
           result.token
         );
 
-        // Remove old admin token if needed
         localStorage.removeItem("adminToken");
       }
 
@@ -108,7 +114,6 @@ function Login() {
           JSON.stringify(result.user)
         );
 
-        // Remove old admin user if needed
         localStorage.removeItem("user");
       } else {
         localStorage.setItem(
@@ -116,7 +121,6 @@ function Login() {
           JSON.stringify(result.user)
         );
 
-        // Remove old admin user if needed
         localStorage.removeItem("adminUser");
       }
 
@@ -182,7 +186,6 @@ function Login() {
       navigate("/", {
         replace: true,
       });
-
     } catch (error) {
       console.error(
         "Login Error:",
@@ -195,10 +198,194 @@ function Login() {
         "Invalid email or password";
 
       setError(message);
-
     } finally {
       setLoading(false);
     }
+  };
+
+  // ==========================================
+  // GOOGLE LOGIN
+  // ==========================================
+
+  const handleGoogleSuccess = async (
+    credentialResponse
+  ) => {
+    setError("");
+    setGoogleLoading(true);
+
+    try {
+      console.log(
+        "Google credential received"
+      );
+
+      if (!credentialResponse?.credential) {
+        setError(
+          "Google authentication failed. Please try again."
+        );
+
+        return;
+      }
+
+      // ==========================================
+      // SEND GOOGLE CREDENTIAL TO BACKEND
+      // ==========================================
+
+      const response = await fetch(
+        `${API_URL}/api/auth/google`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            credential:
+              credentialResponse.credential,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      console.log(
+        "Google login response:",
+        data
+      );
+
+      // ==========================================
+      // CHECK BACKEND RESPONSE
+      // ==========================================
+
+      if (!response.ok) {
+        throw new Error(
+          data?.message ||
+            "Google login failed."
+        );
+      }
+
+      if (!data?.token) {
+        throw new Error(
+          "Google login failed. Token was not received."
+        );
+      }
+
+      if (!data?.user) {
+        throw new Error(
+          "Google login failed. User information was not received."
+        );
+      }
+
+      // ==========================================
+      // CHECK USER ROLE
+      // ==========================================
+
+      const isAdmin =
+        data.user.role === "admin";
+
+      // ==========================================
+      // SAVE TOKEN
+      // ==========================================
+
+      if (isAdmin) {
+        localStorage.setItem(
+          "adminToken",
+          data.token
+        );
+
+        localStorage.removeItem("token");
+      } else {
+        localStorage.setItem(
+          "token",
+          data.token
+        );
+
+        localStorage.removeItem("adminToken");
+      }
+
+      // ==========================================
+      // SAVE USER
+      // ==========================================
+
+      if (isAdmin) {
+        localStorage.setItem(
+          "adminUser",
+          JSON.stringify(data.user)
+        );
+
+        localStorage.removeItem("user");
+      } else {
+        localStorage.setItem(
+          "user",
+          JSON.stringify(data.user)
+        );
+
+        localStorage.removeItem("adminUser");
+      }
+
+      // ==========================================
+      // UPDATE AUTH CONTEXT
+      // ==========================================
+
+      login(
+        data.user,
+        data.token
+      );
+
+      // ==========================================
+      // ADMIN REDIRECT
+      // ==========================================
+
+      if (isAdmin) {
+        console.log(
+          "Google admin login detected"
+        );
+
+        navigate("/admin", {
+          replace: true,
+        });
+
+        return;
+      }
+
+      // ==========================================
+      // NORMAL USER REDIRECT
+      // ==========================================
+
+      console.log(
+        "Google user login detected"
+      );
+
+      navigate("/", {
+        replace: true,
+      });
+    } catch (error) {
+      console.error(
+        "Google Login Error:",
+        error
+      );
+
+      setError(
+        error?.message ||
+          "Google login failed. Please try again."
+      );
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  // ==========================================
+  // GOOGLE LOGIN ERROR
+  // ==========================================
+
+  const handleGoogleError = () => {
+    console.error(
+      "Google Login failed"
+    );
+
+    setGoogleLoading(false);
+
+    setError(
+      "Google login was unsuccessful. Please try again."
+    );
   };
 
   // ==========================================
@@ -250,7 +437,6 @@ function Login() {
             className="auth-form"
             onSubmit={handleSubmit}
           >
-
             {/* ======================================
                 EMAIL
             ======================================= */}
@@ -341,13 +527,50 @@ function Login() {
             <button
               type="submit"
               className="auth-submit"
-              disabled={loading}
+              disabled={
+                loading ||
+                googleLoading
+              }
             >
               {loading
                 ? "Signing in..."
                 : "Sign in"}
             </button>
           </form>
+
+          {/* ======================================
+              GOOGLE LOGIN DIVIDER
+          ======================================= */}
+
+          <div className="auth-divider">
+            <span>OR</span>
+          </div>
+
+          {/* ======================================
+              GOOGLE LOGIN
+          ======================================= */}
+
+          <div className="google-login-wrapper">
+            {googleLoading ? (
+              <div className="google-loading">
+                Signing in with Google...
+              </div>
+            ) : (
+              <GoogleLogin
+                onSuccess={
+                  handleGoogleSuccess
+                }
+                onError={
+                  handleGoogleError
+                }
+                theme="outline"
+                size="large"
+                text="continue_with"
+                shape="rectangular"
+                width="100%"
+              />
+            )}
+          </div>
 
           {/* ======================================
               SIGNUP
@@ -368,3 +591,4 @@ function Login() {
 }
 
 export default Login;
+
