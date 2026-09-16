@@ -22,6 +22,7 @@ import AdminLayout from "../admin/layout/AdminLayout";
 import AdminLogin from "../admin/pages/AdminLogin/AdminLogin";
 import Dashboard from "../admin/pages/Dashboard/Dashboard";
 import Products from "../admin/pages/Products/Products";
+import EditProduct from "../admin/pages/Products/EditProduct";
 import Orders from "../admin/pages/Orders/Orders";
 import OrderDetails from "../admin/pages/Orders/OrderDetails";
 import Customers from "../admin/pages/Customers/Customers";
@@ -78,7 +79,10 @@ function AppRoutes() {
 
         <Route path="/admin/products/add" element={<AddProduct />} />
 
+        <Route path="/admin/products/edit/:id" element={<EditProduct />}/>
+
         <Route path="/admin/orders" element={<Orders />} />
+
         <Route path="/admin/orders/:orderId" element={<OrderDetails />} />
 
         <Route path="/admin/customers" element={<Customers />} />

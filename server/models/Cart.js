@@ -1,3 +1,4 @@
+
 import mongoose from "mongoose";
 
 const cartItemSchema = new mongoose.Schema(
@@ -48,6 +49,13 @@ const cartSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+
+    // Prevent sending the same abandoned-cart
+    // reminder repeatedly for the same cart activity.
+    abandonedCartReminderSent: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
@@ -57,3 +65,4 @@ const cartSchema = new mongoose.Schema(
 const Cart = mongoose.model("Cart", cartSchema);
 
 export default Cart;
+

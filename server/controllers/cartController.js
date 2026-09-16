@@ -1,9 +1,11 @@
+
 import Cart from "../models/Cart.js";
 import Product from "../models/Product.js";
 
 // ==========================================
 // GET MY CART
 // ==========================================
+
 const getCart = async (req, res) => {
   try {
     let cart = await Cart.findOne({
@@ -41,6 +43,7 @@ const getCart = async (req, res) => {
 // ==========================================
 // ADD PRODUCT TO CART
 // ==========================================
+
 const addToCart = async (req, res) => {
   try {
     const { productId, quantity = 1 } = req.body;
@@ -131,8 +134,18 @@ const addToCart = async (req, res) => {
       });
     }
 
+    // ------------------------------------------
+    // ABANDONED CART TRACKING
+    // User has interacted with the cart again,
+    // so allow a new reminder after 3 days.
+    // ------------------------------------------
+
+    cart.abandonedCartReminderSent = false;
+
     calculateCartTotals(cart);
 
+    // Mongoose timestamps automatically update
+    // updatedAt whenever the cart is saved.
     await cart.save();
 
     await cart.populate({
@@ -159,6 +172,7 @@ const addToCart = async (req, res) => {
 // ==========================================
 // UPDATE CART ITEM QUANTITY
 // ==========================================
+
 const updateCartItem = async (req, res) => {
   try {
     const { productId } = req.params;
@@ -221,8 +235,18 @@ const updateCartItem = async (req, res) => {
     item.quantity = newQuantity;
     item.price = product.price;
 
+    // ------------------------------------------
+    // ABANDONED CART TRACKING
+    // Quantity changed, so this is fresh
+    // cart activity.
+    // ------------------------------------------
+
+    cart.abandonedCartReminderSent = false;
+
     calculateCartTotals(cart);
 
+    // updatedAt is automatically refreshed
+    // because timestamps are enabled in Cart.js.
     await cart.save();
 
     await cart.populate({
@@ -249,6 +273,7 @@ const updateCartItem = async (req, res) => {
 // ==========================================
 // REMOVE PRODUCT FROM CART
 // ==========================================
+
 const removeFromCart = async (req, res) => {
   try {
     const { productId } = req.params;
@@ -281,6 +306,13 @@ const removeFromCart = async (req, res) => {
         item.product.toString() !== productId.toString()
     );
 
+    // ------------------------------------------
+    // ABANDONED CART TRACKING
+    // Cart changed, so reset the reminder.
+    // ------------------------------------------
+
+    cart.abandonedCartReminderSent = false;
+
     calculateCartTotals(cart);
 
     await cart.save();
@@ -301,7 +333,7 @@ const removeFromCart = async (req, res) => {
 
     res.status(500).json({
       success: false,
-      message: "Server error while removing product",
+      message: "Server error while removing product from cart",
     });
   }
 };
@@ -309,6 +341,7 @@ const removeFromCart = async (req, res) => {
 // ==========================================
 // CLEAR CART
 // ==========================================
+
 const clearCart = async (req, res) => {
   try {
     const cart = await Cart.findOne({
@@ -326,6 +359,8 @@ const clearCart = async (req, res) => {
     cart.totalItems = 0;
     cart.totalAmount = 0;
 
+    // No need to reset abandonedCartReminderSent here
+    // because the cart is now empty.
     await cart.save();
 
     res.status(200).json({
@@ -346,6 +381,7 @@ const clearCart = async (req, res) => {
 // ==========================================
 // CALCULATE CART TOTALS
 // ==========================================
+
 const calculateCartTotals = (cart) => {
   let totalItems = 0;
   let totalAmount = 0;
@@ -358,10 +394,15 @@ const calculateCartTotals = (cart) => {
   });
 
   cart.totalItems = totalItems;
+
   cart.totalAmount = Number(
     totalAmount.toFixed(2)
   );
 };
+
+// ==========================================
+// EXPORTS
+// ==========================================
 
 export {
   getCart,
@@ -370,3 +411,4 @@ export {
   removeFromCart,
   clearCart,
 };
+
