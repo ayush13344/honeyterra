@@ -32,6 +32,7 @@ import UProducts from "../pages/Products/UProducts";
 import ProductDetails from "../pages/ProductDetails/ProductDetails";
 import MyOrders from "../pages/MyOrders/MyOrders";
 import TrackOrder from "../pages/Orders/TrackOrder";
+import NotFound from "../pages/NotFound/NotFound";
 
 function AppRoutes() {
   return (
@@ -70,7 +71,7 @@ function AppRoutes() {
         <Route path="/checkout" element={<Checkout />} />
       </Route>
 
-      <Route path="/admin/login" element={<AdminLogin />} />
+      {/* <Route path="/admin/login" element={<AdminLogin />} /> */}
 
       <Route element={<AdminLayout />}>
         <Route path="/admin" element={<Dashboard />} />
@@ -88,7 +89,10 @@ function AppRoutes() {
         <Route path="/admin/customers" element={<Customers />} />
 
         <Route path="/admin/settings" element={<Settings />} />
+
+        
       </Route>
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }

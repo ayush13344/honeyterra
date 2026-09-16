@@ -481,9 +481,34 @@
 ========================================== */
 
 .payment-option-disabled {
-  opacity: 0.58;
+  opacity: 0.55;
 
   cursor: not-allowed;
+
+  background: #f1eee7;
+
+  border-color: #d9d3c8;
+
+  filter: grayscale(0.15);
+
+  pointer-events: none;
+}
+
+.payment-option-disabled .payment-radio {
+  border-color: #b9b5ad;
+}
+
+.payment-option-disabled .payment-icon {
+  background: #e5e2da;
+  color: #8f918c;
+}
+
+.payment-option-disabled .payment-content strong {
+  color: #777b76;
+}
+
+.payment-option-disabled .payment-content span {
+  color: #9a9d98;
 }
 
 

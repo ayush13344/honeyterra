@@ -106,7 +106,7 @@ const Checkout = () => {
   // ==========================================
 
   const [paymentMethod, setPaymentMethod] =
-    useState("cod");
+    useState("razorpay");
 
   // ==========================================
   // ERRORS
@@ -1370,17 +1370,13 @@ const Checkout = () => {
 
               <button
                 type="button"
-                className={
-                  paymentMethod === "cod"
-                    ? "payment-option payment-option-active"
-                    : "payment-option"
-                }
-                onClick={() =>
-                  setPaymentMethod(
-                    "cod"
-                  )
-                }
+                disabled
+                aria-disabled="true"
+                className="payment-option payment-option-disabled"
               >
+                  
+                
+              
 
                 <div className="payment-radio">
 
@@ -1405,19 +1401,12 @@ const Checkout = () => {
                   </strong>
 
                   <span>
-                    Pay in cash when your
-                    order arrives.
+                    Cash on Delivery is currently unavailable.
                   </span>
 
                 </div>
 
-                {paymentMethod ===
-                  "cod" && (
-                  <CheckCircle2
-                    className="payment-check"
-                    size={21}
-                  />
-                )}
+                
 
               </button>
 
