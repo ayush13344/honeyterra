@@ -375,7 +375,7 @@ function Home() {
 
 
           <Link
-            to="/shop/ash-tray"
+            to="/shop"
             className="btn btn-primary"
           >
             Explore Ash Trays
@@ -518,7 +518,7 @@ function Home() {
 
 
           <Link
-            to="/shop/wrap"
+            to="/shop"
             className="btn btn-dark"
           >
             Explore Honeycomb Wrap
@@ -755,7 +755,7 @@ function Home() {
 
 
             <Link
-              to="/products"
+              to="/shop"
               className="text-link"
             >
               Explore entire collection
@@ -800,7 +800,7 @@ function Home() {
 
 
               <Link
-                to="/products?category=Gel%20Ash%20Trays"
+                to="/shop"
                 className="btn btn-secondary"
               >
                 Explore ash trays

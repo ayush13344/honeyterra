@@ -565,10 +565,10 @@ export const generateOrderAWB = async (req, res) => {
         });
       }
 
-      courierCompanyId =
-        Number(
-          selectedCourier.courier_company_id
-        );
+      courierCompanyId =10
+        // Number(
+        //   selectedCourier.courier_company_id
+        // );
 
       console.log(
         "=========================================="

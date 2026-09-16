@@ -15,24 +15,24 @@ function Footer() {
           </p>
 
           <div className="footer-socials">
-            <a href="#" aria-label="Instagram"><AtSign size={18} /></a>
-            <a href="mailto:hello@honeyterra.com" aria-label="Email"><Mail size={18} /></a>
-            <a href="tel:+910000000000" aria-label="Phone"><Phone size={18} /></a>
+            <a href="https://www.instagram.com/honeyterra.in/" aria-label="Instagram"><AtSign size={18} /></a>
+            <a href="mailto:honeyterra.in@gmail.com" aria-label="Email"><Mail size={18} /></a>
+            <a href="tel:+917489075572" aria-label="Phone"><Phone size={18} /></a>
           </div>
         </div>
 
         <div className="footer-column">
           <h4>Shop</h4>
           <Link to="/shop">All Products</Link>
-          <Link to="/shop/wrap">Honeycomb Wrap</Link>
-          <Link to="/shop/ash-tray">Gel Ash Tray</Link>
+          <Link to="/shop">Honeycomb Wrap</Link>
+          <Link to="/shop">Gel Ash Tray</Link>
         </div>
 
         <div className="footer-column">
           <h4>Company</h4>
           <Link to="/about">About Us</Link>
           <Link to="/contact">Contact</Link>
-          <Link to="/login">My Account</Link>
+          <Link to="/my-orders">My Account</Link>
         </div>
 
         <div className="footer-column footer-contact">
