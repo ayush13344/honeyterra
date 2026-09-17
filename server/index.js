@@ -16,6 +16,7 @@ import adminCustomerRoutes from "./routes/adminCustomerRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import shiprocketRoutes from "./routes/shiprocketRoutes.js";
+import analyticsRoutes from "./routes/analyticsRoutes.js";
 
 import {
   verifyEmailConfiguration,
@@ -68,6 +69,8 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/payment", paymentRoutes);
 
 app.use("/api/shiprocket", shiprocketRoutes);
+
+app.use("/api/analytics", analyticsRoutes);
 
 // ==========================================
 // ROOT
