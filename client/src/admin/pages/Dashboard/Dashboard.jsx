@@ -81,7 +81,7 @@ function Dashboard() {
       }
 
       const response = await axios.get(
-        "http://localhost:3000/api/admin/dashboard",
+        "https://honeyterra.onrender.com/api/admin/dashboard",
         {
           headers: {
             Authorization: `Bearer ${token}`,

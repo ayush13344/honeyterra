@@ -16,7 +16,7 @@ import "./Checkout.css";
 // API URL
 // ==========================================
 
-const API_URL = "http://localhost:3000";
+const API_URL = "https://honeyterra.onrender.com";
 
 // ==========================================
 // RAZORPAY SCRIPT

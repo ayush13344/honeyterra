@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import "./products.css";
 
-const API_URL = "http://localhost:3000";
+const API_URL = "https://honeyterra.onrender.com";
 
 const EditProduct = () => {
   const { id } = useParams();

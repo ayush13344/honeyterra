@@ -17,7 +17,7 @@ import "./ProductDetails.css";
 import "../../components/Reviews/Reviews.css";
 
 const API_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:3000";
+  import.meta.env.VITE_API_URL || "https://honeyterra.onrender.com";
 
 function ProductDetails() {
   const { id } = useParams();

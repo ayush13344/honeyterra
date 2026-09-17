@@ -450,7 +450,7 @@ const AddProduct = () => {
       // ==========================================
 
       const response = await axios.post(
-        "http://localhost:3000/api/products",
+        "https://honeyterra.onrender.com/api/products",
         data,
         {
           headers: {

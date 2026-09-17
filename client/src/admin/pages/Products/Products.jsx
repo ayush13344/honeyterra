@@ -71,7 +71,7 @@ function Products() {
       }
 
       const response = await axios.get(
-        "http://localhost:3000/api/products/admin/all",
+        "https://honeyterra.onrender.com/api/products/admin/all",
         {
           headers: {
             Authorization: `Bearer ${token}`,

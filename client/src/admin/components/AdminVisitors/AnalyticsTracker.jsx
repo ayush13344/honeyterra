@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import axios from "axios";
 
 const API_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:3000";
+  import.meta.env.VITE_API_URL || "https://honeyterra.onrender.com";
 
 const VISITOR_ID_KEY = "honeyterra_visitor_id";
 const SESSION_ID_KEY = "honeyterra_session_id";
