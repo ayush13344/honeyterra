@@ -11,7 +11,7 @@ import {
   Image as ImageIcon,
   Loader2,
 } from "lucide-react";
-import "./products.css";
+import "./Products.css";
 
 const API_URL = "https://honeyterra.onrender.com";
 
