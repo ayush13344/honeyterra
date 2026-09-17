@@ -1,3 +1,4 @@
+
 import { Routes, Route } from "react-router-dom";
 
 import SiteLayout from "../components/layout/SiteLayout";
@@ -15,11 +16,8 @@ import HoneycombWrap from "../pages/Products/HoneycombWrap/HoneycombWrap";
 
 import CartDrawer from "../components/CartDrawer/CartDrawer";
 
-/* Admin */
-
+// Admin
 import AdminLayout from "../admin/layout/AdminLayout";
-
-import AdminLogin from "../admin/pages/AdminLogin/AdminLogin";
 import Dashboard from "../admin/pages/Dashboard/Dashboard";
 import Products from "../admin/pages/Products/Products";
 import EditProduct from "../admin/pages/Products/EditProduct";
@@ -28,6 +26,7 @@ import OrderDetails from "../admin/pages/Orders/OrderDetails";
 import Customers from "../admin/pages/Customers/Customers";
 import Settings from "../admin/pages/Settings/Settings";
 import AddProduct from "../admin/pages/Products/AddProduct";
+
 import UProducts from "../pages/Products/UProducts";
 import ProductDetails from "../pages/ProductDetails/ProductDetails";
 import MyOrders from "../pages/MyOrders/MyOrders";
@@ -54,7 +53,7 @@ function AppRoutes() {
 
         <Route path="/products/:id" element={<ProductDetails />} />
 
-        <Route path="/my-orders" element={<MyOrders />}/>
+        <Route path="/my-orders" element={<MyOrders />} />
 
         <Route path="/my-orders/:id" element={<TrackOrder />} />
 
@@ -71,27 +70,37 @@ function AppRoutes() {
         <Route path="/checkout" element={<Checkout />} />
       </Route>
 
-      {/* <Route path="/admin/login" element={<AdminLogin />} /> */}
+      {/* =========================
+          ADMIN PANEL
+      ========================= */}
 
       <Route element={<AdminLayout />}>
         <Route path="/admin" element={<Dashboard />} />
 
         <Route path="/admin/products" element={<Products />} />
 
-        <Route path="/admin/products/add" element={<AddProduct />} />
+        <Route
+          path="/admin/products/add"
+          element={<AddProduct />}
+        />
 
-        <Route path="/admin/products/edit/:id" element={<EditProduct />}/>
+        <Route
+          path="/admin/products/edit/:id"
+          element={<EditProduct />}
+        />
 
         <Route path="/admin/orders" element={<Orders />} />
 
-        <Route path="/admin/orders/:orderId" element={<OrderDetails />} />
+        <Route
+          path="/admin/orders/:orderId"
+          element={<OrderDetails />}
+        />
 
         <Route path="/admin/customers" element={<Customers />} />
 
         <Route path="/admin/settings" element={<Settings />} />
-
-        
       </Route>
+
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

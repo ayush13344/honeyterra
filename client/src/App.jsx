@@ -1,3 +1,4 @@
+
 import AppRoutes from "./routes/AppRoutes";
 import ScrollToTop from "./components/layout/ScrollToTop.jsx";
 import AnalyticsTracker from "./admin/components/AdminVisitors/AnalyticsTracker.jsx";
@@ -5,7 +6,7 @@ import AnalyticsTracker from "./admin/components/AdminVisitors/AnalyticsTracker.
 function App() {
   return (
     <>
-      <AnalyticsTracker/>
+      <AnalyticsTracker />
       <ScrollToTop />
       <AppRoutes />
     </>
