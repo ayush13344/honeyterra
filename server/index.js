@@ -29,8 +29,13 @@ const PORT = process.env.PORT || 3000;
 // ==========================================
 
 const allowedOrigins = [
+  // Local development
   "http://localhost:5173",
-  "https://honeyterra-k6vbro9uq-nagpalayush65-gmailcoms-projects.vercel.app",
+
+  // Current Vercel deployment
+  "https://honeyterra-bkvu1y6ny-nagpalayush65-gmailcoms-projects.vercel.app",
+
+  // Vercel project domain
   "https://honeyterra.vercel.app",
 ];
 
@@ -53,6 +58,7 @@ app.use(
         new Error(`CORS blocked origin: ${origin}`)
       );
     },
+
     credentials: true,
   })
 );
@@ -106,7 +112,10 @@ app.get("/", (req, res) => {
 
 const startServer = async () => {
   try {
-    // Connect MongoDB first
+    // ==========================================
+    // CONNECT MONGODB
+    // ==========================================
+
     await connectDB();
 
     console.log("✅ MongoDB connected");
@@ -133,6 +142,7 @@ const startServer = async () => {
     });
   } catch (error) {
     console.error("❌ Server startup error:", error);
+
     process.exit(1);
   }
 };
