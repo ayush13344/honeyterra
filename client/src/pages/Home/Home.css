@@ -407,6 +407,62 @@
 
 
 /* =========================================================
+   VIDEO PLAY / PAUSE BUTTON
+========================================================= */
+
+.video-play-button {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  width: 76px;
+  height: 38px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  z-index: 10;
+  transition: background 0.2s ease;
+}
+
+/* Dark green circle */
+
+.video-play-button::before {
+  content: "";
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #17201c;
+  transition: transform 0.25s ease;
+}
+
+/* Move dark green circle to right when playing */
+
+.video-play-button.playing::before {
+  transform: translateX(38px);
+}
+
+/* White Play/Pause icon */
+
+.video-play-button svg {
+  position: absolute;
+  left: 11px;
+  color: #fff;
+  z-index: 2;
+  pointer-events: none;
+  transition: left 0.25s ease;
+}
+
+/* Move icon with dark green circle */
+
+.video-play-button.playing svg {
+  left: 49px;
+}
+
+/* =========================================================
    PRODUCT STORY
 ========================================================= */
 
