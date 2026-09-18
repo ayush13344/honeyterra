@@ -1,4 +1,3 @@
-
 import express from "express";
 import cors from "cors";
 import "dotenv/config";
@@ -18,28 +17,55 @@ import paymentRoutes from "./routes/paymentRoutes.js";
 import shiprocketRoutes from "./routes/shiprocketRoutes.js";
 import analyticsRoutes from "./routes/analyticsRoutes.js";
 
-import {
-  verifyEmailConfiguration,
-} from "./config/emailService.js";
-
-import {
-  startAbandonedCartJob,
-} from "./jobs/abandonedCartJob.js";
+import { verifyEmailConfiguration } from "./config/emailService.js";
+import { startAbandonedCartJob } from "./jobs/abandonedCartJob.js";
 
 const app = express();
 
 const PORT = process.env.PORT || 3000;
 
 // ==========================================
-// MIDDLEWARE
+// CORS
 // ==========================================
+
+const allowedOrigins = [
+  // Local development
+  "http://localhost:5173",
+
+  // Current Vercel deployment
+  "https://honeyterra-bkvu1y6ny-nagpalayush65-gmailcoms-projects.vercel.app",
+
+  // Vercel project domain
+  "https://honeyterra.vercel.app",
+];
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: function (origin, callback) {
+      // Allow requests without an Origin header
+      // such as Postman or server-to-server requests
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      console.log("❌ CORS blocked origin:", origin);
+
+      return callback(
+        new Error(`CORS blocked origin: ${origin}`)
+      );
+    },
+
     credentials: true,
   })
 );
+
+// ==========================================
+// MIDDLEWARE
+// ==========================================
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -86,7 +112,10 @@ app.get("/", (req, res) => {
 
 const startServer = async () => {
   try {
-    // Connect MongoDB first
+    // ==========================================
+    // CONNECT MONGODB
+    // ==========================================
+
     await connectDB();
 
     console.log("✅ MongoDB connected");
@@ -109,10 +138,11 @@ const startServer = async () => {
 
     app.listen(PORT, () => {
       console.log(`🚀 Server is running on port ${PORT}`);
-      console.log(`🌐 API: http://localhost:${PORT}`);
+      console.log(`🌐 Server running on port ${PORT}`);
     });
   } catch (error) {
     console.error("❌ Server startup error:", error);
+
     process.exit(1);
   }
 };

@@ -10,7 +10,7 @@ import { loginUser } from "../../services/authService";
 import { useAuth } from "../../context/AuthContext";
 
 const API_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:3000";
+  import.meta.env.VITE_API_URL || "https://honeyterra.onrender.com";
 
 function Login() {
   const navigate = useNavigate();

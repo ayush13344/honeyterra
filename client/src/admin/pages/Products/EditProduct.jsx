@@ -11,9 +11,9 @@ import {
   Image as ImageIcon,
   Loader2,
 } from "lucide-react";
-import "./products.css";
+import "./Products.css";
 
-const API_URL = "http://localhost:3000";
+const API_URL = "https://honeyterra.onrender.com";
 
 const EditProduct = () => {
   const { id } = useParams();

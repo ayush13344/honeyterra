@@ -13,7 +13,7 @@ import { useState } from "react";
 
 import { Link } from "react-router-dom";
 
-import ProductGallery from "../../../components/ProductGallery/ProductGallery";
+import ProductGallery from "../../../components/Productgallery/ProductGallery";
 
 import { productDetails } from "../../../data/products";
 

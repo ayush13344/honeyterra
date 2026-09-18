@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import "./products.css";
+import "./Products.css";
 
 const AddProduct = () => {
   // ==========================================
@@ -450,7 +450,7 @@ const AddProduct = () => {
       // ==========================================
 
       const response = await axios.post(
-        "http://localhost:3000/api/products",
+        "https://honeyterra.onrender.com/api/products",
         data,
         {
           headers: {

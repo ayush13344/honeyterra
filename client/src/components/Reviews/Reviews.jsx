@@ -13,7 +13,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import "./Reviews.css";
 
-const API_URL = "http://localhost:3000";
+const API_URL = "https://honeyterra.onrender.com";
 
 function Reviews({ productId }) {
   const navigate = useNavigate();

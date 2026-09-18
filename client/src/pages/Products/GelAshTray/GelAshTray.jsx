@@ -14,7 +14,7 @@ import {
 
 import { Link } from "react-router-dom";
 
-import ProductGallery from "../../../components/ProductGallery/ProductGallery";
+import ProductGallery from "../../../components/Productgallery/ProductGallery";
 import SmokeEffect from "../../../components/SmokeEffect/SmokeEffect";
 
 import { productDetails } from "../../../data/products";

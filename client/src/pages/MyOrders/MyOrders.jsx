@@ -15,7 +15,7 @@ import {
 
 import "./MyOrders.css";
 
-const API_URL = "http://localhost:3000";
+const API_URL = "https://honeyterra.onrender.com";
 
 function MyOrders() {
   const navigate = useNavigate();

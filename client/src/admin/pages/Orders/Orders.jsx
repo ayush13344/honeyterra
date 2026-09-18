@@ -95,7 +95,7 @@ const Order = () => {
       }
 
       const response = await axios.get(
-        "http://localhost:3000/api/admin/orders",
+        "https://honeyterra.onrender.com/api/admin/orders",
         {
           headers: {
             Authorization: `Bearer ${token}`,
