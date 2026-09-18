@@ -1,3 +1,4 @@
+
 import express from "express";
 import cors from "cors";
 import "dotenv/config";
@@ -33,10 +34,13 @@ const allowedOrigins = [
   "http://localhost:5173",
 
   // Current Vercel deployment
-  "https://honeyterra-bkvu1y6ny-nagpalayush65-gmailcoms-projects.vercel.app",
+  "https://honeyterra-rm7kdyul4-nagpalayush65-gmailcoms-projects.vercel.app",
 
   // Vercel project domain
   "https://honeyterra.vercel.app",
+
+  // Production custom domain
+  "https://honeyterra.com",
 ];
 
 app.use(
@@ -75,27 +79,16 @@ app.use(express.urlencoded({ extended: true }));
 // ==========================================
 
 app.use("/api/auth", authRoutes);
-
 app.use("/api/admin", adminRoutes);
-
 app.use("/api/products", productRoutes);
-
 app.use("/api/cart", cartRoutes);
-
 app.use("/api/orders", orderRoutes);
-
 app.use("/api/admin/orders", adminOrderRoutes);
-
 app.use("/api/admin/dashboard", adminDashboardRoutes);
-
 app.use("/api/admin/customers", adminCustomerRoutes);
-
 app.use("/api/reviews", reviewRoutes);
-
 app.use("/api/payment", paymentRoutes);
-
 app.use("/api/shiprocket", shiprocketRoutes);
-
 app.use("/api/analytics", analyticsRoutes);
 
 // ==========================================
