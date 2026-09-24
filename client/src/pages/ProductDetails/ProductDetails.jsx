@@ -17,11 +17,20 @@ import "./ProductDetails.css";
 import "../../components/Reviews/Reviews.css";
 
 const API_URL =
-  import.meta.env.VITE_API_URL || "https://honeyterra.onrender.com";
+  import.meta.env.VITE_API_URL ||
+  "https://honeyterra.onrender.com";
 
 function ProductDetails() {
   const { id } = useParams();
-  const { addToCart } = useCart();
+
+  // =====================================================
+  // CART
+  // =====================================================
+
+  const {
+    addToCart,
+    loading: cartLoading,
+  } = useCart();
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -43,12 +52,16 @@ function ProductDetails() {
   const [reviewText, setReviewText] = useState("");
 
   const [reviewImage, setReviewImage] = useState(null);
-  const [reviewImagePreview, setReviewImagePreview] = useState("");
+  const [reviewImagePreview, setReviewImagePreview] =
+    useState("");
 
-  const [submittingReview, setSubmittingReview] = useState(false);
+  const [submittingReview, setSubmittingReview] =
+    useState(false);
+
   const [reviewSuccess, setReviewSuccess] = useState("");
 
-  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [showReviewModal, setShowReviewModal] =
+    useState(false);
 
   // =====================================================
   // GET TOKEN
@@ -90,9 +103,14 @@ function ProductDetails() {
         setSelectedImage(0);
         setQuantity(1);
       } catch (err) {
-        console.error("Product details error:", err);
+        console.error(
+          "Product details error:",
+          err
+        );
+
         setError(
-          err.message || "Unable to load this product."
+          err.message ||
+            "Unable to load this product."
         );
       } finally {
         setLoading(false);
@@ -121,11 +139,15 @@ function ProductDetails() {
 
       const data = await response.json();
 
-      console.log("Reviews API Response:", data);
+      console.log(
+        "Reviews API Response:",
+        data
+      );
 
       if (!response.ok) {
         throw new Error(
-          data.message || "Failed to fetch reviews"
+          data.message ||
+            "Failed to fetch reviews"
         );
       }
 
@@ -135,10 +157,14 @@ function ProductDetails() {
           : []
       );
     } catch (err) {
-      console.error("Fetch Reviews Error:", err);
+      console.error(
+        "Fetch Reviews Error:",
+        err
+      );
 
       setReviewError(
-        err.message || "Unable to load reviews."
+        err.message ||
+          "Unable to load reviews."
       );
     } finally {
       setReviewsLoading(false);
@@ -169,7 +195,6 @@ function ProductDetails() {
       return;
     }
 
-    // Reset only when opening a fresh review
     setRating(0);
     setHoverRating(0);
     setReviewText("");
@@ -195,6 +220,11 @@ function ProductDetails() {
     setHoverRating(0);
     setReviewText("");
     setReviewImage(null);
+
+    if (reviewImagePreview) {
+      URL.revokeObjectURL(reviewImagePreview);
+    }
+
     setReviewImagePreview("");
   };
 
@@ -221,12 +251,43 @@ function ProductDetails() {
   // ADD TO CART
   // =====================================================
 
-  const handleAddToCart = () => {
-    if (!product || product.stock <= 0) {
+  const handleAddToCart = async () => {
+    // Prevent invalid product
+    if (!product) {
       return;
     }
 
-    addToCart(product, quantity);
+    // Prevent adding out-of-stock product
+    if (product.stock <= 0) {
+      return;
+    }
+
+    // Prevent multiple clicks while request is running
+    if (cartLoading) {
+      return;
+    }
+
+    console.log("Adding product to cart:", {
+      productId: product._id,
+      productName: product.name,
+      quantity,
+    });
+
+    const result = await addToCart(
+      product._id,
+      quantity
+    );
+
+    if (!result.success) {
+      console.error(
+        "Add to cart failed:",
+        result.message
+      );
+    } else {
+      console.log(
+        "Product added to cart successfully"
+      );
+    }
   };
 
   // =====================================================
@@ -242,6 +303,7 @@ function ProductDetails() {
       setReviewError(
         "Please select a valid image."
       );
+
       return;
     }
 
@@ -249,13 +311,16 @@ function ProductDetails() {
       setReviewError(
         "Image size should be less than 5MB."
       );
+
       return;
     }
 
     setReviewError("");
 
     if (reviewImagePreview) {
-      URL.revokeObjectURL(reviewImagePreview);
+      URL.revokeObjectURL(
+        reviewImagePreview
+      );
     }
 
     setReviewImage(file);
@@ -272,7 +337,9 @@ function ProductDetails() {
 
   const removeReviewImage = () => {
     if (reviewImagePreview) {
-      URL.revokeObjectURL(reviewImagePreview);
+      URL.revokeObjectURL(
+        reviewImagePreview
+      );
     }
 
     setReviewImage(null);
@@ -295,6 +362,7 @@ function ProductDetails() {
       setReviewError(
         "Please login to write a review."
       );
+
       return;
     }
 
@@ -302,6 +370,7 @@ function ProductDetails() {
       setReviewError(
         "Please select a star rating."
       );
+
       return;
     }
 
@@ -309,6 +378,7 @@ function ProductDetails() {
       setReviewError(
         "Please write your review."
       );
+
       return;
     }
 
@@ -316,6 +386,7 @@ function ProductDetails() {
       setReviewError(
         "Product information is missing. Please refresh the page."
       );
+
       return;
     }
 
@@ -346,12 +417,15 @@ function ProductDetails() {
         );
       }
 
-      console.log("Submitting review:", {
-        productId: product._id,
-        rating,
-        comment: reviewText.trim(),
-        hasImage: !!reviewImage,
-      });
+      console.log(
+        "Submitting review:",
+        {
+          productId: product._id,
+          rating,
+          comment: reviewText.trim(),
+          hasImage: !!reviewImage,
+        }
+      );
 
       const response = await fetch(
         `${API_URL}/api/reviews`,
@@ -429,6 +503,7 @@ function ProductDetails() {
       setReviewError(
         "Please login first."
       );
+
       return;
     }
 
@@ -496,7 +571,9 @@ function ProductDetails() {
   };
 
   const getRatingPercentage = (star) => {
-    if (totalReviews === 0) return 0;
+    if (totalReviews === 0) {
+      return 0;
+    }
 
     return Math.round(
       (getRatingCount(star) /
@@ -512,7 +589,9 @@ function ProductDetails() {
   const formatReviewDate = (date) => {
     if (!date) return "";
 
-    return new Date(date).toLocaleDateString(
+    return new Date(
+      date
+    ).toLocaleDateString(
       "en-IN",
       {
         day: "2-digit",
@@ -551,7 +630,9 @@ function ProductDetails() {
       const storedUser =
         localStorage.getItem("user");
 
-      if (!storedUser) return null;
+      if (!storedUser) {
+        return null;
+      }
 
       return JSON.parse(storedUser);
     } catch {
@@ -566,7 +647,9 @@ function ProductDetails() {
   // =====================================================
 
   const isOwnReview = (review) => {
-    if (!currentUser) return false;
+    if (!currentUser) {
+      return false;
+    }
 
     const currentUserId =
       currentUser._id ||
@@ -596,7 +679,10 @@ function ProductDetails() {
       <main className="product-details-page">
         <div className="product-details-loading">
           <div className="product-details-spinner"></div>
-          <p>Loading product...</p>
+
+          <p>
+            Loading product...
+          </p>
         </div>
       </main>
     );
@@ -610,7 +696,9 @@ function ProductDetails() {
     return (
       <main className="product-details-page">
         <div className="product-details-error">
-          <h2>Product not found</h2>
+          <h2>
+            Product not found
+          </h2>
 
           <p>
             {error ||
@@ -622,6 +710,7 @@ function ProductDetails() {
             className="product-details-back-button"
           >
             <ArrowLeft size={17} />
+
             Back to Shop
           </Link>
         </div>
@@ -694,6 +783,7 @@ function ProductDetails() {
             className="product-details-back"
           >
             <ArrowLeft size={17} />
+
             Back to Shop
           </Link>
 
@@ -726,6 +816,7 @@ function ProductDetails() {
                     </span>
                   </div>
                 )}
+
               </div>
 
               {productImages.length > 1 && (
@@ -759,6 +850,7 @@ function ProductDetails() {
 
                 </div>
               )}
+
             </div>
 
             {/* PRODUCT INFORMATION */}
@@ -816,6 +908,7 @@ function ProductDetails() {
                     ? "review"
                     : "reviews"})
                 </span>
+
               </div>
 
               {/* PRICE */}
@@ -889,7 +982,8 @@ function ProductDetails() {
                         decreaseQuantity
                       }
                       disabled={
-                        quantity <= 1
+                        quantity <= 1 ||
+                        cartLoading
                       }
                     >
                       <Minus size={16} />
@@ -905,13 +999,15 @@ function ProductDetails() {
                         increaseQuantity
                       }
                       disabled={
-                        quantity >= stock
+                        quantity >= stock ||
+                        cartLoading
                       }
                     >
                       <Plus size={16} />
                     </button>
 
                   </div>
+
                 </div>
               )}
 
@@ -923,13 +1019,18 @@ function ProductDetails() {
                 onClick={
                   handleAddToCart
                 }
-                disabled={stock <= 0}
+                disabled={
+                  stock <= 0 ||
+                  cartLoading
+                }
               >
                 <ShoppingCart size={19} />
 
-                {stock > 0
-                  ? "Add to Cart"
-                  : "Out of Stock"}
+                {stock <= 0
+                  ? "Out of Stock"
+                  : cartLoading
+                  ? "Adding..."
+                  : "Add to Cart"}
               </button>
 
               {/* FEATURES */}
@@ -976,6 +1077,7 @@ function ProductDetails() {
 
             </div>
           </div>
+
         </div>
       </section>
 
@@ -1029,6 +1131,7 @@ function ProductDetails() {
               </span>
 
             </div>
+
           </div>
 
           {/* RATING SUMMARY */}
@@ -1152,6 +1255,7 @@ function ProductDetails() {
               }
             >
               <Star size={17} />
+
               Write a Review
             </button>
 
@@ -1308,6 +1412,7 @@ function ProductDetails() {
                       {review.isVerified && (
                         <span className="review-verified">
                           <Check size={11} />
+
                           Verified Purchase
                         </span>
                       )}
@@ -1325,6 +1430,7 @@ function ProductDetails() {
                           }
                         >
                           <Trash2 size={14} />
+
                           Delete Review
                         </button>
                       )}
@@ -1623,11 +1729,13 @@ function ProductDetails() {
                   {submittingReview ? (
                     <>
                       <span className="review-submit-spinner"></span>
+
                       Submitting...
                     </>
                   ) : (
                     <>
                       <Check size={17} />
+
                       Submit Review
                     </>
                   )}

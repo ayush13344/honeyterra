@@ -1,10 +1,17 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+
 import axios from "axios";
 
 const CartContext = createContext();
 
 const API_URL =
-  import.meta.env.VITE_API_URL || "https://honeyterra.onrender.com";
+  import.meta.env.VITE_API_URL ||
+  "https://honeyterra.onrender.com";
 
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState({
@@ -16,17 +23,17 @@ export const CartProvider = ({ children }) => {
   const [cartOpen, setCartOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // ==========================================
+  // =====================================================
   // GET TOKEN
-  // ==========================================
+  // =====================================================
 
   const getToken = () => {
     return localStorage.getItem("token");
   };
 
-  // ==========================================
+  // =====================================================
   // AXIOS CONFIG
-  // ==========================================
+  // =====================================================
 
   const getConfig = () => {
     const token = getToken();
@@ -38,9 +45,9 @@ export const CartProvider = ({ children }) => {
     };
   };
 
-  // ==========================================
+  // =====================================================
   // FETCH CART
-  // ==========================================
+  // =====================================================
 
   const fetchCart = async () => {
     const token = getToken();
@@ -51,6 +58,7 @@ export const CartProvider = ({ children }) => {
         totalItems: 0,
         totalAmount: 0,
       });
+
       return;
     }
 
@@ -75,26 +83,49 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // ==========================================
+  // =====================================================
   // LOAD CART WHEN APP STARTS
-  // ==========================================
+  // =====================================================
 
   useEffect(() => {
     fetchCart();
   }, []);
 
-  // ==========================================
+  // =====================================================
   // ADD TO CART
-  // ==========================================
+  // =====================================================
 
   const addToCart = async (productId, quantity = 1) => {
+    // Prevent invalid requests
+    if (!productId) {
+      return {
+        success: false,
+        message: "Product ID is missing",
+      };
+    }
+
+    if (!quantity || quantity < 1) {
+      quantity = 1;
+    }
+
+    const token = getToken();
+
+    if (!token) {
+      return {
+        success: false,
+        message: "Please login to add products to cart",
+      };
+    }
+
+    // Prevent multiple simultaneous add requests
+    if (loading) {
+      return {
+        success: false,
+        message: "Please wait...",
+      };
+    }
+
     try {
-      const token = getToken();
-
-      if (!token) {
-        throw new Error("Please login to add products to cart");
-      }
-
       setLoading(true);
 
       const response = await axios.post(
@@ -107,20 +138,25 @@ export const CartProvider = ({ children }) => {
       );
 
       if (response.data.success) {
+        // Update cart immediately with backend response
         setCart(response.data.cart);
 
-        // Open drawer automatically
+        // Open cart drawer automatically
         setCartOpen(true);
 
         return {
           success: true,
-          message: response.data.message,
+          message:
+            response.data.message ||
+            "Product added to cart",
         };
       }
 
       return {
         success: false,
-        message: response.data.message,
+        message:
+          response.data.message ||
+          "Unable to add product to cart",
       };
     } catch (error) {
       console.error(
@@ -140,11 +176,18 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // ==========================================
+  // =====================================================
   // UPDATE QUANTITY
-  // ==========================================
+  // =====================================================
 
-  const updateQuantity = async (productId, quantity) => {
+  const updateQuantity = async (
+    productId,
+    quantity
+  ) => {
+    if (!productId) {
+      return;
+    }
+
     if (quantity < 1) {
       return;
     }
@@ -174,11 +217,15 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // ==========================================
+  // =====================================================
   // REMOVE ITEM
-  // ==========================================
+  // =====================================================
 
   const removeFromCart = async (productId) => {
+    if (!productId) {
+      return;
+    }
+
     try {
       const response = await axios.delete(
         `${API_URL}/api/cart/remove/${productId}`,
@@ -196,9 +243,9 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // ==========================================
+  // =====================================================
   // CLEAR CART
-  // ==========================================
+  // =====================================================
 
   const clearCart = async () => {
     try {
@@ -218,9 +265,9 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // ==========================================
-  // OPEN / CLOSE DRAWER
-  // ==========================================
+  // =====================================================
+  // OPEN / CLOSE CART
+  // =====================================================
 
   const openCart = () => {
     setCartOpen(true);
@@ -230,20 +277,21 @@ export const CartProvider = ({ children }) => {
     setCartOpen(false);
   };
 
+  // =====================================================
+  // CONTEXT
+  // =====================================================
+
   return (
     <CartContext.Provider
       value={{
         cart,
         cartOpen,
         loading,
-
         addToCart,
         updateQuantity,
         removeFromCart,
         clearCart,
-
         fetchCart,
-
         openCart,
         closeCart,
       }}
@@ -253,9 +301,9 @@ export const CartProvider = ({ children }) => {
   );
 };
 
-// ==========================================
+// =====================================================
 // CUSTOM HOOK
-// ==========================================
+// =====================================================
 
 export const useCart = () => {
   const context = useContext(CartContext);
