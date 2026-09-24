@@ -41,6 +41,7 @@ const allowedOrigins = [
 
   // Production custom domain
   "https://honeyterra.com",
+  "https://www.honeyterra.store",
 ];
 
 app.use(
