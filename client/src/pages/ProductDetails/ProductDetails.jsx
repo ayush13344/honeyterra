@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import {
   ArrowLeft,
@@ -11,7 +12,11 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import "./ProductDetails.css";
 import "../../components/Reviews/Reviews.css";
@@ -22,6 +27,7 @@ const API_URL =
 
 function ProductDetails() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   // =====================================================
   // CART
@@ -44,7 +50,8 @@ function ProductDetails() {
   // =====================================================
 
   const [reviews, setReviews] = useState([]);
-  const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [reviewsLoading, setReviewsLoading] =
+    useState(true);
   const [reviewError, setReviewError] = useState("");
 
   const [rating, setRating] = useState(0);
@@ -58,7 +65,8 @@ function ProductDetails() {
   const [submittingReview, setSubmittingReview] =
     useState(false);
 
-  const [reviewSuccess, setReviewSuccess] = useState("");
+  const [reviewSuccess, setReviewSuccess] =
+    useState("");
 
   const [showReviewModal, setShowReviewModal] =
     useState(false);
@@ -222,7 +230,9 @@ function ProductDetails() {
     setReviewImage(null);
 
     if (reviewImagePreview) {
-      URL.revokeObjectURL(reviewImagePreview);
+      URL.revokeObjectURL(
+        reviewImagePreview
+      );
     }
 
     setReviewImagePreview("");
@@ -252,40 +262,114 @@ function ProductDetails() {
   // =====================================================
 
   const handleAddToCart = async () => {
-    // Prevent invalid product
+    // ===================================================
+    // LOGIN VALIDATION
+    // ===================================================
+
+    const token = getToken();
+
+    if (!token) {
+      console.log(
+        "User is not logged in. Redirecting to login."
+      );
+
+      // Preserve the current product page
+      // so the user can return here after login.
+      navigate(
+        `/login?redirect=/product/${id}`
+      );
+
+      return;
+    }
+
+    // ===================================================
+    // PRODUCT VALIDATION
+    // ===================================================
+
     if (!product) {
+      console.error(
+        "Product information is missing."
+      );
+
       return;
     }
 
-    // Prevent adding out-of-stock product
+    // ===================================================
+    // STOCK VALIDATION
+    // ===================================================
+
     if (product.stock <= 0) {
+      console.error(
+        "Product is out of stock."
+      );
+
       return;
     }
 
-    // Prevent multiple clicks while request is running
+    // ===================================================
+    // QUANTITY VALIDATION
+    // ===================================================
+
+    if (!quantity || quantity < 1) {
+      console.error(
+        "Invalid quantity."
+      );
+
+      return;
+    }
+
+    if (quantity > product.stock) {
+      console.error(
+        "Requested quantity exceeds available stock."
+      );
+
+      return;
+    }
+
+    // ===================================================
+    // PREVENT MULTIPLE REQUESTS
+    // ===================================================
+
     if (cartLoading) {
       return;
     }
 
-    console.log("Adding product to cart:", {
-      productId: product._id,
-      productName: product.name,
-      quantity,
-    });
+    // ===================================================
+    // ADD TO CART
+    // ===================================================
 
-    const result = await addToCart(
-      product._id,
-      quantity
+    console.log(
+      "Adding product to cart:",
+      {
+        productId: product._id,
+        productName: product.name,
+        quantity,
+      }
     );
 
-    if (!result.success) {
-      console.error(
-        "Add to cart failed:",
-        result.message
+    try {
+      const result = await addToCart(
+        product._id,
+        quantity
       );
-    } else {
+
+      if (!result?.success) {
+        console.error(
+          "Add to cart failed:",
+          result?.message ||
+            "Unable to add product to cart."
+        );
+
+        return;
+      }
+
       console.log(
         "Product added to cart successfully"
+      );
+    } catch (err) {
+      console.error(
+        "Add to cart error:",
+        err
       );
     }
   };

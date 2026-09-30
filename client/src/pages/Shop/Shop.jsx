@@ -10,9 +10,14 @@ import ProductCard from "../../components/ProductCard/ProductCard";
 
 import "./Shop.css";
 
+const API_URL =
+  import.meta.env.VITE_API_URL ||
+  "https://honeyterra.onrender.com";
+
 function Shop() {
   const [products, setProducts] = useState([]);
-  const [activeFilter, setActiveFilter] = useState("all");
+  const [activeFilter, setActiveFilter] =
+    useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -27,11 +32,13 @@ function Shop() {
         setError("");
 
         const response = await fetch(
-          "https://honeyterra.onrender.com/api/products"
+          `${API_URL}/api/products`
         );
 
         if (!response.ok) {
-          throw new Error("Failed to fetch products");
+          throw new Error(
+            `Failed to fetch products: ${response.status}`
+          );
         }
 
         const data = await response.json();
@@ -132,7 +139,6 @@ function Shop() {
         </div>
       </section>
 
-
       {/* ==========================================
           PRODUCTS
       ========================================== */}
@@ -162,7 +168,6 @@ function Shop() {
             </p>
 
           </div>
-
 
           {/* ========================================
               FILTERS
@@ -206,14 +211,15 @@ function Shop() {
                   : "shop-filter"
               }
               onClick={() =>
-                handleFilterChange("honeycomb-wrap")
+                handleFilterChange(
+                  "honeycomb-wrap"
+                )
               }
             >
               Honey Comb Wraps
             </button>
 
           </div>
-
 
           {/* ========================================
               PRODUCT COUNT
@@ -229,7 +235,6 @@ function Shop() {
                 }`}
           </div>
 
-
           {/* ========================================
               LOADING
           ======================================== */}
@@ -244,7 +249,6 @@ function Shop() {
               </p>
 
             </div>
-
           ) : error ? (
 
             /* ======================================
@@ -269,7 +273,6 @@ function Shop() {
               </button>
 
             </div>
-
           ) : filteredProducts.length === 0 ? (
 
             /* ======================================
@@ -301,7 +304,6 @@ function Shop() {
               </button>
 
             </div>
-
           ) : (
 
             /* ======================================
@@ -311,7 +313,6 @@ function Shop() {
             <div className="shop-product-grid">
 
               {filteredProducts.map((product) => (
-
                 <Link
                   key={product._id}
                   to={`/products/${product._id}`}
@@ -322,16 +323,13 @@ function Shop() {
                     product={product}
                   />
                 </Link>
-
               ))}
 
             </div>
-
           )}
 
         </div>
       </section>
-
 
       {/* ==========================================
           BENEFITS
@@ -354,7 +352,6 @@ function Shop() {
 
           </div>
 
-
           <div className="shop-benefits-grid">
 
             <div className="shop-benefit">
@@ -374,7 +371,6 @@ function Shop() {
 
             </div>
 
-
             <div className="shop-benefit">
 
               <div className="shop-benefit-icon">
@@ -391,7 +387,6 @@ function Shop() {
               </p>
 
             </div>
-
 
             <div className="shop-benefit">
 
@@ -414,7 +409,6 @@ function Shop() {
 
         </div>
       </section>
-
 
       {/* ==========================================
           CTA
