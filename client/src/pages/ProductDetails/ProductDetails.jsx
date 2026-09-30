@@ -945,7 +945,7 @@ function ProductDetails() {
                 {category}
               </span>
 
-              <h1>{name}</h1>
+              <h1 className="product-details-name">{name}</h1>
 
               {description && (
                 <p className="product-details-description">

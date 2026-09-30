@@ -139,30 +139,77 @@
 
 
 /* ==========================================
-   NAME
+   PRODUCT TITLE
 ========================================== */
 
-.product-details-info h1 {
-  margin: 12px 0 20px;
+.product-details-name {
+  width: 100%;
+  max-width: 680px;
+
+  margin: 14px 0 22px;
+
   font-family: "Playfair Display", Georgia, serif;
-  font-size: clamp(42px, 5vw, 62px);
-  font-weight: 600;
-  line-height: 1.05;
-  letter-spacing: -1px;
+
+  /*
+   * Large enough to feel premium,
+   * without making long product names
+   * visually overwhelming.
+   */
+  font-size: clamp(18px, 4vw, 5px);
+
+  font-weight: 300;
+
+  /*
+   * Comfortable spacing between lines
+   * for long product titles.
+   */
+  line-height: 1.08;
+
+  letter-spacing: -0.8px;
+
   color: #1d2722;
+
+  /*
+   * Creates more natural line breaks
+   * where browser support allows it.
+   */
+  text-wrap: balance;
+
+  /*
+   * Prevents long words from breaking
+   * the product information column.
+   */
+  overflow-wrap: break-word;
 }
 
 
 /* ==========================================
-   DESCRIPTION
+   PRODUCT DESCRIPTION
 ========================================== */
 
 .product-details-description {
-  max-width: 560px;
-  margin: 0 0 25px;
+  width: 100%;
+  max-width: 540px;
+
+  margin: 0 0 28px;
+
   color: #69736d;
+
+  font-family: inherit;
+
   font-size: 16px;
-  line-height: 1.8;
+
+  font-weight: 400;
+
+  line-height: 1.7;
+
+  letter-spacing: 0;
+
+  /*
+   * Keeps the description readable
+   * instead of stretching too wide.
+   */
+  text-wrap: pretty;
 }
 
 
@@ -451,7 +498,60 @@
    RESPONSIVE
 ========================================== */
 
-@media (max-width: 900px) {
+
+/* ==========================================
+   LARGE DESKTOP
+   1200px+
+========================================== */
+
+@media (min-width: 1200px) {
+
+  .product-details-name {
+    max-width: 680px;
+    font-size: 52px;
+    line-height: 1.08;
+  }
+
+  .product-details-description {
+    max-width: 540px;
+    font-size: 16px;
+    line-height: 1.7;
+  }
+}
+
+
+/* ==========================================
+   DESKTOP / SMALL LAPTOP
+   901px - 1199px
+========================================== */
+
+@media (min-width: 901px) and (max-width: 1199px) {
+
+  .product-details-layout {
+    gap: 50px;
+  }
+
+  .product-details-name {
+    max-width: 600px;
+    font-size: 46px;
+    line-height: 1.08;
+  }
+
+  .product-details-description {
+    max-width: 500px;
+    font-size: 15.5px;
+    line-height: 1.7;
+  }
+}
+
+
+/* ==========================================
+   TABLET
+   601px - 900px
+========================================== */
+
+@media (min-width: 601px) and (max-width: 900px) {
+
   .product-details-layout {
     grid-template-columns: 1fr;
     gap: 40px;
@@ -464,12 +564,33 @@
   .product-details-info {
     padding-top: 0;
   }
+
+  .product-details-name {
+    max-width: 760px;
+    margin: 12px 0 20px;
+    font-size: 44px;
+    line-height: 1.1;
+    letter-spacing: -0.6px;
+  }
+
+  .product-details-description {
+    max-width: 680px;
+    font-size: 16px;
+    line-height: 1.7;
+  }
 }
 
 
+/* ==========================================
+   MOBILE
+   0px - 600px
+========================================== */
+
 @media (max-width: 600px) {
+
   .product-details-container {
-    width: min(100% - 32px, 1180px);
+    width: calc(100% - 32px);
+    max-width: 1180px;
   }
 
   .product-details-main {
@@ -481,8 +602,24 @@
     border-radius: 18px;
   }
 
-  .product-details-info h1 {
-    font-size: 42px;
+  .product-details-info {
+    padding-top: 0;
+  }
+
+  .product-details-name {
+    max-width: 100%;
+    margin: 10px 0 17px;
+    font-size: 32px;
+    line-height: 1.12;
+    letter-spacing: -0.4px;
+    overflow-wrap: anywhere;
+  }
+
+  .product-details-description {
+    max-width: 100%;
+    margin-bottom: 24px;
+    font-size: 15px;
+    line-height: 1.65;
   }
 
   .product-details-price {

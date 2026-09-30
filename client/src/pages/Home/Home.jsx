@@ -286,6 +286,71 @@ function Home() {
       </section>
 
       {/* ======================================
+          PRODUCT DISCOVERY
+      ====================================== */}
+
+      <section className="product-discovery">
+        <div className="product-discovery-header">
+          <div>
+            <p className="eyebrow">THE HONEYTERRA COLLECTION</p>
+
+            <h2>
+              Simple products.
+              <br />
+              Thoughtfully made.
+            </h2>
+          </div>
+
+          <div className="product-discovery-copy">
+            <p>
+              Designed for homes, cafés, offices and everyday spaces. Choose the
+              product that fits the way you live and work.
+            </p>
+
+            <Link to="/shop" className="text-link">
+              Explore entire collection
+              <ArrowRight size={17} />
+            </Link>
+          </div>
+        </div>
+
+        {/* FEATURED ASH TRAYS */}
+
+        {gelProducts.length > 0 && (
+          <div className="featured-product-block">
+            <div className="featured-product-info">
+              <div>
+                <p className="eyebrow">GEL ASH TRAYS</p>
+
+                <h3>
+                  Everyday,
+                  <br />
+                  without the mess.
+                </h3>
+
+                <p className="featured-product-description">
+                  Clean, practical ash trays designed for everyday use at home,
+                  in cafés, offices and outdoor spaces.
+                </p>
+              </div>
+
+              <Link to="/shop" className="btn btn-secondary">
+                Explore ash trays
+                <ArrowRight size={17} />
+              </Link>
+            </div>
+
+            <div className="featured-product-grid">
+              {gelProducts.slice(0, 3).map((product) => (
+                <ProductCard key={product._id} product={product} />
+              ))}
+            </div>
+          </div>
+        )}
+
+      </section>
+
+      {/* ======================================
           GEL ASH TRAY
       ====================================== */}
 
@@ -366,6 +431,49 @@ function Home() {
           ))}
         </div>
       </section>
+
+      {/* ======================================
+          HONEYCOMB PRODUCT COLLECTION
+      ====================================== */}
+
+      <section className="product-discovery honeycomb-product-discovery">
+        {/* HONEYCOMB WRAPS */}
+
+        {honeycombProducts.length > 0 && (
+          <div className="featured-product-block honeycomb-block">
+            <div className="featured-product-info">
+              <div>
+                <p className="eyebrow gold">HONEYCOMB WRAPS</p>
+
+                <h3>
+                  Protect better.
+                  <br />
+                  Pack smarter.
+                </h3>
+
+                <p className="featured-product-description">
+                  Flexible honeycomb protection designed to keep your products
+                  safe while reducing unnecessary waste.
+                </p>
+              </div>
+
+              <Link
+                to="/products?category=Honeycomb%20Wraps"
+                className="btn btn-secondary"
+              >
+                Explore honeycomb wraps
+                <ArrowRight size={17} />
+              </Link>
+            </div>
+
+            <div className="featured-product-grid">
+              {honeycombProducts.slice(0, 3).map((product) => (
+                <ProductCard key={product._id} product={product} />
+              ))}
+            </div>
+          </div>
+        )}
+      </section> 
 
       {/* ======================================
           HONEYCOMB WRAP
@@ -509,107 +617,6 @@ function Home() {
             <p>Wrap special products before placing them inside a box.</p>
           </div>
         </div>
-      </section>
-
-      {/* ======================================
-          PRODUCT DISCOVERY
-      ====================================== */}
-
-      <section className="product-discovery">
-        <div className="product-discovery-header">
-          <div>
-            <p className="eyebrow">THE HONEYTERRA COLLECTION</p>
-
-            <h2>
-              Simple products.
-              <br />
-              Thoughtfully made.
-            </h2>
-          </div>
-
-          <div className="product-discovery-copy">
-            <p>
-              Designed for homes, cafés, offices and everyday spaces. Choose the
-              product that fits the way you live and work.
-            </p>
-
-            <Link to="/shop" className="text-link">
-              Explore entire collection
-              <ArrowRight size={17} />
-            </Link>
-          </div>
-        </div>
-
-        {/* FEATURED ASH TRAYS */}
-
-        {gelProducts.length > 0 && (
-          <div className="featured-product-block">
-            <div className="featured-product-info">
-              <div>
-                <p className="eyebrow">GEL ASH TRAYS</p>
-
-                <h3>
-                  Everyday,
-                  <br />
-                  without the mess.
-                </h3>
-
-                <p className="featured-product-description">
-                  Clean, practical ash trays designed for everyday use at home,
-                  in cafés, offices and outdoor spaces.
-                </p>
-              </div>
-
-              <Link to="/shop" className="btn btn-secondary">
-                Explore ash trays
-                <ArrowRight size={17} />
-              </Link>
-            </div>
-
-            <div className="featured-product-grid">
-              {gelProducts.slice(0, 3).map((product) => (
-                <ProductCard key={product._id} product={product} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* HONEYCOMB WRAPS */}
-
-        {honeycombProducts.length > 0 && (
-          <div className="featured-product-block honeycomb-block">
-            <div className="featured-product-info">
-              <div>
-                <p className="eyebrow gold">HONEYCOMB WRAPS</p>
-
-                <h3>
-                  Protect better.
-                  <br />
-                  Pack smarter.
-                </h3>
-
-                <p className="featured-product-description">
-                  Flexible honeycomb protection designed to keep your products
-                  safe while reducing unnecessary waste.
-                </p>
-              </div>
-
-              <Link
-                to="/products?category=Honeycomb%20Wraps"
-                className="btn btn-secondary"
-              >
-                Explore honeycomb wraps
-                <ArrowRight size={17} />
-              </Link>
-            </div>
-
-            <div className="featured-product-grid">
-              {honeycombProducts.slice(0, 3).map((product) => (
-                <ProductCard key={product._id} product={product} />
-              ))}
-            </div>
-          </div>
-        )}
       </section>
 
       {/* ======================================

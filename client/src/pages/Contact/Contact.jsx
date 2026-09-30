@@ -15,7 +15,6 @@ function Contact() {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    // Backend contact API will be connected later.
     console.log("Contact form submitted");
   };
 
@@ -197,7 +196,7 @@ function Contact() {
             ================================================= */}
 
             <a
-              href="mailto:honeyterra.in@gmail.com"
+              href="mailto:Honeyterra.in@gmail.com"
               className="contact-info-card"
             >
 
@@ -313,7 +312,7 @@ function Contact() {
             ================================================= */}
 
             <a
-              href="https://honeyterra.in"
+              href="https://honeyterra.store"
               target="_blank"
               rel="noopener noreferrer"
               className="contact-info-card"
@@ -330,7 +329,7 @@ function Contact() {
                 </span>
 
                 <strong>
-                  honeyterra.in
+                  honeyterra.store
                 </strong>
 
               </div>
