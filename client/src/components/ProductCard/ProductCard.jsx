@@ -1,6 +1,28 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+
 import "./ProductCard.css";
+
+function optimizeCloudinaryImage(url, width = 600) {
+  if (!url || typeof url !== "string") {
+    return url;
+  }
+
+  // Only modify Cloudinary URLs
+  if (!url.includes("res.cloudinary.com")) {
+    return url;
+  }
+
+  // Avoid adding transformations twice
+  if (url.includes("/upload/") && !url.includes("/upload/f_auto")) {
+    return url.replace(
+      "/upload/",
+      `/upload/f_auto,q_auto,w_${width}/`
+    );
+  }
+
+  return url;
+}
 
 function ProductCard({ product }) {
   const {
@@ -36,6 +58,11 @@ function ProductCard({ product }) {
       ? images[0]
       : null;
 
+  const optimizedImage = optimizeCloudinaryImage(
+    productImage,
+    600
+  );
+
   return (
     <article className="product-card">
 
@@ -59,17 +86,20 @@ function ProductCard({ product }) {
 
         {/* IMAGE */}
 
-        {productImage ? (
+        {optimizedImage ? (
           <img
-            src={productImage}
+            src={optimizedImage}
             alt={name}
             className="product-card-real-image"
+            loading="lazy"
+            decoding="async"
           />
         ) : (
           <div className="product-image-placeholder">
             <span>Product Image</span>
           </div>
         )}
+
       </div>
 
       {/* ==========================================
@@ -127,9 +157,7 @@ function ProductCard({ product }) {
           </Link>
 
         </div>
-
       </div>
-
     </article>
   );
 }
