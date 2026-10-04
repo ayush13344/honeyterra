@@ -1,3 +1,17 @@
+
+  /* ===================================
+  GLOBLE ADDED 
+  =======================================*/
+
+
+.product-details-layout,
+.product-details-layout * {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+
+
 /* ==========================================
    PRODUCT DETAILS PAGE
 ========================================== */
@@ -587,6 +601,11 @@
 ========================================== */
 
 @media (max-width: 600px) {
+
+  .product-details-layout {
+      grid-template-columns: 1fr;
+      gap: 25px;
+    }
 
   .product-details-container {
     width: calc(100% - 32px);
