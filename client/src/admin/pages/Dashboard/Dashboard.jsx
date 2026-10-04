@@ -147,7 +147,7 @@ function Dashboard() {
       }
 
       const response = await axios.get(
-        "http://localhost:3000/api/analytics/visitors",
+        "https://honeyterra.onrender.com/api/analytics/visitors",
         {
           params: {
             range: visitorRange,
