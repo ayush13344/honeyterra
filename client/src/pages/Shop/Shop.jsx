@@ -4,7 +4,6 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import { Link } from "react-router-dom";
 
 import ProductCard from "../../components/ProductCard/ProductCard";
 
@@ -16,8 +15,7 @@ const API_URL =
 
 function Shop() {
   const [products, setProducts] = useState([]);
-  const [activeFilter, setActiveFilter] =
-    useState("all");
+  const [activeFilter, setActiveFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -252,7 +250,7 @@ function Shop() {
           ) : error ? (
 
             /* ======================================
-               ERROR
+                ERROR
             ====================================== */
 
             <div className="shop-error">
@@ -276,7 +274,7 @@ function Shop() {
           ) : filteredProducts.length === 0 ? (
 
             /* ======================================
-               EMPTY
+                EMPTY
             ====================================== */
 
             <div className="shop-empty">
@@ -307,23 +305,20 @@ function Shop() {
           ) : (
 
             /* ======================================
-               PRODUCT CARDS
+                PRODUCT CARDS
             ====================================== */
 
             <div className="shop-product-grid">
 
-              {filteredProducts.map((product) => (
-                <Link
-                  key={product._id}
-                  to={`/products/${product._id}`}
-                  className="shop-product-card-link"
-                  aria-label={`View ${product.name}`}
-                >
+              {filteredProducts.map(
+                (product, index) => (
                   <ProductCard
+                    key={product._id}
                     product={product}
+                    priority={index < 4}
                   />
-                </Link>
-              ))}
+                )
+              )}
 
             </div>
           )}
@@ -428,12 +423,12 @@ function Shop() {
             Keep it simple.
           </h2>
 
-          <Link
-            to="/contact"
+          <a
+            href="/contact"
             className="shop-cta-button"
           >
             Have a question?
-          </Link>
+          </a>
 
         </div>
 

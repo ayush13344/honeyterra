@@ -3,6 +3,10 @@ import { Link } from "react-router-dom";
 
 import "./ProductCard.css";
 
+// ==========================================
+// OPTIMIZE CLOUDINARY IMAGE
+// ==========================================
+
 function optimizeCloudinaryImage(url, width = 600) {
   if (!url || typeof url !== "string") {
     return url;
@@ -13,15 +17,24 @@ function optimizeCloudinaryImage(url, width = 600) {
     return url;
   }
 
-  // Avoid adding transformations twice
-  if (url.includes("/upload/") && !url.includes("/upload/f_auto")) {
-    return url.replace(
-      "/upload/",
-      `/upload/f_auto,q_auto,w_${width}/`
-    );
+  // Only modify URLs that contain /upload/
+  if (!url.includes("/upload/")) {
+    return url;
   }
 
-  return url;
+  // Avoid adding transformations twice
+  if (
+    url.includes("/upload/f_auto") ||
+    url.includes("/upload/q_auto") ||
+    /\/upload\/[^/]+,/.test(url)
+  ) {
+    return url;
+  }
+
+  return url.replace(
+    "/upload/",
+    `/upload/f_auto,q_auto,w_${width}/`
+  );
 }
 
 // ==========================================
@@ -37,11 +50,7 @@ function getShortProductName(name) {
     .replace(/\s+/g, " ")
     .trim();
 
-  /*
-   * Keep the important beginning of the product name.
-   * Marketplace-style descriptions after this point are
-   * unnecessary inside a product card.
-   */
+  // Keep product cards compact
   const maxLength = 48;
 
   if (cleanedName.length <= maxLength) {
@@ -55,7 +64,11 @@ function getShortProductName(name) {
   return `${shortenedName}...`;
 }
 
-function ProductCard({ product }) {
+// ==========================================
+// PRODUCT CARD
+// ==========================================
+
+function ProductCard({ product, priority = false }) {
   const {
     _id,
     name,
@@ -80,7 +93,9 @@ function ProductCard({ product }) {
   const discount =
     compareAtPrice > price
       ? Math.round(
-          ((compareAtPrice - price) / compareAtPrice) * 100
+          ((compareAtPrice - price) /
+            compareAtPrice) *
+            100
         )
       : 0;
 
@@ -89,26 +104,32 @@ function ProductCard({ product }) {
   // ==========================================
 
   const productImage =
-    images && images.length > 0
+    Array.isArray(images) && images.length > 0
       ? images[0]
       : null;
 
-  const optimizedImage = optimizeCloudinaryImage(
-    productImage,
-    600
-  );
+  const optimizedImage =
+    optimizeCloudinaryImage(
+      productImage,
+      600
+    );
 
   // ==========================================
   // SHORT PRODUCT NAME
   // ==========================================
 
-  const shortProductName = getShortProductName(name);
+  const shortProductName =
+    getShortProductName(name);
+
+  // ==========================================
+  // RENDER
+  // ==========================================
 
   return (
     <Link
       to={productUrl}
       className="product-card-link-wrapper"
-      aria-label={`View ${name}`}
+      aria-label={`View ${name || "product"}`}
     >
       <article className="product-card">
 
@@ -135,16 +156,28 @@ function ProductCard({ product }) {
           {optimizedImage ? (
             <img
               src={optimizedImage}
-              alt={name}
+              alt={name || "HoneyTerra product"}
               className="product-card-real-image"
-              loading="lazy"
+              loading={
+                priority
+                  ? "eager"
+                  : "lazy"
+              }
+              fetchPriority={
+                priority
+                  ? "high"
+                  : "auto"
+              }
               decoding="async"
             />
           ) : (
             <div className="product-image-placeholder">
-              <span>Product Image</span>
+              <span>
+                Product Image
+              </span>
             </div>
           )}
+
         </div>
 
         {/* ==========================================
@@ -156,12 +189,12 @@ function ProductCard({ product }) {
           {/* CATEGORY */}
 
           <span className="product-card-category">
-            {category}
+            {category || "HoneyTerra"}
           </span>
 
           {/* NAME */}
 
-          <h3 title={name}>
+          <h3 title={name || "Product"}>
             {shortProductName}
           </h3>
 
@@ -190,6 +223,7 @@ function ProductCard({ product }) {
                   Out of Stock
                 </span>
               )}
+
             </div>
 
             {/* VIEW */}
@@ -198,8 +232,11 @@ function ProductCard({ product }) {
               View
               <ArrowRight size={15} />
             </span>
+
           </div>
+
         </div>
+
       </article>
     </Link>
   );
