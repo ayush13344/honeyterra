@@ -1,3 +1,4 @@
+
 import {
   createContext,
   useContext,
@@ -12,6 +13,10 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // =====================================================
+  // LOAD USER ON APP START
+  // =====================================================
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -34,7 +39,10 @@ export const AuthProvider = ({ children }) => {
           );
         }
       } catch (error) {
-        console.error("Failed to load user:", error);
+        console.error(
+          "Failed to load user:",
+          error
+        );
 
         localStorage.removeItem("token");
         localStorage.removeItem("user");
@@ -48,15 +56,57 @@ export const AuthProvider = ({ children }) => {
     loadUser();
   }, []);
 
-  const login = (userData, token) => {
-    localStorage.setItem("token", token);
-    localStorage.setItem(
-      "user",
-      JSON.stringify(userData)
-    );
+  // =====================================================
+  // LOGIN
+  // =====================================================
 
+  const login = (userData, token) => {
+    if (!userData || !token) {
+      console.error(
+        "Login failed: user or token missing"
+      );
+      return;
+    }
+
+    const isAdmin = userData.role === "admin";
+
+    if (isAdmin) {
+      localStorage.setItem(
+        "adminToken",
+        token
+      );
+
+      localStorage.setItem(
+        "adminUser",
+        JSON.stringify(userData)
+      );
+
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+    } else {
+      localStorage.setItem(
+        "token",
+        token
+      );
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify(userData)
+      );
+
+      localStorage.removeItem("adminToken");
+      localStorage.removeItem("adminUser");
+    }
+
+    // IMPORTANT:
+    // This immediately updates AuthContext.
+    // CartContext is listening to this change.
     setUser(userData);
   };
+
+  // =====================================================
+  // LOGOUT
+  // =====================================================
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -64,6 +114,10 @@ export const AuthProvider = ({ children }) => {
 
     setUser(null);
   };
+
+  // =====================================================
+  // CONTEXT
+  // =====================================================
 
   return (
     <AuthContext.Provider
@@ -78,6 +132,10 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
+// =====================================================
+// CUSTOM HOOK
+// =====================================================
 
 export const useAuth = () => {
   return useContext(AuthContext);

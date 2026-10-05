@@ -1,3 +1,4 @@
+
 import {
   createContext,
   useContext,
@@ -6,6 +7,8 @@ import {
 } from "react";
 import axios from "axios";
 
+import { useAuth } from "./AuthContext";
+
 const CartContext = createContext();
 
 const API_URL =
@@ -13,6 +16,8 @@ const API_URL =
   "https://honeyterra.onrender.com";
 
 export const CartProvider = ({ children }) => {
+  const { user, loading: authLoading } = useAuth();
+
   const [cart, setCart] = useState({
     items: [],
     totalItems: 0,
@@ -20,7 +25,12 @@ export const CartProvider = ({ children }) => {
   });
 
   const [cartOpen, setCartOpen] = useState(false);
+
+  // Used for add/update/remove actions
   const [loading, setLoading] = useState(false);
+
+  // Used only while fetching the cart
+  const [cartLoading, setCartLoading] = useState(false);
 
   // =====================================================
   // GET TOKEN
@@ -45,6 +55,18 @@ export const CartProvider = ({ children }) => {
   };
 
   // =====================================================
+  // RESET CART
+  // =====================================================
+
+  const resetCart = () => {
+    setCart({
+      items: [],
+      totalItems: 0,
+      totalAmount: 0,
+    });
+  };
+
+  // =====================================================
   // FETCH CART
   // =====================================================
 
@@ -52,17 +74,12 @@ export const CartProvider = ({ children }) => {
     const token = getToken();
 
     if (!token) {
-      setCart({
-        items: [],
-        totalItems: 0,
-        totalAmount: 0,
-      });
-
+      resetCart();
       return;
     }
 
     try {
-      setLoading(true);
+      setCartLoading(true);
 
       const response = await axios.get(
         `${API_URL}/api/cart`,
@@ -77,25 +94,46 @@ export const CartProvider = ({ children }) => {
         "Fetch Cart Error:",
         error.response?.data || error.message
       );
+
+      // If token is invalid/expired
+      if (
+        error.response?.status === 401 ||
+        error.response?.status === 403
+      ) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
+        resetCart();
+      }
     } finally {
-      setLoading(false);
+      setCartLoading(false);
     }
   };
 
   // =====================================================
-  // LOAD CART WHEN APP STARTS
+  // FETCH CART WHEN AUTHENTICATION CHANGES
   // =====================================================
 
   useEffect(() => {
-    fetchCart();
-  }, []);
+    // Wait until AuthContext finishes checking authentication
+    if (authLoading) {
+      return;
+    }
+
+    // User is logged in
+    if (user) {
+      fetchCart();
+    } else {
+      // User logged out
+      resetCart();
+    }
+  }, [user, authLoading]);
 
   // =====================================================
   // ADD TO CART
   // =====================================================
 
   const addToCart = async (productId, quantity = 1) => {
-    // Prevent invalid requests
     if (!productId) {
       return {
         success: false,
@@ -109,14 +147,17 @@ export const CartProvider = ({ children }) => {
 
     const token = getToken();
 
-    if (!token) {
+    // Authentication validation
+    if (!token || !user) {
       return {
         success: false,
         message: "Please login to add products to cart",
+        requiresLogin: true,
       };
     }
 
-    // Prevent multiple simultaneous add requests
+    // Only block another cart action.
+    // cartLoading does NOT block Add to Cart.
     if (loading) {
       return {
         success: false,
@@ -137,10 +178,8 @@ export const CartProvider = ({ children }) => {
       );
 
       if (response.data.success) {
-        // Update cart immediately with backend response
         setCart(response.data.cart);
 
-        // Open cart drawer automatically
         setCartOpen(true);
 
         return {
@@ -163,6 +202,18 @@ export const CartProvider = ({ children }) => {
         error.response?.data || error.message
       );
 
+      // Token expired / invalid
+      if (
+        error.response?.status === 401 ||
+        error.response?.status === 403
+      ) {
+        return {
+          success: false,
+          message: "Your session has expired. Please login again.",
+          requiresLogin: true,
+        };
+      }
+
       return {
         success: false,
         message:
@@ -183,15 +234,19 @@ export const CartProvider = ({ children }) => {
     productId,
     quantity
   ) => {
-    if (!productId) {
+    if (!productId || quantity < 1) {
       return;
     }
 
-    if (quantity < 1) {
+    const token = getToken();
+
+    if (!token || !user) {
       return;
     }
 
     try {
+      setLoading(true);
+
       const response = await axios.put(
         `${API_URL}/api/cart/update/${productId}`,
         {
@@ -213,6 +268,8 @@ export const CartProvider = ({ children }) => {
         error.response?.data?.message ||
           "Unable to update cart"
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -225,7 +282,15 @@ export const CartProvider = ({ children }) => {
       return;
     }
 
+    const token = getToken();
+
+    if (!token || !user) {
+      return;
+    }
+
     try {
+      setLoading(true);
+
       const response = await axios.delete(
         `${API_URL}/api/cart/remove/${productId}`,
         getConfig()
@@ -239,6 +304,8 @@ export const CartProvider = ({ children }) => {
         "Remove Cart Error:",
         error.response?.data || error.message
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -247,7 +314,15 @@ export const CartProvider = ({ children }) => {
   // =====================================================
 
   const clearCart = async () => {
+    const token = getToken();
+
+    if (!token || !user) {
+      return;
+    }
+
     try {
+      setLoading(true);
+
       const response = await axios.delete(
         `${API_URL}/api/cart/clear`,
         getConfig()
@@ -261,6 +336,8 @@ export const CartProvider = ({ children }) => {
         "Clear Cart Error:",
         error.response?.data || error.message
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -285,7 +362,13 @@ export const CartProvider = ({ children }) => {
       value={{
         cart,
         cartOpen,
+
+        // Action loading
         loading,
+
+        // Fetching loading
+        cartLoading,
+
         addToCart,
         updateQuantity,
         removeFromCart,

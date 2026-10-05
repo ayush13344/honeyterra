@@ -1,10 +1,7 @@
 
 import { Link, useNavigate } from "react-router-dom";
-
 import { Eye, EyeOff } from "lucide-react";
-
 import { GoogleLogin } from "@react-oauth/google";
-
 import { useState } from "react";
 
 import "./Auth.css";
@@ -12,23 +9,21 @@ import "./Auth.css";
 import { useAuth } from "../../context/AuthContext";
 
 const API_URL =
-  import.meta.env.VITE_API_URL || "https://honeyterra.onrender.com";
+  import.meta.env.VITE_API_URL ||
+  "https://honeyterra.onrender.com";
 
 function Signup() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
-
   const [showConfirmPassword, setShowConfirmPassword] =
     useState(false);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  const [confirmPassword, setConfirmPassword] =
-    useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -36,7 +31,7 @@ function Signup() {
   const [error, setError] = useState("");
 
   // ==========================================
-  // SIGNUP
+  // NORMAL SIGNUP
   // ==========================================
 
   const handleSubmit = async (event) => {
@@ -78,10 +73,6 @@ function Signup() {
       return;
     }
 
-    // ==========================================
-    // START LOADING
-    // ==========================================
-
     setLoading(true);
 
     try {
@@ -107,7 +98,7 @@ function Signup() {
       );
 
       // ==========================================
-      // READ RESPONSE SAFELY
+      // READ RESPONSE
       // ==========================================
 
       let data = {};
@@ -156,52 +147,24 @@ function Signup() {
           "Signup successful. Logging user in..."
         );
 
-        const isAdmin =
-          user.role === "admin";
+        /*
+         * IMPORTANT:
+         *
+         * login() handles:
+         * - localStorage token
+         * - localStorage user
+         * - AuthContext user state
+         *
+         * Do NOT manually save token/user here.
+         */
 
-        // Save correct token
-        if (isAdmin) {
-          localStorage.setItem(
-            "adminToken",
-            token
-          );
-
-          localStorage.removeItem("token");
-        } else {
-          localStorage.setItem(
-            "token",
-            token
-          );
-
-          localStorage.removeItem(
-            "adminToken"
-          );
-        }
-
-        // Save correct user
-        if (isAdmin) {
-          localStorage.setItem(
-            "adminUser",
-            JSON.stringify(user)
-          );
-
-          localStorage.removeItem("user");
-        } else {
-          localStorage.setItem(
-            "user",
-            JSON.stringify(user)
-          );
-
-          localStorage.removeItem(
-            "adminUser"
-          );
-        }
-
-        // Update AuthContext
         login(user, token);
 
-        // Admin redirect
-        if (isAdmin) {
+        // ========================================
+        // ADMIN REDIRECT
+        // ========================================
+
+        if (user.role === "admin") {
           navigate("/admin", {
             replace: true,
           });
@@ -209,7 +172,10 @@ function Signup() {
           return;
         }
 
-        // Normal user redirect
+        // ========================================
+        // NORMAL USER REDIRECT
+        // ========================================
+
         navigate("/", {
           replace: true,
         });
@@ -220,6 +186,15 @@ function Signup() {
       // ==========================================
       // SUCCESS WITHOUT TOKEN
       // ==========================================
+
+      /*
+       * A normal signup should ideally always
+       * return a token.
+       *
+       * If the backend does not return one,
+       * send the user to login instead of
+       * pretending that they are authenticated.
+       */
 
       if (user) {
         localStorage.setItem(
@@ -248,7 +223,7 @@ function Signup() {
           .includes("fetch")
       ) {
         setError(
-          "Unable to connect to the server. Make sure your backend is running on port 3000."
+          "Unable to connect to the server. Please try again."
         );
 
         return;
@@ -268,7 +243,7 @@ function Signup() {
   };
 
   // ==========================================
-  // GOOGLE SIGNUP
+  // GOOGLE SIGNUP / LOGIN
   // ==========================================
 
   const handleGoogleSuccess = async (
@@ -368,59 +343,16 @@ function Signup() {
       const token = data.token;
 
       // ==========================================
-      // CHECK USER ROLE
-      // ==========================================
-
-      const isAdmin =
-        user.role === "admin";
-
-      // ==========================================
-      // SAVE TOKEN
-      // ==========================================
-
-      if (isAdmin) {
-        localStorage.setItem(
-          "adminToken",
-          token
-        );
-
-        localStorage.removeItem("token");
-      } else {
-        localStorage.setItem(
-          "token",
-          token
-        );
-
-        localStorage.removeItem(
-          "adminToken"
-        );
-      }
-
-      // ==========================================
-      // SAVE USER
-      // ==========================================
-
-      if (isAdmin) {
-        localStorage.setItem(
-          "adminUser",
-          JSON.stringify(user)
-        );
-
-        localStorage.removeItem("user");
-      } else {
-        localStorage.setItem(
-          "user",
-          JSON.stringify(user)
-        );
-
-        localStorage.removeItem(
-          "adminUser"
-        );
-      }
-
-      // ==========================================
       // UPDATE AUTH CONTEXT
       // ==========================================
+
+      /*
+       * login() handles:
+       * - token
+       * - user
+       * - AuthContext state
+       * - admin/user localStorage separation
+       */
 
       login(user, token);
 
@@ -428,7 +360,7 @@ function Signup() {
       // ADMIN REDIRECT
       // ==========================================
 
-      if (isAdmin) {
+      if (user.role === "admin") {
         console.log(
           "Google admin signup/login detected"
         );
@@ -547,9 +479,7 @@ function Signup() {
                 autoComplete="name"
                 value={name}
                 onChange={(event) =>
-                  setName(
-                    event.target.value
-                  )
+                  setName(event.target.value)
                 }
                 disabled={
                   loading ||
@@ -575,9 +505,7 @@ function Signup() {
                 autoComplete="email"
                 value={email}
                 onChange={(event) =>
-                  setEmail(
-                    event.target.value
-                  )
+                  setEmail(event.target.value)
                 }
                 disabled={
                   loading ||
@@ -608,9 +536,7 @@ function Signup() {
                   autoComplete="new-password"
                   value={password}
                   onChange={(event) =>
-                    setPassword(
-                      event.target.value
-                    )
+                    setPassword(event.target.value)
                   }
                   disabled={
                     loading ||
@@ -790,4 +716,3 @@ function Signup() {
 }
 
 export default Signup;
-
