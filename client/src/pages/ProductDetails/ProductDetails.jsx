@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import {
   ArrowLeft,
@@ -18,6 +17,7 @@ import {
   useParams,
 } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
+import { useAuth } from "../../context/AuthContext";
 import "./ProductDetails.css";
 import "../../components/Reviews/Reviews.css";
 
@@ -28,6 +28,15 @@ const API_URL =
 function ProductDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+
+  // =====================================================
+  // AUTH
+  // =====================================================
+
+  const {
+    user,
+    loading: authLoading,
+  } = useAuth();
 
   // =====================================================
   // CART
@@ -195,7 +204,7 @@ function ProductDetails() {
     setReviewError("");
     setReviewSuccess("");
 
-    if (!token) {
+    if (!token || !user) {
       setReviewError(
         "Please login to write a review."
       );
@@ -262,19 +271,37 @@ function ProductDetails() {
   // =====================================================
 
   const handleAddToCart = async () => {
-    // ===================================================
-    // LOGIN VALIDATION
-    // ===================================================
+    // Wait until AuthContext has finished checking
+    // the current login session.
+    if (authLoading) {
+      console.log(
+        "Authentication is still loading..."
+      );
 
-    const token = getToken();
+      return;
+    }
 
-    if (!token) {
+    // AuthContext is the primary source of truth.
+    if (!user) {
       console.log(
         "User is not logged in. Redirecting to login."
       );
 
-      // Preserve the current product page
-      // so the user can return here after login.
+      navigate(
+        `/login?redirect=/product/${id}`
+      );
+
+      return;
+    }
+
+    // Make sure the token also exists.
+    const token = getToken();
+
+    if (!token) {
+      console.log(
+        "User exists but token is missing. Redirecting to login."
+      );
+
       navigate(
         `/login?redirect=/product/${id}`
       );
@@ -331,6 +358,10 @@ function ProductDetails() {
     // ===================================================
 
     if (cartLoading) {
+      console.log(
+        "Cart request already in progress."
+      );
+
       return;
     }
 
@@ -341,8 +372,13 @@ function ProductDetails() {
     console.log(
       "Adding product to cart:",
       {
-        productId: product._id,
-        productName: product.name,
+        userId:
+          user._id ||
+          user.id,
+        productId:
+          product._id,
+        productName:
+          product.name,
         quantity,
       }
     );
@@ -352,6 +388,23 @@ function ProductDetails() {
         product._id,
         quantity
       );
+
+      console.log(
+        "Add to cart result:",
+        result
+      );
+
+      if (result?.requiresLogin) {
+        console.log(
+          "CartContext requires login."
+        );
+
+        navigate(
+          `/login?redirect=/product/${id}`
+        );
+
+        return;
+      }
 
       if (!result?.success) {
         console.error(
@@ -364,7 +417,7 @@ function ProductDetails() {
       }
 
       console.log(
-        "Product added to cart successfully"
+        "Product added to cart successfully."
       );
     } catch (err) {
       console.error(
@@ -442,7 +495,7 @@ function ProductDetails() {
 
     const token = getToken();
 
-    if (!token) {
+    if (!token || !user) {
       setReviewError(
         "Please login to write a review."
       );
@@ -504,10 +557,13 @@ function ProductDetails() {
       console.log(
         "Submitting review:",
         {
-          productId: product._id,
+          productId:
+            product._id,
           rating,
-          comment: reviewText.trim(),
-          hasImage: !!reviewImage,
+          comment:
+            reviewText.trim(),
+          hasImage:
+            !!reviewImage,
         }
       );
 
@@ -583,7 +639,7 @@ function ProductDetails() {
   ) => {
     const token = getToken();
 
-    if (!token) {
+    if (!token || !user) {
       setReviewError(
         "Please login first."
       );
@@ -642,7 +698,9 @@ function ProductDetails() {
       ? reviews.reduce(
           (total, review) =>
             total +
-            Number(review.rating || 0),
+            Number(
+              review.rating || 0
+            ),
           0
         ) / totalReviews
       : 0;
@@ -650,7 +708,8 @@ function ProductDetails() {
   const getRatingCount = (star) => {
     return reviews.filter(
       (review) =>
-        Number(review.rating) === star
+        Number(review.rating) ===
+        star
     ).length;
   };
 
@@ -744,7 +803,10 @@ function ProductDetails() {
       review.user?.id ||
       review.user;
 
-    if (!currentUserId || !reviewUserId) {
+    if (
+      !currentUserId ||
+      !reviewUserId
+    ) {
       return false;
     }
 
@@ -820,16 +882,20 @@ function ProductDetails() {
   // PRODUCT IMAGES
   // =====================================================
 
-  const productImages = Array.isArray(images)
-    ? images.filter(
-        (image) =>
-          typeof image === "string" &&
-          image.trim() !== ""
-      )
-    : [];
+  const productImages =
+    Array.isArray(images)
+      ? images.filter(
+          (image) =>
+            typeof image ===
+              "string" &&
+            image.trim() !== ""
+        )
+      : [];
 
   const productImage =
-    productImages[selectedImage] ||
+    productImages[
+      selectedImage
+    ] ||
     productImages[0] ||
     null;
 
@@ -841,9 +907,13 @@ function ProductDetails() {
     Number(compareAtPrice) >
     Number(price)
       ? Math.round(
-          ((Number(compareAtPrice) -
+          ((Number(
+            compareAtPrice
+          ) -
             Number(price)) /
-            Number(compareAtPrice)) *
+            Number(
+              compareAtPrice
+            )) *
             100
         )
       : 0;
@@ -903,16 +973,21 @@ function ProductDetails() {
 
               </div>
 
-              {productImages.length > 1 && (
+              {productImages.length >
+                1 && (
                 <div className="product-details-thumbnails">
 
                   {productImages.map(
-                    (image, index) => (
+                    (
+                      image,
+                      index
+                    ) => (
                       <button
                         key={`${image}-${index}`}
                         type="button"
                         className={`product-details-thumbnail ${
-                          selectedImage === index
+                          selectedImage ===
+                          index
                             ? "active"
                             : ""
                         }`}
@@ -925,7 +1000,8 @@ function ProductDetails() {
                         <img
                           src={image}
                           alt={`${name} ${
-                            index + 1
+                            index +
+                            1
                           }`}
                         />
                       </button>
@@ -945,7 +1021,9 @@ function ProductDetails() {
                 {category}
               </span>
 
-              <h1 className="product-details-name">{name}</h1>
+              <h1 className="product-details-name">
+                {name}
+              </h1>
 
               {description && (
                 <p className="product-details-description">
@@ -979,7 +1057,8 @@ function ProductDetails() {
                 </div>
 
                 <strong>
-                  {averageRating > 0
+                  {averageRating >
+                  0
                     ? averageRating.toFixed(
                         1
                       )
@@ -988,7 +1067,8 @@ function ProductDetails() {
 
                 <span>
                   ({totalReviews}{" "}
-                  {totalReviews === 1
+                  {totalReviews ===
+                  1
                     ? "review"
                     : "reviews"})
                 </span>
@@ -1010,7 +1090,10 @@ function ProductDetails() {
 
                 {Number(
                   compareAtPrice
-                ) > Number(price) && (
+                ) >
+                  Number(
+                    price
+                  ) && (
                   <span className="product-details-old-price">
                     ₹
                     {Number(
@@ -1021,7 +1104,8 @@ function ProductDetails() {
                   </span>
                 )}
 
-                {discount > 0 && (
+                {discount >
+                  0 && (
                   <span className="product-details-save">
                     Save {discount}%
                   </span>
@@ -1066,7 +1150,8 @@ function ProductDetails() {
                         decreaseQuantity
                       }
                       disabled={
-                        quantity <= 1 ||
+                        quantity <=
+                          1 ||
                         cartLoading
                       }
                     >
@@ -1083,7 +1168,8 @@ function ProductDetails() {
                         increaseQuantity
                       }
                       disabled={
-                        quantity >= stock ||
+                        quantity >=
+                          stock ||
                         cartLoading
                       }
                     >
@@ -1105,13 +1191,16 @@ function ProductDetails() {
                 }
                 disabled={
                   stock <= 0 ||
-                  cartLoading
+                  cartLoading ||
+                  authLoading
                 }
               >
                 <ShoppingCart size={19} />
 
                 {stock <= 0
                   ? "Out of Stock"
+                  : authLoading
+                  ? "Checking..."
                   : cartLoading
                   ? "Adding..."
                   : "Add to Cart"}
@@ -1200,7 +1289,8 @@ function ProductDetails() {
               />
 
               <strong>
-                {averageRating > 0
+                {averageRating >
+                0
                   ? averageRating.toFixed(
                       1
                     )
@@ -1209,7 +1299,8 @@ function ProductDetails() {
 
               <span>
                 {totalReviews}{" "}
-                {totalReviews === 1
+                {totalReviews ===
+                1
                   ? "Review"
                   : "Reviews"}
               </span>
@@ -1225,7 +1316,8 @@ function ProductDetails() {
             <div className="reviews-average">
 
               <strong>
-                {averageRating > 0
+                {averageRating >
+                0
                   ? averageRating.toFixed(
                       1
                     )
@@ -1255,7 +1347,8 @@ function ProductDetails() {
 
               <span>
                 Based on {totalReviews}{" "}
-                {totalReviews === 1
+                {totalReviews ===
+                1
                   ? "review"
                   : "reviews"}
               </span>
@@ -1373,7 +1466,8 @@ function ProductDetails() {
 
               <span>
                 {totalReviews}{" "}
-                {totalReviews === 1
+                {totalReviews ===
+                1
                   ? "review"
                   : "reviews"}
               </span>
@@ -1390,7 +1484,8 @@ function ProductDetails() {
                 </p>
 
               </div>
-            ) : reviews.length === 0 ? (
+            ) : reviews.length ===
+              0 ? (
               <div className="no-reviews">
 
                 <div className="no-reviews-icon">
@@ -1414,7 +1509,9 @@ function ProductDetails() {
                   (review) => (
                     <article
                       className="review-card"
-                      key={review._id}
+                      key={
+                        review._id
+                      }
                     >
 
                       <div className="review-card-top">
@@ -1425,7 +1522,9 @@ function ProductDetails() {
                             {getReviewUserName(
                               review
                             )
-                              ?.charAt(0)
+                              ?.charAt(
+                                0
+                              )
                               ?.toUpperCase() ||
                               "C"}
                           </div>
@@ -1453,7 +1552,9 @@ function ProductDetails() {
                           {[1, 2, 3, 4, 5].map(
                             (star) => (
                               <Star
-                                key={star}
+                                key={
+                                  star
+                                }
                                 size={15}
                                 fill={
                                   star <=
@@ -1487,7 +1588,9 @@ function ProductDetails() {
                       {review.image && (
                         <div className="review-card-image">
                           <img
-                            src={review.image}
+                            src={
+                              review.image
+                            }
                             alt="Customer review"
                           />
                         </div>
