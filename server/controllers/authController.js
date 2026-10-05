@@ -1,9 +1,7 @@
+
 import User from "../models/User.js";
-
 import generateToken from "../utils/generateToken.js";
-
 import jwt from "jsonwebtoken";
-
 import { OAuth2Client } from "google-auth-library";
 
 // ==========================================
@@ -105,7 +103,17 @@ const registerUser = async (req, res) => {
     // GENERATE TOKEN
     // ==========================================
 
-    const token = generateToken(user._id);
+    // IMPORTANT:
+    // generateToken now creates a JWT containing:
+    // id, _id and role.
+    //
+    // This matches authMiddleware.js which reads:
+    // decoded.id
+
+    const token = generateToken(
+      user._id,
+      user.role
+    );
 
     // ==========================================
     // RESPONSE
@@ -244,9 +252,7 @@ const loginUser = async (req, res) => {
     // ==========================================
 
     const isPasswordCorrect =
-      await user.comparePassword(
-        password
-      );
+      await user.comparePassword(password);
 
     if (!isPasswordCorrect) {
       return res.status(401).json({
