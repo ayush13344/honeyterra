@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -24,7 +25,6 @@ const API_URL = "https://honeyterra.onrender.com";
 
 const loadRazorpayScript = () => {
   return new Promise((resolve) => {
-    // Already loaded
     if (window.Razorpay) {
       console.log("Razorpay already loaded");
       resolve(true);
@@ -366,6 +366,9 @@ const Checkout = () => {
             address:
               formData.address.trim(),
 
+            landmark:
+              formData.landmark.trim(),
+
             city:
               formData.city.trim(),
 
@@ -460,7 +463,7 @@ const Checkout = () => {
       // ==========================================
 
       const options = {
-        key: key,
+        key,
 
         amount: Number(amount),
 
@@ -489,6 +492,9 @@ const Checkout = () => {
         notes: {
           address:
             formData.address.trim(),
+
+          landmark:
+            formData.landmark.trim(),
 
           city:
             formData.city.trim(),
@@ -519,7 +525,7 @@ const Checkout = () => {
         },
 
         // ==========================================
-        // SUCCESS
+        // PAYMENT SUCCESS
         // ==========================================
 
         handler: async (
@@ -548,11 +554,11 @@ const Checkout = () => {
 
             if (
               !paymentResponse
-                .razorpay_payment_id ||
+                ?.razorpay_payment_id ||
               !paymentResponse
-                .razorpay_order_id ||
+                ?.razorpay_order_id ||
               !paymentResponse
-                .razorpay_signature
+                ?.razorpay_signature
             ) {
               throw new Error(
                 "Incomplete Razorpay payment response."
@@ -596,20 +602,75 @@ const Checkout = () => {
               verifyResponse.data
             );
 
+            // ==========================================
+            // PAYMENT VERIFIED
+            // ==========================================
+
             if (
-              verifyResponse.data.success
+              verifyResponse.data?.success
             ) {
-              alert(
-                "Payment successful! Your order has been placed."
+              /*
+                The backend should ideally return
+                the HoneyTerra/MongoDB order ID.
+
+                We check several possible response
+                formats so the frontend works with
+                different backend response structures.
+              */
+
+              const confirmedOrderId =
+                verifyResponse.data?.orderId ||
+                verifyResponse.data?.order?._id ||
+                verifyResponse.data?.order?.id ||
+                verifyResponse.data?.data?.orderId ||
+                verifyResponse.data?.data?.order?._id ||
+                verifyResponse.data?.data?.order?.id;
+
+              /*
+                Save the order ID so that the
+                confirmation page can still show it
+                after a page refresh.
+              */
+
+              if (confirmedOrderId) {
+                localStorage.setItem(
+                  "lastOrderId",
+                  String(confirmedOrderId)
+                );
+              }
+
+              console.log(
+                "Confirmed order ID:",
+                confirmedOrderId
               );
 
-              navigate("/");
-            } else {
-              alert(
-                verifyResponse.data.message ||
-                  "Payment verification failed."
+              // ==========================================
+              // GO TO ORDER CONFIRMATION PAGE
+              // ==========================================
+
+              navigate(
+                "/order-confirmation",
+                {
+                  replace: true,
+
+                  state: {
+                    orderId:
+                      confirmedOrderId || null,
+                  },
+                }
               );
+
+              return;
             }
+
+            // ==========================================
+            // VERIFICATION FAILED
+            // ==========================================
+
+            alert(
+              verifyResponse.data?.message ||
+                "Payment verification failed."
+            );
           } catch (error) {
             console.error(
               "Payment verification error:",
@@ -620,6 +681,10 @@ const Checkout = () => {
               "Server response:",
               error.response?.data
             );
+
+            // ==========================================
+            // SESSION EXPIRED
+            // ==========================================
 
             if (
               error.response?.status ===
@@ -641,6 +706,10 @@ const Checkout = () => {
 
               return;
             }
+
+            // ==========================================
+            // OTHER ERROR
+            // ==========================================
 
             alert(
               error.response?.data?.message ||
@@ -687,7 +756,7 @@ const Checkout = () => {
           );
 
           console.error(
-            response.error
+            response?.error
           );
 
           console.error(
@@ -695,7 +764,7 @@ const Checkout = () => {
           );
 
           alert(
-            response.error?.description ||
+            response?.error?.description ||
               "Payment failed. Please try again."
           );
 
@@ -766,8 +835,6 @@ const Checkout = () => {
           "Unable to start Razorpay payment."
       );
     } finally {
-      // Do NOT leave button disabled
-      // if an error happens before popup.
       setIsSubmitting(false);
     }
   };
@@ -806,6 +873,9 @@ const Checkout = () => {
             address:
               formData.address.trim(),
 
+            landmark:
+              formData.landmark.trim(),
+
             city:
               formData.city.trim(),
 
@@ -831,15 +901,33 @@ const Checkout = () => {
         response.data
       );
 
-      if (response.data.success) {
-        alert(
-          "Order placed successfully!"
-        );
+      if (response.data?.success) {
+        const confirmedOrderId =
+          response.data?.orderId ||
+          response.data?.order?._id ||
+          response.data?.order?.id;
 
-        navigate("/");
+        if (confirmedOrderId) {
+          localStorage.setItem(
+            "lastOrderId",
+            String(confirmedOrderId)
+          );
+        }
+
+        navigate(
+          "/order-confirmation",
+          {
+            replace: true,
+
+            state: {
+              orderId:
+                confirmedOrderId || null,
+            },
+          }
+        );
       } else {
         alert(
-          response.data.message ||
+          response.data?.message ||
             "Failed to place order."
         );
       }
@@ -1147,6 +1235,7 @@ const Checkout = () => {
                     name="mobile"
                     type="tel"
                     maxLength="10"
+                    inputMode="numeric"
                     value={
                       formData.mobile
                     }
@@ -1374,9 +1463,6 @@ const Checkout = () => {
                 aria-disabled="true"
                 className="payment-option payment-option-disabled"
               >
-                  
-                
-              
 
                 <div className="payment-radio">
 
@@ -1405,8 +1491,6 @@ const Checkout = () => {
                   </span>
 
                 </div>
-
-                
 
               </button>
 
@@ -1686,9 +1770,7 @@ const Checkout = () => {
 
           </div>
 
-          {/* ==========================================
-              DESKTOP PAYMENT BUTTON
-          ========================================== */}
+          {/* DESKTOP PAYMENT BUTTON */}
 
           <button
             type="submit"

@@ -26,7 +26,7 @@ import OrderDetails from "../admin/pages/Orders/OrderDetails";
 import Customers from "../admin/pages/Customers/Customers";
 import Settings from "../admin/pages/Settings/Settings";
 import AddProduct from "../admin/pages/Products/AddProduct";
-
+import OrderConfirmation from "../pages/OrderConfirmation/OrderConfirmation";
 import UProducts from "../pages/Products/UProducts";
 import ProductDetails from "../pages/ProductDetails/ProductDetails";
 import MyOrders from "../pages/MyOrders/MyOrders";
@@ -50,6 +50,8 @@ function AppRoutes() {
         <Route path="/shop/wrap" element={<HoneycombWrap />} />
 
         <Route path="/shop/ash-tray" element={<GelAshTray />} />
+
+        <Route path="/order-confirmation" element={<OrderConfirmation />}/>
 
         <Route path="/products/:id" element={<ProductDetails />} />
 
