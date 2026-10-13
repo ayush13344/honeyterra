@@ -1,4 +1,3 @@
-
 import express from "express";
 import cors from "cors";
 import "dotenv/config";
@@ -22,61 +21,73 @@ import { verifyEmailConfiguration } from "./config/emailService.js";
 import { startAbandonedCartJob } from "./jobs/abandonedCartJob.js";
 
 const app = express();
-
 const PORT = process.env.PORT || 3000;
 
 // ==========================================
-// CORS
+// CORS CONFIGURATION
 // ==========================================
 
 const allowedOrigins = [
   // Local development
   "http://localhost:5173",
+  "http://localhost:3000",
 
-  // Current Vercel deployment
+  // Vercel deployments
   "https://honeyterra-rm7kdyul4-nagpalayush65-gmailcoms-projects.vercel.app",
-
-  // Vercel project domain
   "https://honeyterra.vercel.app",
 
-  // Production custom domain
+  // Production domains
   "https://honeyterra.com",
   "https://www.honeyterra.store",
+  "https://honeyterra.store",
 ];
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // Allow requests without an Origin header
-      // such as Postman or server-to-server requests
-      if (!origin) {
-        return callback(null, true);
-      }
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests without an Origin header, such as server-to-server requests.
+    if (!origin) {
+      return callback(null, true);
+    }
 
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
 
-      console.log("❌ CORS blocked origin:", origin);
+    console.error("CORS blocked origin:", origin);
 
-      return callback(
-        new Error(`CORS blocked origin: ${origin}`)
-      );
-    },
+    return callback(new Error(`CORS blocked origin: ${origin}`));
+  },
 
-    credentials: true,
-  })
-);
+  methods: [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+  ],
+
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+  ],
+
+  credentials: true,
+};
+
+// Register CORS before all API routes.
+// This also handles browser preflight requests.
+app.use(cors(corsOptions));
 
 // ==========================================
-// MIDDLEWARE
+// GENERAL MIDDLEWARE
 // ==========================================
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // ==========================================
-// ROUTES
+// API ROUTES
 // ==========================================
 
 app.use("/api/auth", authRoutes);
@@ -93,11 +104,42 @@ app.use("/api/shiprocket", shiprocketRoutes);
 app.use("/api/analytics", analyticsRoutes);
 
 // ==========================================
-// ROOT
+// ROOT / HEALTH CHECK
 // ==========================================
 
 app.get("/", (req, res) => {
-  res.send("server is live");
+  res.status(200).send("server is live");
+});
+
+// ==========================================
+// NOT FOUND HANDLER
+// ==========================================
+
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Route not found: ${req.method} ${req.originalUrl}`,
+  });
+});
+
+// ==========================================
+// ERROR HANDLER
+// ==========================================
+
+app.use((err, req, res, next) => {
+  console.error("Express error:", err.message);
+
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  res.status(err.status || 500).json({
+    success: false,
+    message:
+      process.env.NODE_ENV === "production"
+        ? "An internal server error occurred"
+        : err.message,
+  });
 });
 
 // ==========================================
@@ -106,37 +148,22 @@ app.get("/", (req, res) => {
 
 const startServer = async () => {
   try {
-    // ==========================================
-    // CONNECT MONGODB
-    // ==========================================
-
+    // Connect to MongoDB
     await connectDB();
+    console.log("MongoDB connected");
 
-    console.log("✅ MongoDB connected");
-
-    // ==========================================
-    // EMAIL SERVICE
-    // ==========================================
-
+    // Verify email configuration
     await verifyEmailConfiguration();
 
-    // ==========================================
-    // ABANDONED CART JOB
-    // ==========================================
-
+    // Start abandoned-cart background job
     startAbandonedCartJob();
 
-    // ==========================================
-    // START EXPRESS SERVER
-    // ==========================================
-
+    // Start Express server
     app.listen(PORT, () => {
-      console.log(`🚀 Server is running on port ${PORT}`);
-      console.log(`🌐 Server running on port ${PORT}`);
+      console.log(`Server is running on port ${PORT}`);
     });
   } catch (error) {
-    console.error("❌ Server startup error:", error);
-
+    console.error("Server startup error:", error);
     process.exit(1);
   }
 };
