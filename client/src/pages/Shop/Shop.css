@@ -838,3 +838,62 @@
   }
 
 }
+
+/* =========================================================
+   SKELETON LOADING
+========================================================= */
+
+.shop-skeleton-card {
+  background: #ffffff;
+  border: 1px solid #ede8de;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+}
+
+.shop-skeleton-image {
+  height: 280px;
+  background: linear-gradient(90deg, #f0eae1 25%, #e8e0d4 50%, #f0eae1 75%);
+  background-size: 200% 100%;
+  animation: shop-shimmer 1.5s infinite;
+}
+
+.shop-skeleton-content {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.shop-skeleton-line {
+  height: 14px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #f0eae1 25%, #e8e0d4 50%, #f0eae1 75%);
+  background-size: 200% 100%;
+  animation: shop-shimmer 1.5s infinite;
+}
+
+.shop-skeleton-line.short {
+  width: 35%;
+  height: 11px;
+}
+
+.shop-skeleton-line.title {
+  width: 85%;
+  height: 18px;
+}
+
+.shop-skeleton-line.price {
+  width: 45%;
+  height: 16px;
+  margin-top: 8px;
+}
+
+@keyframes shop-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}

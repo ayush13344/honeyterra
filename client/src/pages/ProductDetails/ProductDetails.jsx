@@ -17,7 +17,11 @@ import {
   useParams,
 } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
+<<<<<<< HEAD
 import { useAuth } from "../../context/AuthContext";
+=======
+import { useProducts } from "../../context/ProductContext";
+>>>>>>> 8c968f7 (FInal commit)
 import "./ProductDetails.css";
 import "../../components/Reviews/Reviews.css";
 
@@ -28,6 +32,9 @@ const API_URL =
 function ProductDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { getProduct } = useProducts();
+
+  const cachedProduct = getProduct(id);
 
   // =====================================================
   // AUTH
@@ -47,8 +54,8 @@ function ProductDetails() {
     loading: cartLoading,
   } = useCart();
 
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [product, setProduct] = useState(cachedProduct);
+  const [loading, setLoading] = useState(!cachedProduct);
   const [error, setError] = useState("");
 
   const [quantity, setQuantity] = useState(1);
@@ -93,9 +100,17 @@ function ProductDetails() {
   // =====================================================
 
   useEffect(() => {
+    const itemInCache = getProduct(id);
+    if (itemInCache) {
+      setProduct(itemInCache);
+      setLoading(false);
+    }
+
     const fetchProduct = async () => {
       try {
-        setLoading(true);
+        if (!itemInCache && !product) {
+          setLoading(true);
+        }
         setError("");
 
         const response = await fetch(
@@ -106,29 +121,28 @@ function ProductDetails() {
 
         console.log("Product details:", data);
 
-        if (!response.ok) {
-          throw new Error(
-            data.message || "Product not found"
-          );
-        }
-
-        if (!data.success || !data.product) {
-          throw new Error("Product not found");
+        if (!response.ok || !data.success || !data.product) {
+          if (!itemInCache && !product) {
+            throw new Error(
+              data?.message || "Product not found"
+            );
+          }
+          return;
         }
 
         setProduct(data.product);
-        setSelectedImage(0);
-        setQuantity(1);
       } catch (err) {
         console.error(
           "Product details error:",
           err
         );
 
-        setError(
-          err.message ||
-            "Unable to load this product."
-        );
+        if (!itemInCache && !product) {
+          setError(
+            err.message ||
+              "Unable to load this product."
+          );
+        }
       } finally {
         setLoading(false);
       }
@@ -137,7 +151,7 @@ function ProductDetails() {
     if (id) {
       fetchProduct();
     }
-  }, [id]);
+  }, [id, getProduct]);
 
   // =====================================================
   // FETCH REVIEWS

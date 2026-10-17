@@ -10,6 +10,7 @@ import "./App.css";
 
 import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext";
+import { ProductProvider } from "./context/ProductContext";
 
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
@@ -21,7 +22,9 @@ createRoot(document.getElementById("root")).render(
       >
         <AuthProvider>
           <CartProvider>
-            <App />
+            <ProductProvider>
+              <App />
+            </ProductProvider>
           </CartProvider>
         </AuthProvider>
       </GoogleOAuthProvider>

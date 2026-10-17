@@ -104,7 +104,11 @@ app.use("/api/shiprocket", shiprocketRoutes);
 app.use("/api/analytics", analyticsRoutes);
 
 // ==========================================
+<<<<<<< HEAD
 // ROOT / HEALTH CHECK
+=======
+// ROOT & HEALTH
+>>>>>>> 8c968f7 (FInal commit)
 // ==========================================
 
 app.get("/", (req, res) => {
@@ -142,6 +146,14 @@ app.use((err, req, res, next) => {
   });
 });
 
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // ==========================================
 // START SERVER
 // ==========================================
@@ -152,6 +164,7 @@ const startServer = async () => {
     await connectDB();
     console.log("MongoDB connected");
 
+<<<<<<< HEAD
     // Verify email configuration
     await verifyEmailConfiguration();
 
@@ -159,9 +172,33 @@ const startServer = async () => {
     startAbandonedCartJob();
 
     // Start Express server
+=======
+    console.log("✅ MongoDB connected");
+
+    // ==========================================
+    // START EXPRESS SERVER IMMEDIATELY
+    // ==========================================
+    // Start listening right away so Render / hosting platforms detect
+    // the service is healthy and immediately route requests.
+
+>>>>>>> 8c968f7 (FInal commit)
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
+
+    // ==========================================
+    // BACKGROUND INITIALIZATION (NON-BLOCKING)
+    // ==========================================
+
+    // Verify email service asynchronously without delaying server availability
+    verifyEmailConfiguration().catch((err) => {
+      console.error("❌ Email service initialization error:", err?.message || err);
+    });
+
+    // Defer initial abandoned cart scan by 10 seconds so cold start traffic gets full DB bandwidth
+    setTimeout(() => {
+      startAbandonedCartJob();
+    }, 10000);
   } catch (error) {
     console.error("Server startup error:", error);
     process.exit(1);
@@ -169,3 +206,4 @@ const startServer = async () => {
 };
 
 startServer();
+

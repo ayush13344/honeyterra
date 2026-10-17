@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Leaf,
   ShieldCheck,
@@ -6,14 +6,12 @@ import {
 } from "lucide-react";
 
 import ProductCard from "../../components/ProductCard/ProductCard";
+import { useProducts } from "../../context/ProductContext";
 
 import "./Shop.css";
 
-const API_URL =
-  import.meta.env.VITE_API_URL ||
-  "https://honeyterra.onrender.com";
-
 function Shop() {
+<<<<<<< HEAD
   const [products, setProducts] = useState([]);
   const [activeFilter, setActiveFilter] = useState("all");
   const [loading, setLoading] = useState(true);
@@ -61,6 +59,10 @@ function Shop() {
 
     fetchProducts();
   }, []);
+=======
+  const { products, loading, error, refreshProducts } = useProducts();
+  const [activeFilter, setActiveFilter] = useState("all");
+>>>>>>> 8c968f7 (FInal commit)
 
   // ==========================================
   // FILTER PRODUCTS
@@ -107,7 +109,7 @@ function Shop() {
   // ==========================================
 
   const handleRetry = () => {
-    window.location.reload();
+    refreshProducts();
   };
 
   return (
@@ -234,18 +236,21 @@ function Shop() {
           </div>
 
           {/* ========================================
-              LOADING
+              LOADING (SKELETONS)
           ======================================== */}
 
           {loading ? (
-            <div className="shop-loading">
-
-              <div className="shop-loading-spinner"></div>
-
-              <p>
-                Loading our collection...
-              </p>
-
+            <div className="shop-product-grid">
+              {[1, 2, 3, 4].map((n) => (
+                <div key={n} className="shop-skeleton-card">
+                  <div className="shop-skeleton-image" />
+                  <div className="shop-skeleton-content">
+                    <div className="shop-skeleton-line short" />
+                    <div className="shop-skeleton-line title" />
+                    <div className="shop-skeleton-line price" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : error ? (
 
@@ -310,6 +315,7 @@ function Shop() {
 
             <div className="shop-product-grid">
 
+<<<<<<< HEAD
               {filteredProducts.map(
                 (product, index) => (
                   <ProductCard
@@ -319,6 +325,14 @@ function Shop() {
                   />
                 )
               )}
+=======
+              {filteredProducts.map((product) => (
+                <ProductCard
+                  key={product._id}
+                  product={product}
+                />
+              ))}
+>>>>>>> 8c968f7 (FInal commit)
 
             </div>
           )}

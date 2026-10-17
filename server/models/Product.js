@@ -182,6 +182,13 @@ productSchema.pre("save", function () {
 });
 
 // ==========================================
+// INDEXES
+// ==========================================
+
+productSchema.index({ isActive: 1, createdAt: -1 });
+productSchema.index({ isActive: 1, category: 1 });
+
+// ==========================================
 // PRODUCT MODEL
 // ==========================================
 
