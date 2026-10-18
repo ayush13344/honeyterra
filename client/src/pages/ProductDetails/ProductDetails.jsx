@@ -19,6 +19,7 @@ import {
 import { useCart } from "../../context/CartContext";
 import { useAuth } from "../../context/AuthContext";
 import { useProducts } from "../../context/ProductContext";
+import { optimizeImage } from "../../utils/imageOptimizer";
 import "./ProductDetails.css";
 import "../../components/Reviews/Reviews.css";
 
@@ -968,9 +969,11 @@ function ProductDetails() {
 
                 {productImage ? (
                   <img
-                    src={productImage}
+                    src={optimizeImage(productImage, { width: 1000 })}
                     alt={name}
                     className="product-details-image"
+                    loading="eager"
+                    decoding="async"
                   />
                 ) : (
                   <div className="product-details-image-placeholder">
@@ -1009,11 +1012,13 @@ function ProductDetails() {
                         }
                       >
                         <img
-                          src={image}
+                          src={optimizeImage(image, { width: 160 })}
                           alt={`${name} ${
                             index +
                             1
                           }`}
+                          loading="lazy"
+                          decoding="async"
                         />
                       </button>
                     )
