@@ -17,11 +17,8 @@ import {
   useParams,
 } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
-<<<<<<< HEAD
 import { useAuth } from "../../context/AuthContext";
-=======
 import { useProducts } from "../../context/ProductContext";
->>>>>>> 8c968f7 (FInal commit)
 import "./ProductDetails.css";
 import "../../components/Reviews/Reviews.css";
 
