@@ -227,7 +227,8 @@ function Home() {
           ref={videoRef}
           className="honeyterra-intro-video"
           src="/videos/video.mp4"
-          preload="auto"
+          poster="/images/honeyterra-intro.webp"
+          preload="metadata"
           loop
           playsInline
           muted={false}
@@ -318,7 +319,12 @@ function Home() {
 
       <section className="product-story ash-tray-story">
         <div className="story-image">
-          <img src="./images/gelashtray.jpeg" alt="HoneyTerra Gel Ash Tray" />
+          <img
+            src="/images/gelashtray.webp"
+            alt="HoneyTerra Gel Ash Tray"
+            loading="lazy"
+            decoding="async"
+          />
         </div>
 
         <div className="story-content">
@@ -480,7 +486,12 @@ function Home() {
         </div>
 
         <div className="story-image">
-          <img src="./images/honeycomb.png" alt="Honeycomb Wrap" />
+          <img
+            src="/images/honeycomb.webp"
+            alt="Honeycomb Wrap"
+            loading="lazy"
+            decoding="async"
+          />
         </div>
       </section>
 

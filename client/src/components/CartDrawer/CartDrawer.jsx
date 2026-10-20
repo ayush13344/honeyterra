@@ -8,6 +8,7 @@ import {
 
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
+import { optimizeImage } from "../../utils/imageOptimizer";
 
 import "./CartDrawer.css";
 
@@ -204,8 +205,10 @@ function CartDrawer() {
                     <div className="cart-item-image">
                       {image ? (
                         <img
-                          src={image}
+                          src={optimizeImage(image, { width: 150 })}
                           alt={product.name || "Product"}
+                          loading="lazy"
+                          decoding="async"
                         />
                       ) : (
                         <div>No Image</div>

@@ -9,7 +9,7 @@ const products = [
     number: "01",
     name: "Gel Ash Tray",
     shortName: "Gel Ash Tray",
-    image: "/products/gel-ashtray.png",
+    image: "/products/gel-ashtray.webp",
     description:
       "A practical everyday ash tray designed for cleaner spaces.",
   },
@@ -18,7 +18,7 @@ const products = [
     number: "02",
     name: "Honeycomb Wrap",
     shortName: "Honeycomb Wrap",
-    image: "/products/honeycomb-wrap.png",
+    image: "/products/honeycomb-wrap.webp",
     description:
       "Flexible honeycomb protection for products that need extra care.",
   },
@@ -65,6 +65,8 @@ function ProductReveal() {
               alt={product.name}
               className="product-reveal-image"
               draggable="false"
+              loading="lazy"
+              decoding="async"
             />
           </Link>
 

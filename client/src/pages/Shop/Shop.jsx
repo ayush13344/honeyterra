@@ -11,58 +11,8 @@ import { useProducts } from "../../context/ProductContext";
 import "./Shop.css";
 
 function Shop() {
-<<<<<<< HEAD
-  const [products, setProducts] = useState([]);
-  const [activeFilter, setActiveFilter] = useState("all");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  // ==========================================
-  // FETCH PRODUCTS
-  // ==========================================
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        setError("");
-
-        const response = await fetch(
-          `${API_URL}/api/products`
-        );
-
-        if (!response.ok) {
-          throw new Error(
-            `Failed to fetch products: ${response.status}`
-          );
-        }
-
-        const data = await response.json();
-
-        console.log("Products received:", data);
-
-        const productList = Array.isArray(data)
-          ? data
-          : data.products || [];
-
-        setProducts(productList);
-      } catch (err) {
-        console.error("Product fetch error:", err);
-
-        setError(
-          "Unable to load products right now."
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, []);
-=======
   const { products, loading, error, refreshProducts } = useProducts();
   const [activeFilter, setActiveFilter] = useState("all");
->>>>>>> 8c968f7 (FInal commit)
 
   // ==========================================
   // FILTER PRODUCTS
@@ -315,7 +265,6 @@ function Shop() {
 
             <div className="shop-product-grid">
 
-<<<<<<< HEAD
               {filteredProducts.map(
                 (product, index) => (
                   <ProductCard
@@ -325,14 +274,6 @@ function Shop() {
                   />
                 )
               )}
-=======
-              {filteredProducts.map((product) => (
-                <ProductCard
-                  key={product._id}
-                  product={product}
-                />
-              ))}
->>>>>>> 8c968f7 (FInal commit)
 
             </div>
           )}

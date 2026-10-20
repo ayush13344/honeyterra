@@ -104,15 +104,19 @@ app.use("/api/shiprocket", shiprocketRoutes);
 app.use("/api/analytics", analyticsRoutes);
 
 // ==========================================
-<<<<<<< HEAD
-// ROOT / HEALTH CHECK
-=======
 // ROOT & HEALTH
->>>>>>> 8c968f7 (FInal commit)
 // ==========================================
 
 app.get("/", (req, res) => {
   res.status(200).send("server is live");
+});
+
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+  });
 });
 
 // ==========================================
@@ -146,14 +150,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.get("/api/health", (req, res) => {
-  res.status(200).json({
-    status: "ok",
-    uptime: process.uptime(),
-    timestamp: new Date().toISOString(),
-  });
-});
-
 // ==========================================
 // START SERVER
 // ==========================================
@@ -164,15 +160,6 @@ const startServer = async () => {
     await connectDB();
     console.log("MongoDB connected");
 
-<<<<<<< HEAD
-    // Verify email configuration
-    await verifyEmailConfiguration();
-
-    // Start abandoned-cart background job
-    startAbandonedCartJob();
-
-    // Start Express server
-=======
     console.log("✅ MongoDB connected");
 
     // ==========================================
@@ -180,8 +167,6 @@ const startServer = async () => {
     // ==========================================
     // Start listening right away so Render / hosting platforms detect
     // the service is healthy and immediately route requests.
-
->>>>>>> 8c968f7 (FInal commit)
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
