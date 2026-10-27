@@ -25,6 +25,8 @@ import ProductCard from "../../components/ProductCard/ProductCard.jsx";
 
 import ProductReveal from "../../components/ProductReveal/ProductReveal.jsx";
 
+import { useProducts } from "../../context/ProductContext.jsx";
+
 import "./Home.css";
 
 const useCases = [
@@ -67,7 +69,7 @@ const useCases = [
 ];
 
 function Home() {
-  const [products, setProducts] = useState([]);
+  const { products, loading: loadingProducts, error: productError } = useProducts();
 
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -81,46 +83,6 @@ function Home() {
       videoRef.current.pause();
     }
   };
-
-  const [loadingProducts, setLoadingProducts] = useState(true);
-
-  const [productError, setProductError] = useState("");
-
-  /* ==========================================
-     FETCH PRODUCTS
-  ========================================== */
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoadingProducts(true);
-
-        setProductError("");
-
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/products`,
-        );
-
-        if (response.data.success) {
-          setProducts(response.data.products || []);
-        } else {
-          setProducts([]);
-
-          setProductError("Unable to load products.");
-        }
-      } catch (error) {
-        console.error("Error fetching products:", error);
-
-        setProducts([]);
-
-        setProductError("Unable to load products right now.");
-      } finally {
-        setLoadingProducts(false);
-      }
-    };
-
-    fetchProducts();
-  }, []);
 
   /* ==========================================
      HONEYTERRA VIDEO PLAY / PAUSE
@@ -265,7 +227,8 @@ function Home() {
           ref={videoRef}
           className="honeyterra-intro-video"
           src="/videos/video.mp4"
-          preload="auto"
+          poster="/images/honeyterra-intro.webp"
+          preload="metadata"
           loop
           playsInline
           muted={false}
@@ -356,7 +319,12 @@ function Home() {
 
       <section className="product-story ash-tray-story">
         <div className="story-image">
-          <img src="./images/gelashtray.jpeg" alt="HoneyTerra Gel Ash Tray" />
+          <img
+            src="/images/gelashtray.webp"
+            alt="HoneyTerra Gel Ash Tray"
+            loading="lazy"
+            decoding="async"
+          />
         </div>
 
         <div className="story-content">
@@ -518,7 +486,12 @@ function Home() {
         </div>
 
         <div className="story-image">
-          <img src="./images/honeycomb.png" alt="Honeycomb Wrap" />
+          <img
+            src="/images/honeycomb.webp"
+            alt="Honeycomb Wrap"
+            loading="lazy"
+            decoding="async"
+          />
         </div>
       </section>
 

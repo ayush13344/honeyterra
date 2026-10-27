@@ -93,8 +93,12 @@ function About() {
             <div className="about-image-placeholder">
 
               <div className="about-image-inner">
-                <img src="./images/logo.jpg" alt="About HoneyTerra" />
-               
+                <img
+                  src="/images/logo.webp"
+                  alt="About HoneyTerra"
+                  loading="lazy"
+                  decoding="async"
+                />
               </div>
 
             </div>
@@ -280,10 +284,12 @@ function About() {
             <div className="about-product-image honeycomb-product">
 
               <div className="product-image-placeholder">
-               <img
-            src="/images/honeycomb.png"
-            alt="HoneyTerra Gel Ash Tray"
-          />
+                <img
+                  src="/images/honeycomb.webp"
+                  alt="Honeycomb Wrap"
+                  loading="lazy"
+                  decoding="async"
+                />
               </div>
 
               <span className="product-number">
@@ -324,11 +330,12 @@ function About() {
             <div className="about-product-image ashtray-product">
 
               <div className="product-image-placeholder">
-                
                 <img
-            src="/images/gelashtray.jpeg"
-            alt="HoneyTerra Gel Ash Tray"
-          />
+                  src="/images/gelashtray.webp"
+                  alt="HoneyTerra Gel Ash Tray"
+                  loading="lazy"
+                  decoding="async"
+                />
               </div>
 
               <span className="product-number">

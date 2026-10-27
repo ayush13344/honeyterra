@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { optimizeImage } from "../../utils/imageOptimizer";
 import "./ProductGallery.css";
 
 function ProductGallery({ images = [] }) {
@@ -62,8 +63,10 @@ function ProductGallery({ images = [] }) {
 
         {selectedImage?.src ? (
           <img
-            src={selectedImage.src}
+            src={optimizeImage(selectedImage.src, { width: 1000 })}
             alt={selectedImage.name || "Product image"}
+            loading="eager"
+            decoding="async"
           />
         ) : (
           <div className="gallery-placeholder">
@@ -118,11 +121,13 @@ function ProductGallery({ images = [] }) {
 
               {image.src ? (
                 <img
-                  src={image.src}
+                  src={optimizeImage(image.src, { width: 160 })}
                   alt={
                     image.name ||
                     `Product image ${index + 1}`
                   }
+                  loading="lazy"
+                  decoding="async"
                 />
               ) : (
                 <span>

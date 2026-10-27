@@ -149,7 +149,8 @@ export const getProductReviews = async (
       .populate("user", "name")
       .sort({
         createdAt: -1,
-      });
+      })
+      .lean();
 
     // ==========================================
     // CALCULATE RATING
@@ -183,6 +184,11 @@ export const getProductReviews = async (
     reviews.forEach((review) => {
       ratingBreakdown[review.rating]++;
     });
+
+    res.set(
+      "Cache-Control",
+      "public, max-age=60, s-maxage=120, stale-while-revalidate=300"
+    );
 
     return res.status(200).json({
       success: true,

@@ -1,60 +1,17 @@
 import { ArrowRight, PackageOpen } from "lucide-react";
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import ProductCard from "../../components/ProductCard/ProductCard.jsx";
+import { useProducts } from "../../context/ProductContext.jsx";
 
 import "./UProducts.css";
-import api from "../../api/axios.js";
 
 // ==========================================
 // PRODUCTS PAGE
 // ==========================================
 
 function UProducts() {
-  const [products, setProducts] = useState([]);
-
-  const [loading, setLoading] = useState(true);
-
-  const [error, setError] = useState("");
-
-  // ==========================================
-  // FETCH PRODUCTS
-  // ==========================================
-
-  useEffect(() => {
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      setError("");
-
-      const response = await api.get("/products");
-
-      if (response.data.success) {
-        setProducts(response.data.products || []);
-      } else {
-        setProducts([]);
-        setError("Unable to load products.");
-      }
-    } catch (error) {
-      console.error(
-        "Products fetch error:",
-        error.response?.data || error.message
-      );
-
-      setProducts([]);
-
-      setError(
-        error.response?.data?.message ||
-          "Unable to load products right now."
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchProducts();
-}, []);
+  const { products, loading, error } = useProducts();
 
   // ==========================================
   // CATEGORY PRODUCTS

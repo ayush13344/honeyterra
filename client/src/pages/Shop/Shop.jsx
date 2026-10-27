@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Leaf,
   ShieldCheck,
@@ -6,61 +6,13 @@ import {
 } from "lucide-react";
 
 import ProductCard from "../../components/ProductCard/ProductCard";
+import { useProducts } from "../../context/ProductContext";
 
 import "./Shop.css";
 
-const API_URL =
-  import.meta.env.VITE_API_URL ||
-  "https://honeyterra.onrender.com";
-
 function Shop() {
-  const [products, setProducts] = useState([]);
+  const { products, loading, error, refreshProducts } = useProducts();
   const [activeFilter, setActiveFilter] = useState("all");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  // ==========================================
-  // FETCH PRODUCTS
-  // ==========================================
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        setError("");
-
-        const response = await fetch(
-          `${API_URL}/api/products`
-        );
-
-        if (!response.ok) {
-          throw new Error(
-            `Failed to fetch products: ${response.status}`
-          );
-        }
-
-        const data = await response.json();
-
-        console.log("Products received:", data);
-
-        const productList = Array.isArray(data)
-          ? data
-          : data.products || [];
-
-        setProducts(productList);
-      } catch (err) {
-        console.error("Product fetch error:", err);
-
-        setError(
-          "Unable to load products right now."
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, []);
 
   // ==========================================
   // FILTER PRODUCTS
@@ -107,7 +59,7 @@ function Shop() {
   // ==========================================
 
   const handleRetry = () => {
-    window.location.reload();
+    refreshProducts();
   };
 
   return (
@@ -234,18 +186,21 @@ function Shop() {
           </div>
 
           {/* ========================================
-              LOADING
+              LOADING (SKELETONS)
           ======================================== */}
 
           {loading ? (
-            <div className="shop-loading">
-
-              <div className="shop-loading-spinner"></div>
-
-              <p>
-                Loading our collection...
-              </p>
-
+            <div className="shop-product-grid">
+              {[1, 2, 3, 4].map((n) => (
+                <div key={n} className="shop-skeleton-card">
+                  <div className="shop-skeleton-image" />
+                  <div className="shop-skeleton-content">
+                    <div className="shop-skeleton-line short" />
+                    <div className="shop-skeleton-line title" />
+                    <div className="shop-skeleton-line price" />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : error ? (
 

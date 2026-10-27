@@ -12,8 +12,11 @@ function optimizeCloudinaryImage(url, width = 600) {
     return url;
   }
 
-  // Only modify Cloudinary URLs
+  // If local image, swap .png/.jpg to .webp if applicable
   if (!url.includes("res.cloudinary.com")) {
+    if (url.startsWith("/") || url.startsWith("./")) {
+      return url.replace(/\.(png|jpe?g)$/i, ".webp");
+    }
     return url;
   }
 

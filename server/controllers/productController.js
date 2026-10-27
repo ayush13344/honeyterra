@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Product from "../models/Product.js";
 import cloudinary from "../config/cloudinary.js";
 import streamifier from "streamifier";
@@ -431,13 +432,14 @@ const getProducts = async (req, res) => {
     }
 
     // ==========================================
-    // GET PRODUCTS
+    // GET PRODUCTS (LEAN QUERY)
     // ==========================================
 
     const products = await Product.find(filter)
       .sort(sortOption)
       .skip(skip)
-      .limit(productsPerPage);
+      .limit(productsPerPage)
+      .lean();
 
     // ==========================================
     // COUNT
@@ -451,8 +453,13 @@ const getProducts = async (req, res) => {
     );
 
     // ==========================================
-    // RESPONSE
+    // CACHING HEADERS & RESPONSE
     // ==========================================
+
+    res.set(
+      "Cache-Control",
+      "public, max-age=60, s-maxage=300, stale-while-revalidate=600"
+    );
 
     return res.status(200).json({
       success: true,
@@ -494,10 +501,12 @@ const getProductById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const product = await Product.findOne({
-      _id: id,
-      isActive: true,
-    });
+    const isObjectId = mongoose.Types.ObjectId.isValid(id);
+    const query = isObjectId
+      ? { _id: id, isActive: true }
+      : { slug: id.toLowerCase().trim(), isActive: true };
+
+    const product = await Product.findOne(query).lean();
 
     if (!product) {
       return res.status(404).json({
@@ -505,6 +514,11 @@ const getProductById = async (req, res) => {
         message: "Product not found",
       });
     }
+
+    res.set(
+      "Cache-Control",
+      "public, max-age=60, s-maxage=300, stale-while-revalidate=600"
+    );
 
     return res.status(200).json({
       success: true,
