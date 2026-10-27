@@ -2,6 +2,16 @@ import React, { useState } from "react";
 import axios from "axios";
 import "./Products.css";
 
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://honeyterra.onrender.com";
+
+// ==========================================
+// GET ADMIN TOKEN
+// Login saves admin tokens under "adminToken"
+// ==========================================
+
+const getAdminToken = () => localStorage.getItem("adminToken");
+
 const AddProduct = () => {
   // ==========================================
   // FORM DATA
@@ -103,9 +113,7 @@ const AddProduct = () => {
   // ==========================================
 
   const removeVariant = (index) => {
-    setVariants((prev) =>
-      prev.filter((_, i) => i !== index)
-    );
+    setVariants((prev) => prev.filter((_, i) => i !== index));
   };
 
   // ==========================================
@@ -119,9 +127,7 @@ const AddProduct = () => {
       return;
     }
 
-    // ==========================================
     // MAX 10 IMAGES
-    // ==========================================
 
     if (images.length + selectedFiles.length > 10) {
       setMessage({
@@ -133,9 +139,7 @@ const AddProduct = () => {
       return;
     }
 
-    // ==========================================
     // ALLOWED IMAGE TYPES
-    // ==========================================
 
     const allowedTypes = [
       "image/jpeg",
@@ -145,9 +149,7 @@ const AddProduct = () => {
       "image/gif",
     ];
 
-    // ==========================================
     // VALIDATE FILES
-    // ==========================================
 
     const validFiles = [];
 
@@ -155,8 +157,7 @@ const AddProduct = () => {
       if (!allowedTypes.includes(file.type)) {
         setMessage({
           type: "error",
-          text:
-            "Only JPG, JPEG, PNG, WEBP and GIF images are allowed.",
+          text: "Only JPG, JPEG, PNG, WEBP and GIF images are allowed.",
         });
 
         continue;
@@ -179,31 +180,17 @@ const AddProduct = () => {
       return;
     }
 
-    // ==========================================
     // ADD FILES
-    // ==========================================
 
-    setImages((prev) => [
-      ...prev,
-      ...validFiles,
-    ]);
+    setImages((prev) => [...prev, ...validFiles]);
 
-    // ==========================================
     // CREATE PREVIEWS
-    // ==========================================
 
-    const newPreviews = validFiles.map((file) =>
-      URL.createObjectURL(file)
-    );
+    const newPreviews = validFiles.map((file) => URL.createObjectURL(file));
 
-    setImagePreviews((prev) => [
-      ...prev,
-      ...newPreviews,
-    ]);
+    setImagePreviews((prev) => [...prev, ...newPreviews]);
 
-    // ==========================================
     // CLEAR FILE INPUT
-    // ==========================================
 
     e.target.value = "";
 
@@ -222,13 +209,9 @@ const AddProduct = () => {
       URL.revokeObjectURL(imagePreviews[index]);
     }
 
-    setImages((prev) =>
-      prev.filter((_, i) => i !== index)
-    );
+    setImages((prev) => prev.filter((_, i) => i !== index));
 
-    setImagePreviews((prev) =>
-      prev.filter((_, i) => i !== index)
-    );
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   // ==========================================
@@ -266,10 +249,7 @@ const AddProduct = () => {
       return;
     }
 
-    if (
-      formData.stock === "" ||
-      Number(formData.stock) < 0
-    ) {
+    if (formData.stock === "" || Number(formData.stock) < 0) {
       setMessage({
         type: "error",
         text: "Please enter valid stock.",
@@ -300,10 +280,7 @@ const AddProduct = () => {
         return;
       }
 
-      if (
-        variant.price === "" ||
-        Number(variant.price) <= 0
-      ) {
+      if (variant.price === "" || Number(variant.price) <= 0) {
         setMessage({
           type: "error",
           text: `Please enter a valid price for Variant ${i + 1}.`,
@@ -311,10 +288,7 @@ const AddProduct = () => {
         return;
       }
 
-      if (
-        variant.stock === "" ||
-        Number(variant.stock) < 0
-      ) {
+      if (variant.stock === "" || Number(variant.stock) < 0) {
         setMessage({
           type: "error",
           text: `Please enter valid stock for Variant ${i + 1}.`,
@@ -332,10 +306,10 @@ const AddProduct = () => {
 
     try {
       // ==========================================
-      // GET TOKEN
+      // GET TOKEN (FIXED: adminToken)
       // ==========================================
 
-      const token = localStorage.getItem("token");
+      const token = getAdminToken();
 
       if (!token) {
         setMessage({
@@ -353,120 +327,67 @@ const AddProduct = () => {
 
       const data = new FormData();
 
-      // ==========================================
-      // BASIC INFORMATION
-      // ==========================================
+      data.append("name", formData.name.trim());
 
-      data.append(
-        "name",
-        formData.name.trim()
-      );
+      data.append("description", formData.description.trim());
 
-      data.append(
-        "description",
-        formData.description.trim()
-      );
-
-      data.append(
-        "price",
-        String(Number(formData.price))
-      );
+      data.append("price", String(Number(formData.price)));
 
       data.append(
         "compareAtPrice",
-        String(
-          Number(formData.compareAtPrice) || 0
-        )
+        String(Number(formData.compareAtPrice) || 0)
       );
 
-      data.append(
-        "category",
-        formData.category
-      );
+      data.append("category", formData.category);
 
-      data.append(
-        "stock",
-        String(Number(formData.stock) || 0)
-      );
+      data.append("stock", String(Number(formData.stock) || 0));
 
-      data.append(
-        "isActive",
-        String(formData.isActive)
-      );
+      data.append("isActive", String(formData.isActive));
 
-      data.append(
-        "isFeatured",
-        String(formData.isFeatured)
-      );
+      data.append("isFeatured", String(formData.isFeatured));
 
-      // ==========================================
       // VARIANTS
-      // ==========================================
 
-      const formattedVariants = variants.map(
-        (variant) => ({
-          name: variant.name.trim(),
+      const formattedVariants = variants.map((variant) => ({
+        name: variant.name.trim(),
+        price: Number(variant.price) || 0,
+        compareAtPrice: Number(variant.compareAtPrice) || 0,
+        stock: Number(variant.stock) || 0,
+        sku: variant.sku.trim(),
+      }));
 
-          price:
-            Number(variant.price) || 0,
+      data.append("variants", JSON.stringify(formattedVariants));
 
-          compareAtPrice:
-            Number(variant.compareAtPrice) || 0,
-
-          stock:
-            Number(variant.stock) || 0,
-
-          sku:
-            variant.sku.trim(),
-        })
-      );
-
-      data.append(
-        "variants",
-        JSON.stringify(formattedVariants)
-      );
-
-      // ==========================================
       // IMAGES
-      // ==========================================
 
       images.forEach((image) => {
         data.append("images", image);
       });
 
-      // ==========================================
       // DEBUG
-      // ==========================================
 
       console.log("========== CREATE PRODUCT ==========");
       console.log("Product:", formData);
       console.log("Variants:", formattedVariants);
       console.log("Images:", images);
-      console.log("Token exists:", !!token);
+      console.log("Admin token exists:", !!token);
       console.log("====================================");
 
       // ==========================================
       // SEND REQUEST
       // ==========================================
 
-      const response = await axios.post(
-        "https://honeyterra.onrender.com/api/products",
-        data,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.post(`${API_URL}/api/products`, data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       // ==========================================
       // SUCCESS
       // ==========================================
 
-      console.log(
-        "Create Product Response:",
-        response.data
-      );
+      console.log("Create Product Response:", response.data);
 
       if (response.data.success) {
         setMessage({
@@ -474,9 +395,7 @@ const AddProduct = () => {
           text: "Product created successfully!",
         });
 
-        // ==========================================
         // RESET FORM
-        // ==========================================
 
         setFormData({
           name: "",
@@ -491,9 +410,7 @@ const AddProduct = () => {
 
         setVariants([]);
 
-        // ==========================================
         // REVOKE IMAGE PREVIEWS
-        // ==========================================
 
         imagePreviews.forEach((preview) => {
           URL.revokeObjectURL(preview);
@@ -502,9 +419,7 @@ const AddProduct = () => {
         setImages([]);
         setImagePreviews([]);
 
-        // ==========================================
         // SCROLL TO TOP
-        // ==========================================
 
         window.scrollTo({
           top: 0,
@@ -512,14 +427,9 @@ const AddProduct = () => {
         });
       }
     } catch (error) {
-      console.error(
-        "Create Product Error:",
-        error
-      );
+      console.error("Create Product Error:", error);
 
-      // ==========================================
       // NETWORK ERROR
-      // ==========================================
 
       if (
         error.code === "ERR_NETWORK" ||
@@ -527,44 +437,35 @@ const AddProduct = () => {
       ) {
         setMessage({
           type: "error",
-          text:
-            "Cannot connect to backend server. Make sure your Node.js server is running on port 3000.",
+          text: "Cannot connect to the backend server. Please check your internet connection and that the server is running.",
         });
 
         return;
       }
 
-      // ==========================================
       // UNAUTHORIZED
-      // ==========================================
 
       if (error.response?.status === 401) {
         setMessage({
           type: "error",
-          text:
-            "Unauthorized. Please login to the admin account again.",
+          text: "Unauthorized. Please login to the admin account again.",
         });
 
         return;
       }
 
-      // ==========================================
       // FORBIDDEN
-      // ==========================================
 
       if (error.response?.status === 403) {
         setMessage({
           type: "error",
-          text:
-            "Access denied. Only admin can create products.",
+          text: "Access denied. Only admin can create products.",
         });
 
         return;
       }
 
-      // ==========================================
       // SERVER ERROR
-      // ==========================================
 
       setMessage({
         type: "error",
@@ -583,76 +484,47 @@ const AddProduct = () => {
 
   return (
     <div className="admin-add-product-page">
-
-      {/* =====================================
-          PAGE HEADER
-      ===================================== */}
+      {/* PAGE HEADER */}
 
       <div className="admin-add-product-heading">
         <div>
-          <p className="admin-add-product-eyebrow">
-            HoneyTerra Admin
-          </p>
+          <p className="admin-add-product-eyebrow">HoneyTerra Admin</p>
 
-          <h1>
-            Add New Product
-          </h1>
+          <h1>Add New Product</h1>
 
-          <p>
-            Add a new product to your HoneyTerra store.
-          </p>
+          <p>Add a new product to your HoneyTerra store.</p>
         </div>
       </div>
 
-      {/* =====================================
-          MESSAGE
-      ===================================== */}
+      {/* MESSAGE */}
 
       {message.text && (
         <div
           className={`product-form-message ${
-            message.type === "success"
-              ? "success"
-              : "error"
+            message.type === "success" ? "success" : "error"
           }`}
         >
           {message.text}
         </div>
       )}
 
-      {/* =====================================
-          FORM
-      ===================================== */}
+      {/* FORM */}
 
-      <form
-        onSubmit={handleSubmit}
-        className="admin-product-form"
-      >
-
-        {/* =====================================
-            BASIC INFORMATION
-        ===================================== */}
+      <form onSubmit={handleSubmit} className="admin-product-form">
+        {/* BASIC INFORMATION */}
 
         <div className="product-form-card">
-
           <div className="product-form-card-header">
-            <h2>
-              Basic Information
-            </h2>
+            <h2>Basic Information</h2>
 
-            <p>
-              Enter the basic details of your product.
-            </p>
+            <p>Enter the basic details of your product.</p>
           </div>
 
           <div className="product-form-grid">
-
             {/* PRODUCT NAME */}
 
             <div className="product-form-group full-width">
-              <label>
-                Product Name
-              </label>
+              <label>Product Name</label>
 
               <input
                 type="text"
@@ -667,9 +539,7 @@ const AddProduct = () => {
             {/* CATEGORY */}
 
             <div className="product-form-group">
-              <label>
-                Category
-              </label>
+              <label>Category</label>
 
               <select
                 name="category"
@@ -677,30 +547,20 @@ const AddProduct = () => {
                 onChange={handleChange}
                 required
               >
-                <option value="Gel Ash Trays">
-                  Gel Ash Trays
-                </option>
+                <option value="Gel Ash Trays">Gel Ash Trays</option>
 
-                <option value="Honeycomb Wraps">
-                  Honeycomb Wraps
-                </option>
+                <option value="Honeycomb Wraps">Honeycomb Wraps</option>
 
-                <option value="Bundles">
-                  Bundles
-                </option>
+                <option value="Bundles">Bundles</option>
 
-                <option value="Accessories">
-                  Accessories
-                </option>
+                <option value="Accessories">Accessories</option>
               </select>
             </div>
 
             {/* STOCK */}
 
             <div className="product-form-group">
-              <label>
-                Total Stock
-              </label>
+              <label>Total Stock</label>
 
               <input
                 type="number"
@@ -716,9 +576,7 @@ const AddProduct = () => {
             {/* DESCRIPTION */}
 
             <div className="product-form-group full-width">
-              <label>
-                Description
-              </label>
+              <label>Description</label>
 
               <textarea
                 name="description"
@@ -729,34 +587,23 @@ const AddProduct = () => {
                 required
               />
             </div>
-
           </div>
         </div>
 
-        {/* =====================================
-            PRICING
-        ===================================== */}
+        {/* PRICING */}
 
         <div className="product-form-card">
-
           <div className="product-form-card-header">
-            <h2>
-              Pricing
-            </h2>
+            <h2>Pricing</h2>
 
-            <p>
-              Set the selling price and original price.
-            </p>
+            <p>Set the selling price and original price.</p>
           </div>
 
           <div className="product-form-grid">
-
             {/* SELLING PRICE */}
 
             <div className="product-form-group">
-              <label>
-                Selling Price (₹)
-              </label>
+              <label>Selling Price (₹)</label>
 
               <input
                 type="number"
@@ -772,9 +619,7 @@ const AddProduct = () => {
             {/* COMPARE PRICE */}
 
             <div className="product-form-group">
-              <label>
-                Compare At Price (₹)
-              </label>
+              <label>Compare At Price (₹)</label>
 
               <input
                 type="number"
@@ -785,26 +630,17 @@ const AddProduct = () => {
                 placeholder="699"
               />
             </div>
-
           </div>
         </div>
 
-        {/* =====================================
-            OPTIONAL VARIANTS
-        ===================================== */}
+        {/* OPTIONAL VARIANTS */}
 
         <div className="product-form-card">
-
           <div className="product-form-card-header product-form-flex-header">
-
             <div>
-              <h2>
-                Product Variants
-              </h2>
+              <h2>Product Variants</h2>
 
-              <p>
-                Optional. Add different sizes, packs or versions.
-              </p>
+              <p>Optional. Add different sizes, packs or versions.</p>
             </div>
 
             <button
@@ -812,117 +648,72 @@ const AddProduct = () => {
               className="admin-primary-button add-variant-button"
               onClick={addVariant}
             >
-              <span>
-                +
-              </span>
-
+              <span>+</span>
               Add Variant
             </button>
-
           </div>
 
-          {/* NO VARIANTS */}
-
           {variants.length === 0 ? (
-
             <div className="no-variants">
-
-              <p>
-                No variants added yet.
-              </p>
+              <p>No variants added yet.</p>
 
               <span>
-                Variants are optional. If your product has
-                different sizes or packs, click "Add Variant".
+                Variants are optional. If your product has different sizes or
+                packs, click "Add Variant".
               </span>
-
             </div>
-
           ) : (
-
             <div className="variants-container">
-
               {variants.map((variant, index) => (
-
-                <div
-                  className="variant-card"
-                  key={`variant-${index}`}
-                >
-
+                <div className="variant-card" key={`variant-${index}`}>
                   <div className="variant-header">
-
-                    <h3>
-                      Variant {index + 1}
-                    </h3>
+                    <h3>Variant {index + 1}</h3>
 
                     <button
                       type="button"
                       className="remove-variant-button"
-                      onClick={() =>
-                        removeVariant(index)
-                      }
+                      onClick={() => removeVariant(index)}
                     >
                       Remove
                     </button>
-
                   </div>
 
                   <div className="variant-grid">
-
                     {/* VARIANT NAME */}
 
                     <div className="product-form-group">
-
-                      <label>
-                        Variant Name
-                      </label>
+                      <label>Variant Name</label>
 
                       <input
                         type="text"
                         value={variant.name}
                         onChange={(e) =>
-                          updateVariant(
-                            index,
-                            "name",
-                            e.target.value
-                          )
+                          updateVariant(index, "name", e.target.value)
                         }
                         placeholder="Small / Pack of 3"
                       />
-
                     </div>
 
                     {/* VARIANT PRICE */}
 
                     <div className="product-form-group">
-
-                      <label>
-                        Price (₹)
-                      </label>
+                      <label>Price (₹)</label>
 
                       <input
                         type="number"
                         value={variant.price}
                         onChange={(e) =>
-                          updateVariant(
-                            index,
-                            "price",
-                            e.target.value
-                          )
+                          updateVariant(index, "price", e.target.value)
                         }
                         placeholder="399"
                         min="0"
                       />
-
                     </div>
 
                     {/* VARIANT COMPARE PRICE */}
 
                     <div className="product-form-group">
-
-                      <label>
-                        Compare Price (₹)
-                      </label>
+                      <label>Compare Price (₹)</label>
 
                       <input
                         type="number"
@@ -937,110 +728,65 @@ const AddProduct = () => {
                         placeholder="499"
                         min="0"
                       />
-
                     </div>
 
                     {/* VARIANT STOCK */}
 
                     <div className="product-form-group">
-
-                      <label>
-                        Stock
-                      </label>
+                      <label>Stock</label>
 
                       <input
                         type="number"
                         value={variant.stock}
                         onChange={(e) =>
-                          updateVariant(
-                            index,
-                            "stock",
-                            e.target.value
-                          )
+                          updateVariant(index, "stock", e.target.value)
                         }
                         placeholder="10"
                         min="0"
                       />
-
                     </div>
 
                     {/* SKU */}
 
                     <div className="product-form-group">
-
-                      <label>
-                        SKU
-                      </label>
+                      <label>SKU</label>
 
                       <input
                         type="text"
                         value={variant.sku}
                         onChange={(e) =>
-                          updateVariant(
-                            index,
-                            "sku",
-                            e.target.value
-                          )
+                          updateVariant(index, "sku", e.target.value)
                         }
                         placeholder="GAT-SM"
                       />
-
                     </div>
-
                   </div>
                 </div>
-
               ))}
-
             </div>
-
           )}
-
         </div>
 
-        {/* =====================================
-            PRODUCT IMAGES
-        ===================================== */}
+        {/* PRODUCT IMAGES */}
 
         <div className="product-form-card">
-
           <div className="product-form-card-header">
+            <h2>Product Images</h2>
 
-            <h2>
-              Product Images
-            </h2>
-
-            <p>
-              Upload actual product images from your computer.
-            </p>
-
+            <p>Upload actual product images from your computer.</p>
           </div>
 
           {/* IMAGE UPLOAD */}
 
           <div className="image-upload-area">
+            <label htmlFor="product-images" className="image-upload-label">
+              <div className="image-upload-icon">+</div>
 
-            <label
-              htmlFor="product-images"
-              className="image-upload-label"
-            >
+              <strong>Choose Product Images</strong>
 
-              <div className="image-upload-icon">
-                +
-              </div>
+              <span>JPG, JPEG, PNG, WEBP or GIF</span>
 
-              <strong>
-                Choose Product Images
-              </strong>
-
-              <span>
-                JPG, JPEG, PNG, WEBP or GIF
-              </span>
-
-              <small>
-                Maximum 10 images, 5 MB each
-              </small>
-
+              <small>Maximum 10 images, 5 MB each</small>
             </label>
 
             <input
@@ -1053,85 +799,48 @@ const AddProduct = () => {
                 display: "none",
               }}
             />
-
           </div>
 
           {/* IMAGE PREVIEWS */}
 
           {imagePreviews.length > 0 && (
-
             <div className="product-images-preview">
-
               {imagePreviews.map((preview, index) => (
-
-                <div
-                  className="product-image-item"
-                  key={`preview-${index}`}
-                >
-
-                  <img
-                    src={preview}
-                    alt={`Product ${index + 1}`}
-                  />
+                <div className="product-image-item" key={`preview-${index}`}>
+                  <img src={preview} alt={`Product ${index + 1}`} />
 
                   <button
                     type="button"
-                    onClick={() =>
-                      removeImage(index)
-                    }
+                    onClick={() => removeImage(index)}
                     className="remove-image-button"
                   >
                     ×
                   </button>
 
-                  <span>
-                    Image {index + 1}
-                  </span>
-
+                  <span>Image {index + 1}</span>
                 </div>
-
               ))}
-
             </div>
-
           )}
-
         </div>
 
-        {/* =====================================
-            SETTINGS
-        ===================================== */}
+        {/* SETTINGS */}
 
         <div className="product-form-card">
-
           <div className="product-form-card-header">
+            <h2>Product Settings</h2>
 
-            <h2>
-              Product Settings
-            </h2>
-
-            <p>
-              Control how this product appears in your store.
-            </p>
-
+            <p>Control how this product appears in your store.</p>
           </div>
 
           <div className="product-settings">
-
             {/* ACTIVE */}
 
             <label className="product-setting-row">
-
               <div>
+                <strong>Active Product</strong>
 
-                <strong>
-                  Active Product
-                </strong>
-
-                <span>
-                  Make this product visible on your store.
-                </span>
-
+                <span>Make this product visible on your store.</span>
               </div>
 
               <input
@@ -1140,23 +849,15 @@ const AddProduct = () => {
                 checked={formData.isActive}
                 onChange={handleChange}
               />
-
             </label>
 
             {/* FEATURED */}
 
             <label className="product-setting-row">
-
               <div>
+                <strong>Featured Product</strong>
 
-                <strong>
-                  Featured Product
-                </strong>
-
-                <span>
-                  Show this product in your featured section.
-                </span>
-
+                <span>Show this product in your featured section.</span>
               </div>
 
               <input
@@ -1165,19 +866,13 @@ const AddProduct = () => {
                 checked={formData.isFeatured}
                 onChange={handleChange}
               />
-
             </label>
-
           </div>
-
         </div>
 
-        {/* =====================================
-            ACTIONS
-        ===================================== */}
+        {/* ACTIONS */}
 
         <div className="product-form-actions">
-
           <button
             type="button"
             className="product-cancel-button"
@@ -1192,15 +887,10 @@ const AddProduct = () => {
             className="admin-primary-button product-submit-button"
             disabled={loading}
           >
-            {loading
-              ? "Uploading & Creating..."
-              : "Create Product"}
+            {loading ? "Uploading & Creating..." : "Create Product"}
           </button>
-
         </div>
-
       </form>
-
     </div>
   );
 };
