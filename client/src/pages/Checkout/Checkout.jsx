@@ -1458,11 +1458,17 @@ const Checkout = () => {
               {/* COD */}
 
               <button
-                type="button"
-                disabled
-                aria-disabled="true"
-                className="payment-option payment-option-disabled"
-              >
+  type="button"
+  className={
+    paymentMethod === "cod"
+      ? "payment-option payment-option-active"
+      : "payment-option"
+  }
+  onClick={() => {
+    console.log("COD selected");
+    setPaymentMethod("cod");
+  }}
+>
 
                 <div className="payment-radio">
 
